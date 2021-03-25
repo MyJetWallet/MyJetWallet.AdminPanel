@@ -19,7 +19,7 @@ namespace Backoffice.Services
                 string sslCn;
                 if (!ctx.Request.Headers.TryGetValue("x-ssl-user", out sslUser))
                 {
-                    Console.WriteLine("Do not found header 'x-ssl-user'");
+                    Console.WriteLine($"Do not found header 'x-ssl-user' {ctx.Request.Method}|{ctx.Request.Scheme}|{ctx.Request.Protocol}");
                     var userId = System.Environment.GetEnvironmentVariable("x-ssl-user");
                     sslCn = userId;
                 }
