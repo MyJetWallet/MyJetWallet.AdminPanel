@@ -33,6 +33,10 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (HttpContext?.HttpContext?.Request?.Headers == null)
+        {
+            Console.WriteLine($"No http context at OnInitializedAsync {HttpContext?.HttpContext == null}|{HttpContext?.HttpContext?.Request==null}|{HttpContext?.HttpContext?.Request?.Headers}");
+        }
         var boUser = await HttpContext.HttpContext.GetBoUserId();
         CurrentBoUserUser = await BoUsers.GetBoUserById(boUser);
         await base.OnInitializedAsync();
