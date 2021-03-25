@@ -1,0 +1,85 @@
+﻿@using Service.AssetsDictionary.Domain.Models
+@using Service.AssetsDictionary.Grpc
+@using Backoffice.Abstractions.Models
+
+@inject IAssetsDictionaryService AssetsDictionaryService;
+
+<tr style="@(!Item.IsEnabled ? "background: lightgray" : "")">
+    <td >@Item.BrokerId</td>
+    <td>@Item.Symbol</td>
+    <td>@Item.Description</td>
+    <td style="@(!Item.IsEnabled ? "background: red" : "")">@Item.IsEnabled</td>
+    <td>@Item.Accuracy</td>
+    <td style="background: @(Item.KycRequiredForWithdrawal ? "orange" : "#28a745")">@Item.KycRequiredForDeposit</td>
+    <td style="background: @(Item.KycRequiredForWithdrawal ? "orange" : "#28a745")">@Item.KycRequiredForWithdrawal</td>
+    <td>
+        <ul class="nav">
+            <li><button type="button" class="btn-outline-info btn" @onclick="ShowDetails" >Details</button></li>
+            <li><button type="button" class="btn-outline-warning btn" @onclick="ShowEdit" >Edit</button></li>
+            <li><button type="button" class="btn-outline-danger btn" >Delete</button></li>
+        </ul>
+    </td>
+</tr>
+
+@if (IsShowDetails)
+{
+    <AssetDetailsDialog Item="@Item" OnCloseCallback="OnCloseAssetDialog" />
+}
+
+@if (IsShowEdit)
+{
+    <div>
+        <AssetDetailsDialogEdit Item="@Item" IsCreate="false" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="OnUpdateAsset" />
+    </div>
+}
+
+
+
+@code {
+    
+    [Parameter]
+    public Asset Item { get; set; }
+
+    [Parameter]
+    public ILoaderConfiguration LoaderConfig { get; set; }
+    
+    private bool IsShowDetails { get; set; }
+    
+    private bool IsShowEdit { get; set; }
+
+    private void OnCloseAssetDialog()
+    {
+        IsShowDetails = false;
+        StateHasChanged();
+    }
+
+    private void ShowDetails()
+    {
+        IsShowDetails = true;
+        StateHasChanged();
+    }
+
+    private void ShowEdit()
+    {
+        IsShowEdit = true;
+        StateHasChanged();
+    }
+
+    private void OnCloseEditDialog()
+    {
+        IsShowEdit = false;
+        StateHasChanged();
+    }
+    
+    private async void OnUpdateAsset()
+    {
+        Item.IsEnabled = !Item.IsEnabled;
+        await AssetsDictionaryService.UpdateAssetAsync(Item);
+
+        IsShowEdit = false;
+        
+        await InvokeAsync(StateHasChanged);
+    }
+
+
+}

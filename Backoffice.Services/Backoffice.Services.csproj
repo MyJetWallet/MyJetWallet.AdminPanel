@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Backoffice.Abstractions\Backoffice.Abstractions.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="DotNetCoreDecorators" Version="1.0.20" />
+      <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
+      <PackageReference Include="MyCrm.Accounts.Grpc" Version="1.0.17" />
+      <PackageReference Include="MyCRM.AccountTransactions.Grpc" Version="1.0.12" />
+      <PackageReference Include="MyCrm.AuditLog.Grpc" Version="1.0.4" />
+      <PackageReference Include="MyCrm.Auth.GrpcContracts" Version="1.0.5" />
+      <PackageReference Include="MyCrm.AutoOwnerProfiles.Grpc" Version="1.0.1" />
+      <PackageReference Include="MyCrm.BusinessCategories.Grpc" Version="1.0.2" />
+      <PackageReference Include="MyCrm.Calls.Grpc" Version="1.0.9" />
+      <PackageReference Include="MyCrm.Comments.GrpcContracts" Version="1.0.3" />
+      <PackageReference Include="MyCrm.Deposits.Grpc" Version="1.0.30" />
+      <PackageReference Include="MyCRM.Logs.GrpcContracts" Version="1.0.6" />
+      <PackageReference Include="MyCrm.MyCrmTradersUtmParametersGrpcContracts" Version="1.0.3" />
+      <PackageReference Include="MyCrm.PaymentReport.GrpcContracts" Version="1.0.3" />
+      <PackageReference Include="MyCrm.PersonalData.Grpc" Version="1.0.36" />
+      <PackageReference Include="MyCrm.TraderCrmStatuses.Grpc" Version="1.0.1" />
+      <PackageReference Include="MyCrm.TraderMarketingSalesData.Grpc" Version="1.0.8" />
+      <PackageReference Include="MyCrm.TraderOnlineData.Grpc" Version="1.0.4" />
+      <PackageReference Include="MyCrm.AffiliateAccess.Grpc" Version="1.0.2" />
+      <PackageReference Include="MyCrm.TradersDocuments.Grpc" Version="1.0.4" />
+        <PackageReference Include="MyCrm.Withdrawals.Grpc" Version="1.0.14" />
+      <PackageReference Include="SimpleTrading.Deposit.Grpc" Version="1.2.13" />
+    </ItemGroup>
+
+</Project>

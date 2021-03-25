@@ -1,0 +1,29 @@
+<nav aria-label="Page navigation example">
+    <ul class="pagination">
+        @for (var i = 1; i <= PageCount; i++)
+        {
+            var activeAttr = PageNo == i ? "active" : "";
+            
+            <li style="cursor: pointer" class="page-item @activeAttr">
+                <a class="page-link" @onclick="@(async () => await OnClick(i))">@i</a>
+            </li>
+        }
+    </ul>
+</nav>
+
+@code {
+
+    [Parameter]
+    public int PageNo { get; set; }
+
+    [Parameter]
+    public int PageCount { get; set; }
+
+    [Parameter]
+    public EventCallback<int> Callback { get; set; }
+
+    private async Task OnClick(int page)
+    {
+        await Callback.InvokeAsync(page);
+    }
+}

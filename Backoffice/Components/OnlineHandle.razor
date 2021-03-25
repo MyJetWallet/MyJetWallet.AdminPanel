@@ -1,0 +1,19 @@
+@using Backoffice.Abstractions.Bo
+@implements IDisposable
+
+@code {
+    
+    [CascadingParameter(Name = "CurrentBoUserUser")]
+    public IBackOfficeUser CurrentBoUserUser { get; set; }
+    
+    protected override void OnInitialized()
+    {
+        OnlineCache.HandleOnline(CurrentBoUserUser.Id);
+        base.OnInitialized();
+    }
+
+    public void Dispose()
+    {
+        OnlineCache.HandleOffline(CurrentBoUserUser.Id);
+    }
+}

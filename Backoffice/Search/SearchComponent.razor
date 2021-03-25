@@ -1,0 +1,141 @@
+@using Backoffice.ReflectionSearch
+@using Backoffice.Abstractions.Bo
+
+@inject IToaster ToastService
+@inject IBackofficeFiltersPresetRepository PresetRepository
+
+@if (FiltersPresets != null && FiltersPresets.Any())
+{
+    <div style="display: flex; justify-content: center;">
+
+
+        <select @onchange="@OnSelect" class="form-select" aria-label="Default select example">
+            <option selected>Select filter</option>
+            @foreach (var itm in FiltersPresets)
+            {
+                <option value="@itm.FilterName">@itm.FilterName</option>
+            }
+        </select>
+
+    </div>
+}
+
+@foreach (var filterItem in _filters)
+{
+    <SearchRowComponent OnDeleteRow="@OnDelete" FilterModel="@filterItem.Value" OnFill="@HandleFilledEntity" SearchModelItems="@SearchModel.SearchModelItems"/>
+}
+
+<div style="display: flex; justify-content: center;">
+    @if (_filters.Values.All(itm => itm.IsFilled()))
+    {
+        <button @onclick="AddSearchRow" type="button" class="btn btn-outline-success">Add</button>
+    }
+    else
+    {
+        <button @onclick="@(() => ToastService.Info("Fill all filters"))" type="button" class="btn btn-outline-danger">Add</button>
+    }
+
+    <button @onclick="OnSave" type="button" class="btn btn-outline-warning">Save</button>
+    <button @onclick="OnFilter" type="button" class="btn btn-outline-success">Filter</button>
+</div>
+
+@if (IsSaveDialogActive)
+{
+    <SaveFilterDialog
+        OnSuccessCallback="@OnHideSave"
+        OnCloseCallback="@OnHideSave"
+        PageName="@PageName"
+        Filters="@_filters"/>
+}
+
+@code
+{
+    private bool IsSaveDialogActive { get; set; }
+
+    private IEnumerable<ILogPresetModel> FiltersPresets { get; set; }
+
+    [Parameter]
+    public SearchModel SearchModel { get; set; }
+
+    [Parameter]
+    public string PageName { get; set; }
+
+    [Parameter]
+    public EventCallback<IEnumerable<SearchFilterItem>> OnSearchCallback { get; set; }
+
+    private IDictionary<string, SearchFilterItem> _filters = InitForm();
+
+    private bool _isDropdownActive = false;
+    private HashSet<string> _selectedItems = new();
+
+    private void HandleFilledEntity(SearchFilterItem item)
+    {
+        if (!_filters.ContainsKey(item.GuidField.ToString()))
+            _filters.Add(item.GuidField.ToString(), item);
+
+        _filters[item.GuidField.ToString()] = item;
+    }
+
+    [CascadingParameter(Name = "CurrentBoUserUser")]
+    public IBackOfficeUser CurrentBoUserUser { get; set; }
+
+    private static IDictionary<string, SearchFilterItem> InitForm()
+    {
+        var form = new SearchFilterItem();
+        return new Dictionary<string, SearchFilterItem> {[form.GuidField.ToString()] = form};
+    }
+
+    private async Task OnFilter()
+    {
+        await OnSearchCallback.InvokeAsync(_filters.Values);
+        Console.WriteLine("On filter");
+    }
+
+    private void AddSearchRow()
+    {
+        var form = new SearchFilterItem();
+        _filters.Add(form.GuidField.ToString(), form);
+        StateHasChanged();
+    }
+
+    private async void OnSave()
+    {
+        IsSaveDialogActive = true;
+        FiltersPresets = await PresetRepository.GetFiltersForPage(CurrentBoUserUser.Id, PageName);
+        StateHasChanged();
+    }
+
+    private async void OnHideSave()
+    {
+        IsSaveDialogActive = false;
+        FiltersPresets = await PresetRepository.GetFiltersForPage(CurrentBoUserUser.Id, PageName);
+        StateHasChanged();
+    }
+
+
+    private void OnDelete(string filterGuid)
+    {
+        _filters.Remove(filterGuid);
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        FiltersPresets = await PresetRepository.GetFiltersForPage(CurrentBoUserUser.Id, PageName);
+        await base.OnInitializedAsync();
+    }
+
+    private void OnSelect(ChangeEventArgs eventArgs)
+    {
+        var selectedFilter = eventArgs.Value?.ToString();
+
+        var filter = FiltersPresets.FirstOrDefault(itm => itm.FilterName == selectedFilter);
+        if (filter == null)
+        {
+            ToastService.Error("Filter not found");
+            return;
+        }
+
+        _filters = filter.GetFilters();
+    }
+}

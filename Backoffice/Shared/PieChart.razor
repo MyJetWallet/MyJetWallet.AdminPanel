@@ -1,0 +1,68 @@
+@using Allegiance.Blazor.Highcharts.Charts
+@using Allegiance.Blazor.Highcharts.Constants
+@using Allegiance.Blazor.Highcharts.Options
+@using Allegiance.Blazor.Highcharts.Services
+
+@inject IChartService ChartService
+@inject IJSRuntime JsRuntime
+
+<figure class="highcharts-figure">
+    <div id="piechart"></div>    
+</figure>
+
+@code {
+    
+    public class PieModel
+    {
+        public string Name { get; set; }
+        public double Amount { get; set; }
+    }
+    
+    [Parameter]
+    public string Title { get; set; }
+    
+    [Parameter]
+    public IEnumerable<PieModel> ChartData { get; set; }
+
+    private ChartObject PieChartObj => InitChart();
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        if (!firstRender) return;
+        ChartService.RenderChart("piechart", PieChartObj.Generate());
+        JsRuntime.InvokeVoidAsync("prettyPrint");
+    }
+    
+    private ChartObject InitChart()
+    {
+        return new()
+        {
+            Chart = new Chart(ChartType.Pie),
+            Title = new Title(Title),
+            Tooltip = new Allegiance.Blazor.Highcharts.Options.Tooltip(false),
+            Legend = new Legend(true),
+            PlotOptions = new PlotOptions
+            {
+                Pie = new PlotOptionsPie
+                {
+                    AllowPointSelect = false,
+                    ShowInLegend = true,
+                    Cursor = CursorType.Pointer,
+                    DataLabels = new Labels("<b>{point.name}</b>: ${point.y:.1f}"),
+                    States = new States(new Hover(false)),
+                },
+                Series = null
+            },
+            Series = new List<SeriesElement>
+            {
+                new ()
+                {
+                    Name = "Amount",
+                    Data = new List<object> {ChartData.Select( itm => new List<object> {itm.Name, itm.Amount})}
+                }
+            }
+        };
+    }
+
+}

@@ -1,0 +1,132 @@
+@using Backoffice.ReflectionSearch
+
+<div class="form-group" style="display: flex;">
+    <div class="col-3 my-1">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text">Field</div>
+            </div>
+            <select @onchange="OnPropertyUpdate" class="form-control" id="exampleFormControlSelect1">
+                <option>---</option>
+                @foreach (var itm in SearchModelItems)
+                {
+                    <option value="@itm.PropertyName">@itm.PropertyName</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <div class="col-2 my-1">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text">Condition</div>
+            </div>
+            @if (string.IsNullOrEmpty(FilterModel.PropertyName))
+            {
+                <select disabled class="form-control" id="exampleFormControlSelect2"></select>
+            }
+            else
+            {
+                <select @onchange="OnConditionUpdate" class="form-control" id="exampleFormControlSelect2">
+                    <option value="">---</option>
+                    @foreach (var condition in SearchModelItems
+                        .First(itm => itm.PropertyName == FilterModel.PropertyName).Type.GetConditionsByFieldType())
+                    {
+                        <option value="@condition">@condition</option>
+                    }
+                </select>
+            }
+        </div>
+    </div>
+
+    <div class="col-6 my-1">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text">Value</div>
+            </div>
+            @if (string.IsNullOrEmpty(FilterModel.Condition) || FilterModel.Condition.GetValueInputType() == ValueInputsTypes.Disabled)
+            {
+                <select disabled class="form-control" id="exampleFormControlSelect2"></select>
+            }
+            else
+            {
+                if (FilterModel.Condition.GetValueInputType() == ValueInputsTypes.SingleSelect)
+                {
+                    <select @bind="FilterModel.FilterValue" class="form-control" id="exampleFormControlSelect2">
+                        @foreach (var value in SearchModelItems
+                            .First(itm => itm.PropertyName == FilterModel.PropertyName).PossibleValues)
+                        {
+                            <option value="@value">@value</option>
+                        }
+                    </select>
+                }
+
+                if (FilterModel.Condition.GetValueInputType() == ValueInputsTypes.StringValue)
+                {
+                    <input @bind="FilterModel.FilterValue" type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3">
+                }
+
+                if (FilterModel.Condition.GetValueInputType() == ValueInputsTypes.Multiselect)
+                {
+                    <TagSelector SelectableTags="@SearchModelItems.First(itm => itm.PropertyName == FilterModel.PropertyName).PossibleValues.ToArray()"
+                                 @bind-SelectedTags="@FilterModel.FilterValues" Filter="@((item, term) => item.Contains(term))" OnCreateTag="OnCreateTag">
+                        <TagTemplate>@context</TagTemplate>
+                    </TagSelector>
+                }
+            }
+        </div>
+    </div>
+    <div class="col-1 my-1">
+        <button type="button" @onclick="@OnDelete" class="btn btn-outline-danger">Delete</button>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public IEnumerable<SearchModelItem> SearchModelItems { get; set; }
+
+    [Parameter]
+    public EventCallback<SearchFilterItem> OnFill { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnDeleteRow { get; set; }
+
+    [Parameter]
+    public SearchFilterItem FilterModel { get; set; }
+
+    private void OnPropertyUpdate(ChangeEventArgs eventArgs)
+    {
+        FilterModel.PropertyName = eventArgs.Value?.ToString();
+        FilterModel.Condition = null;
+    }
+
+    private void OnConditionUpdate(ChangeEventArgs eventArgs)
+    {
+        FilterModel.Condition = eventArgs.Value?.ToString();
+        FilterModel.FilterValue = null;
+        FilterModel.FilterValues = new List<string>();
+
+        if (FilterModel.IsFilled())
+            OnFill.InvokeAsync(FilterModel);
+    }
+
+    private void OnFilterValueUpdate(ChangeEventArgs eventArgs)
+    {
+        FilterModel.FilterValue = eventArgs.Value?.ToString();
+
+        if (FilterModel.IsFilled())
+            OnFill.InvokeAsync(FilterModel);
+    }
+
+    void OnCreateTag(string tag)
+    {
+        FilterModel.FilterValues.Add(tag);
+    }
+
+    private void OnDelete()
+    {
+        OnDeleteRow.InvokeAsync(FilterModel.GuidField.ToString());
+    }
+
+}

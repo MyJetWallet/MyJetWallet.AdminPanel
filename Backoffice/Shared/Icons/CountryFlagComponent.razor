@@ -1,0 +1,28 @@
+@using Backoffice.Services
+@if (string.IsNullOrEmpty(CountryCode))
+{
+    <span>???</span>
+    return;
+}
+
+@if (CountryCode.Length == 2)
+{
+    CountryCode = CountryCode.Iso2ToIso3();
+}
+
+@{ CountryName = CountryCode.GetCountryName() ?? CountryCode; }
+
+<img class="flag" title="@CountryName" src="@GetFlagImage()" alt=""/>
+<div style="height: 10px; position: relative; font-size: 8px; text-align: center;">@CountryCode</div>
+
+@code {
+    [Parameter]
+    public string CountryCode { get; set; }
+ 
+    private string CountryName { get; set; }
+
+    private string GetFlagImage()
+    {
+        return $"/images/flags/{CountryCode.ToLower()}.svg";
+    }
+}

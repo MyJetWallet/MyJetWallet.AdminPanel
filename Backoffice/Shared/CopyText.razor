@@ -1,0 +1,18 @@
+@inject IJSRuntime Js
+@inject IToaster ToastService
+
+<span @onclick="@OnClick" class="disable-select">@Text</span>
+
+@code {
+    [Parameter]
+    public string Text { get; set; }
+    
+    [Parameter]
+    public string TextName { get; set; }
+    
+    private async Task OnClick()
+    {
+        await Js.InvokeVoidAsync("clipboardCopy.copyText", Text);
+        ToastService.Success($"{TextName} copied to clipboard");
+    }
+}

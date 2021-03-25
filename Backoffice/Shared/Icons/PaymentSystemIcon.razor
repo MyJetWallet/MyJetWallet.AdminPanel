@@ -1,0 +1,10 @@
+@inherits Backoffice.ClassComponents.PaymentSystemComponent
+@{
+    var (image, name) = GetPaymentSystemData();
+}
+
+@if (!string.IsNullOrEmpty(image))
+{
+    <img height="24px;" title="@name" src="@image" alt="@name">
+}
+<span> @name</span>

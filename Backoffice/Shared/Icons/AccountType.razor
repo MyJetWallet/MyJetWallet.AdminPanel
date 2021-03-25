@@ -1,0 +1,18 @@
+@if (AccountTypeName.IsSt())
+{
+    <img style="width: 32px" src="/images/StLogo.png" alt="">
+    return;
+}
+
+@if (AccountTypeName.IsMt())
+{
+    <img style="width: 32px" src="/images/MtLogo.png" alt="">
+    return;
+}
+
+<span>@AccountTypeName</span>
+
+@code {
+    [Parameter]
+    public string AccountTypeName { get; set; }
+}

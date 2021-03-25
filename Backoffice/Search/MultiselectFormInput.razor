@@ -1,0 +1,47 @@
+<div align="center">
+    <div class="input-group mb-3" @onclick="@ChangeDropdownState">
+        <div class="input-group-prepend">
+            <span class="input-group-text" id="basic-addon1">Select Registered</span>
+        </div>
+        <input type="text" value="@string.Join(", ", SelectedItems)" disabled class="form-control" placeholder="Registered" aria-label="Registered" aria-describedby="basic-addon1">
+    </div>
+
+    @if (_isDropdownActive)
+    {
+        <ul style="padding: 0; list-style-type:none;">
+            @foreach (var itm in PossibleValues)
+            {
+                <li class="dropdown-item" style="list-style-type:none;" @onclick="@(() => OnSelect(itm))">@itm</li>
+            }
+        </ul>
+    }
+</div>
+
+@code
+{
+    [Parameter]
+    public IEnumerable<string> PossibleValues { get; set; }
+
+    [Parameter]
+    public EventCallback<HashSet<string>> SelectCallback { get; set; }
+
+    private bool _isDropdownActive;
+
+    private HashSet<string> SelectedItems { get; set; }
+
+    private void ChangeDropdownState()
+    {
+        _isDropdownActive = !_isDropdownActive;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnSelect(string itm)
+    {
+        if (SelectedItems.Contains(itm))
+            SelectedItems.Remove(itm);
+        else
+            SelectedItems.Add(itm);
+
+        InvokeAsync(StateHasChanged);
+    }
+}

@@ -1,0 +1,92 @@
+﻿@using Service.AssetsDictionary.Grpc
+@using Backoffice.Abstractions.Models
+@using Service.AssetsDictionary.Domain.Models
+
+@inject IAssetsDictionaryService AssetsDictionaryService;
+
+<Loader LoaderConfig="@LoaderConfig"/>
+
+
+<p class="float-left"><span class="h2">Asset list</span></p>
+
+<ul class="nav float-right">
+    <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary">Refresh</button></li>
+    <li><button @onclick="OnAddAsset" type="button" class="btn btn-outline-success">Add</button></li>
+</ul>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Broker</th>
+            <th>Symbol</th>
+            <th>Description</th>
+            <th>Enabled</th>
+            <th>Accuracy</th>
+            <th>Kyc Deposit</th>
+            <th>Kyc Withdrawal</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var asset in AssetList)
+        {
+            <AssetTableRow Item="@asset" LoaderConfig="@LoaderConfig" />
+        }
+    
+    </tbody>
+</table>
+
+
+@code {
+    private string Message { get; set; } = "-- none --";
+    
+    
+    
+    public ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+
+    private async void OnGetCountAssets()
+    {
+        try
+        {
+            var assetList = await AssetsDictionaryService.GetAllAssetsAsync();
+
+            Message = $"Count Assets is {assetList.Assets.Length}";
+        }
+        catch (Exception ex)
+        {
+            Message = "Cannot get asset list";
+        }
+
+        StateHasChanged();
+    }
+
+
+    private async void OnRefresh()
+    {
+        LoaderConfig.Enable();
+        AssetList = new Asset[] {};
+        
+        var assetList = await AssetsDictionaryService.GetAllAssetsAsync();
+
+        AssetList = assetList.Assets;
+        
+        LoaderConfig.Disable();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public Asset[] AssetList { get; set; } = new Asset[] {};
+
+    protected override async void OnInitialized()
+    {
+        base.OnInitialized();
+
+        OnRefresh();
+    }
+
+
+    private async Task OnAddAsset()
+    {
+        
+    }
+
+}

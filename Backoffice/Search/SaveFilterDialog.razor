@@ -1,0 +1,45 @@
+@using Backoffice.Abstractions.Bo
+@using Backoffice.ReflectionSearch
+@inject IBackofficeFiltersPresetRepository PresetRepository
+
+<BaseTwoButtonsDialog
+    OnClose="HandleOnClose"
+    OnSubmit="HandleOnSubmit"
+    Caption=@("Save filter")
+    YesButtonCaption="Update">
+
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <span class="input-group-text" id="basic-addon1">Filter Name</span>
+        </div>
+        <input type="text" @bind="@FilterName" class="form-control" id="basic-url" aria-describedby="basic-addon3">
+    </div>
+</BaseTwoButtonsDialog>
+
+
+@code {
+    private string FilterName { get; set; }
+    
+    [Parameter]
+    public EventCallback OnSuccessCallback { get; set; }  
+    
+    [Parameter]
+    public IDictionary<string, SearchFilterItem> Filters { get; set; }  
+    
+    [Parameter]
+    public string PageName { get; set; }
+
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+    
+    [CascadingParameter(Name = "CurrentBoUserUser")]
+    public IBackOfficeUser CurrentBoUserUser { get; set; }
+    
+    private void HandleOnClose() => OnCloseCallback.InvokeAsync();
+    
+    private async Task HandleOnSubmit()
+    {
+        await PresetRepository.InsertOrReplaceAsync(CurrentBoUserUser.Id, PageName, FilterName, Filters);
+        await OnSuccessCallback.InvokeAsync();
+    }
+}

@@ -1,0 +1,46 @@
+﻿@using Service.AssetsDictionary.Domain.Models
+@using Blazorise
+@using Color = System.Drawing.Color
+
+<BaseOneButtonsDialog Caption=@($"{Item.Symbol} [{Item.BrokerId}]") OnClose="OnClose" ButtonCaption="Close">
+    <table>
+        <tr><td>Broker</td><td class="float-left">@Item.BrokerId</td></tr>
+        <tr><td>Symbol</td><td class="float-left">@Item.Symbol</td></tr>
+        <tr></tr>
+        <tr><td>Description</td><td class="float-left">@Item.Description</td></tr>
+        <tr><td>Accuracy</td><td class="float-left">@Item.Accuracy</td></tr>
+        <tr><td>IsEnabled</td><td class="float-left">@Item.IsEnabled</td></tr>
+        <tr>
+            <td>KYC</td>
+            <td>
+                <table style="font-size: 10px">
+                    <tr>
+                        <th >Deposit</th>
+                        <th >Withdrawal</th>
+                    </tr>
+                    <tr>
+                        <td style="background: @(Item.KycRequiredForWithdrawal ? "orange" : "#28a745")">@Item.KycRequiredForDeposit</td>
+                        <td style="background: @(!Item.KycRequiredForWithdrawal ? "orange" : "#28a745")">@Item.KycRequiredForWithdrawal</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</BaseOneButtonsDialog>
+
+@code {
+    
+    [Parameter]
+    public Asset Item { get; set; }
+    
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+
+    private void OnClose()
+    {
+        OnCloseCallback.InvokeAsync();
+    }
+    
+    
+
+}

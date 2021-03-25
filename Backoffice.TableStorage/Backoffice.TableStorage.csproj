@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Backoffice.Abstractions\Backoffice.Abstractions.csproj" />
+      <ProjectReference Include="..\Backoffice.Services\Backoffice.Services.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="DotNetCoreDecorators" Version="1.0.20" />
+        <PackageReference Include="MyAzureBlob" Version="1.0.5" />
+        <PackageReference Include="MyAzureTableStorage" Version="1.1.1" />
+    </ItemGroup>
+</Project>

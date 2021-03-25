@@ -1,0 +1,41 @@
+@using Backoffice.Abstractions.Bo
+@using Backoffice.Services
+@using Microsoft.AspNetCore.Http
+
+@inherits LayoutComponentBase
+@inject IBoUsersService BoUsers
+@inject IHttpContextAccessor HttpContext
+
+@if (CurrentBoUserUser == null)
+{
+    <h1>Can't find your user. Please, ask your team lead to access.</h1>
+    return;
+}
+
+<ToastContainer/>
+<div class="page">
+    <div class="sidebar">
+        <NavMenu/>
+    </div>
+    <CascadingValue Name="CurrentBoUserUser" Value="@CurrentBoUserUser">
+        <OnlineHandle/>
+        <div style="height: 100vh" class="main overflow-auto">
+            <div style="padding: 0!important;" class="content px-4">
+                @Body
+            </div>
+        </div>
+    </CascadingValue>
+</div>
+
+@code {
+
+    private IBackOfficeUser CurrentBoUserUser { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var boUser = await HttpContext.HttpContext.GetBoUserId();
+        CurrentBoUserUser = await BoUsers.GetBoUserById(boUser);
+        await base.OnInitializedAsync();
+    }
+
+}

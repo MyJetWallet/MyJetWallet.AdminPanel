@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Backoffice.Datatypes\Backoffice.Datatypes.csproj" />
+      <ProjectReference Include="..\Backoffice.ReflectionSearch\Backoffice.ReflectionSearch.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MyCrm.Deposits.Grpc" Version="1.0.30" />
+      <PackageReference Include="MyCrm.Kyc.New.Grpc" Version="1.0.8" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,29 @@
+@using BlazorDateRangePicker
+
+<style>
+   .currentDatePicker {
+       background-color: aquamarine !important;
+   }
+</style>
+
+<DateRangePicker SingleDatePicker="true"
+                 CustomDateFunction="CustomDateFunction"
+                 OnRangeSelect="OnDateSelect"/>
+
+@code {
+
+    [Parameter]
+    public EventCallback<DateTime> OnSelectEvent { get; set; }
+
+    private object CustomDateFunction(DateTimeOffset day)
+    {
+        return day == DateTimeOffset.Now ? "currentDatePicker" : string.Empty;
+    }
+
+
+    private async Task OnDateSelect(DateRange dateRange)
+    {
+        await OnSelectEvent.InvokeAsync(dateRange.Start.UtcDateTime);
+    }
+
+}

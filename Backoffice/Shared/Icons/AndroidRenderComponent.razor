@@ -1,0 +1,25 @@
+@using Backoffice.Abstractions.Bo
+@using Backoffice.Services
+
+<img style="height:24px;" title="@DeviceInfo.OsVersion" src="@GetPngName(DeviceInfo.OsVersion)" alt="">
+
+@code {
+    [Parameter]
+    public DeviceInfo DeviceInfo { get; set; }
+
+    private string GetPngName(string osVersion)
+    {
+        var osName = osVersion.GetAndroidVersionName();
+
+        return osName switch
+        {
+            PlatformManager.AndroidPlatformName.Nougat => "/images/Devices/AndroidNougat.svg",
+            PlatformManager.AndroidPlatformName.Oreo => "/images/Devices/AndroidOreo.svg",
+            PlatformManager.AndroidPlatformName.Pie => "/images/Devices/AndroidPie.svg",
+            PlatformManager.AndroidPlatformName.AndroidQ => "/images/Devices/Android_10.svg",
+            PlatformManager.AndroidPlatformName.AndroidR => "/images/Devices/Android_11.svg",
+            PlatformManager.AndroidPlatformName.Unknown => "/images/Devices/Android.png",
+            _ => $"/images/Devices/Android{osName}.png"
+            };
+    }
+}

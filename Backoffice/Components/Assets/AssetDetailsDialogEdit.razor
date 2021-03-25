@@ -1,0 +1,69 @@
+﻿@using Service.AssetsDictionary.Domain.Models
+@using Blazorise
+@using Syncfusion.Blazor.RichTextEditor
+@using Color = System.Drawing.Color
+
+<BaseTwoButtonsDialog 
+    Caption=@($"{Item.Symbol} [{Item.BrokerId}]") 
+    OnClose="OnClose" 
+    YesButtonCaption="@(IsCreate ? "Create" : "Save")"
+    NoButtonCaption="Close"
+    OnSubmit="OnSubmit">
+    
+    <table>
+        <tr><td>Broker</td><td class="float-left">@Item.BrokerId</td></tr>
+        <tr><td>Symbol</td><td class="float-left">@Item.Symbol</td></tr>
+        <tr></tr>
+        <tr><td>Description</td><td class="float-left">@Item.Description</td></tr>
+        <tr><td>Accuracy</td><td class="float-left">@Item.Accuracy</td></tr>
+        <tr><td>IsEnabled</td><td class="float-left">@Item.IsEnabled</td></tr>
+        <tr>
+            <td>KYC</td>
+            <td>
+                <table style="font-size: 10px">
+                    <tr>
+                        <th >Deposit</th>
+                        <th >Withdrawal</th>
+                    </tr>
+                    <tr>
+                        <td style="background: @(Item.KycRequiredForWithdrawal ? "orange" : "#28a745")">@Item.KycRequiredForDeposit</td>
+                        <td style="background: @(!Item.KycRequiredForWithdrawal ? "orange" : "#28a745")">@Item.KycRequiredForWithdrawal</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</BaseTwoButtonsDialog>
+
+@code {
+    
+    [Parameter]
+    public Asset Item { get; set; }
+    
+    [Parameter]
+    public bool IsCreate { get; set; }
+    
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+    
+    [Parameter]
+    public EventCallback<Asset> OnCreateCallback { get; set; }
+    
+    [Parameter]
+    public EventCallback<Asset> OnUpdateCallback { get; set; }
+
+    private void OnClose()
+    {
+        OnCloseCallback.InvokeAsync();
+    }
+
+
+    private async Task OnSubmit()
+    {
+        if (IsCreate)
+            await OnCreateCallback.InvokeAsync(Item);
+        else
+            await OnUpdateCallback.InvokeAsync(Item);
+    }
+
+}
