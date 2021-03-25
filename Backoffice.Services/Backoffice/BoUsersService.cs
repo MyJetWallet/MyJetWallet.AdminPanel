@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,6 +19,38 @@ namespace Backoffice.Services.Backoffice
 
         public async ValueTask<IBackOfficeUser> GetBoUserById(string boUserId)
         {
+            //todo: прикрутить тут авторизацию юзеров по БД
+            return new BackOfficeUser()
+            {
+                Id = boUserId,
+                AllDataAccess = true,
+                AllOfficeDataAccess = true,
+                AssignedPhonePoolId = "",
+                CanDoRealFund = true,
+                CanDownloadData = true,
+                CanEditAffiliates = true,
+                CanEditReferralLinks = true,
+                CanLoginEdit = true,
+                CanSeeDataWithNoOffice = true,
+                CanUseBalanceCorrection = true,
+                CertAliases = new[] {"alex", "alexey"},
+                ChangeIsInternal = true,
+                Countries = new[] {"ALL"},
+                DataOwnership = "",
+                DataOwnerships = new[] {"ALL"},
+                ExposePersonalData = true,
+                InternalPhoneNumberId = "1234567",
+                IsAdmin = true,
+                IsBlocked = false,
+                Ip = "",
+                LastLogInAttempt = null,
+                PersonalName = "Alexey",
+                ReferralLink = "",
+                Registered = DateTime.Parse("2021-01-01"),
+                Roles = new[] {"ALL"}
+            };
+            
+            
             return await _authService.GetBackOfficeUsersAsync()
                 .SelectAsync(itm => itm.ToDomain())
                 .FirstOrDefaultAsync(itm => itm.Id == boUserId);
