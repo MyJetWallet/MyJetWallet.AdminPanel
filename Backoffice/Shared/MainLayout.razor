@@ -36,6 +36,7 @@
         if (HttpContext?.HttpContext?.Request?.Headers == null)
         {
             Console.WriteLine($"No http context at OnInitializedAsync {HttpContext?.HttpContext == null}|{HttpContext?.HttpContext?.Request==null}|{HttpContext?.HttpContext?.Request?.Headers}");
+            Console.WriteLine($"{HttpContext?.HttpContext.Request.Method}|{HttpContext?.HttpContext.Request.Path}|{HttpContext?.HttpContext.Request.Protocol}|{|{HttpContext?.HttpContext.Request.Scheme}}");
         }
         var boUser = await HttpContext.HttpContext.GetBoUserId();
         CurrentBoUserUser = await BoUsers.GetBoUserById(boUser);
