@@ -19,6 +19,9 @@ namespace Backoffice.Services.Backoffice
 
         public async ValueTask<IBackOfficeUser> GetBoUserById(string boUserId)
         {
+            if (string.IsNullOrEmpty(boUserId))
+                throw new Exception("Cannot found user with empty ID");
+            
             //todo: прикрутить тут авторизацию юзеров по БД
             return new BackOfficeUser()
             {

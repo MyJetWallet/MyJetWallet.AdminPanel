@@ -19,6 +19,7 @@ namespace Backoffice.Services
                 string sslCn;
                 if (!ctx.Request.Headers.TryGetValue("x-ssl-user", out sslUser))
                 {
+                    Console.WriteLine("Do not found header 'x-ssl-user'");
                     var userId = System.Environment.GetEnvironmentVariable("x-ssl-user");
                     sslCn = userId;
                 }
@@ -27,9 +28,12 @@ namespace Backoffice.Services
                     if (string.IsNullOrEmpty(sslUser.ToString()))
                     {
                         Console.WriteLine($"Receive empty x-ssl-user: {sslUser}");
-                        return null;
+                        sslCn = null;
                     }
-                    sslCn = sslUser.ToString().Split("=").Last();
+                    else
+                    {
+                        sslCn = sslUser.ToString().Split("=").Last();
+                    }
                 }
 
                 var targetUser = await BoUsersService.GetBoUserById(sslCn);
