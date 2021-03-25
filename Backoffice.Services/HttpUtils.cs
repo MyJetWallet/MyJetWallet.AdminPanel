@@ -20,7 +20,7 @@ namespace Backoffice.Services
             }
             else
             {
-                Console.WriteLine($"x-ssl-user");
+                Console.WriteLine($"x-ssl-user: {sslUser.ToString()}");
                 sslCn = sslUser.ToString().Split("=").Last();
             }
             var targetUser = await BoUsersService.GetBoUserById(sslCn);
