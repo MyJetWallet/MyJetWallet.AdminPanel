@@ -14,9 +14,24 @@
         <tr><td>Broker</td><td class="float-left">@Item.BrokerId</td></tr>
         <tr><td>Symbol</td><td class="float-left">@Item.Symbol</td></tr>
         <tr></tr>
-        <tr><td>Description</td><td class="float-left">@Item.Description</td></tr>
-        <tr><td>Accuracy</td><td class="float-left">@Item.Accuracy</td></tr>
-        <tr><td>IsEnabled</td><td class="float-left">@Item.IsEnabled</td></tr>
+        <tr>
+            <td>Description</td>
+            <td class="float-left">
+                <input type="text" class="form-control" @bind="Item.Description" />
+            </td>
+        </tr>
+        <tr>
+            <td>Accuracy</td>
+            <td class="float-left">
+                <input type="number" class="form-control" @bind="Item.Accuracy" />
+            </td>
+        </tr>
+        <tr>
+            <td>IsEnabled</td>
+            <td class="float-left" style="@(!Item.IsEnabled ? "background: red" : "")">
+                <input type="checkbox" @bind="Item.IsEnabled" />
+            </td>
+        </tr>
         <tr>
             <td>KYC</td>
             <td>
@@ -26,8 +41,12 @@
                         <th >Withdrawal</th>
                     </tr>
                     <tr>
-                        <td style="background: @(Item.KycRequiredForWithdrawal ? "orange" : "#28a745")">@Item.KycRequiredForDeposit</td>
-                        <td style="background: @(!Item.KycRequiredForWithdrawal ? "orange" : "#28a745")">@Item.KycRequiredForWithdrawal</td>
+                        <td style="background: @(Item.KycRequiredForDeposit ? "orange" : "#28a745")">
+                            <input type="checkbox" @bind="Item.KycRequiredForDeposit" />
+                        </td>
+                        <td style="background: @(Item.KycRequiredForWithdrawal ? "orange" : "#28a745")">
+                            <input type="checkbox" @bind="Item.KycRequiredForWithdrawal" />
+                        </td>
                     </tr>
                 </table>
             </td>

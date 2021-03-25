@@ -10,7 +10,7 @@
     <td>@Item.Description</td>
     <td style="@(!Item.IsEnabled ? "background: red" : "")">@Item.IsEnabled</td>
     <td>@Item.Accuracy</td>
-    <td style="background: @(Item.KycRequiredForWithdrawal ? "orange" : "#28a745")">@Item.KycRequiredForDeposit</td>
+    <td style="background: @(Item.KycRequiredForDeposit ? "orange" : "#28a745")">@Item.KycRequiredForDeposit</td>
     <td style="background: @(Item.KycRequiredForWithdrawal ? "orange" : "#28a745")">@Item.KycRequiredForWithdrawal</td>
     <td>
         <ul class="nav">
@@ -71,10 +71,11 @@
         StateHasChanged();
     }
     
-    private async void OnUpdateAsset()
+    private async void OnUpdateAsset(Asset asset)
     {
-        Item.IsEnabled = !Item.IsEnabled;
-        await AssetsDictionaryService.UpdateAssetAsync(Item);
+        //Item.IsEnabled = !Item.IsEnabled;
+        
+        await AssetsDictionaryService.UpdateAssetAsync(asset);
 
         IsShowEdit = false;
         
