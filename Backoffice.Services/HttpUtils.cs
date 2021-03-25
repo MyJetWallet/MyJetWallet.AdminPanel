@@ -36,6 +36,9 @@ namespace Backoffice.Services
                     }
                 }
 
+                if (string.IsNullOrEmpty(sslCn))
+                    return null;
+
                 var targetUser = await BoUsersService.GetBoUserById(sslCn);
 
                 if (targetUser != null)
