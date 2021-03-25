@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Backoffice.Abstractions.Bo;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
 
 namespace Backoffice.Services
 {
@@ -12,24 +13,34 @@ namespace Backoffice.Services
 
         public static async Task<string> GetBoUserId(this HttpContext ctx)
         {
-            string sslCn;
-            if (!ctx.Request.Headers.TryGetValue("x-ssl-user", out var sslUser))
+            StringValues sslUser;
+            try
             {
-                var userId = System.Environment.GetEnvironmentVariable("x-ssl-user");
-                sslCn = userId;
+                string sslCn;
+                if (!ctx.Request.Headers.TryGetValue("x-ssl-user", out sslUser))
+                {
+                    var userId = System.Environment.GetEnvironmentVariable("x-ssl-user");
+                    sslCn = userId;
+                }
+                else
+                {
+                    sslCn = sslUser.ToString().Split("=").Last();
+                }
+
+                var targetUser = await BoUsersService.GetBoUserById(sslCn);
+
+                if (targetUser != null)
+                    return targetUser.Id;
+
+                var allUsers = await BoUsersService.GetBoUsersAsync();
+
+                return allUsers.FirstOrDefault(itm => itm.CertAliases?.Contains(sslCn) ?? false)?.Id ?? sslCn;
             }
-            else
+            catch (Exception ex)
             {
-                sslCn = sslUser.ToString().Split("=").Last();
+                Console.WriteLine($"x-ssl-user: {sslUser.ToString()}");
+                throw;
             }
-            var targetUser = await BoUsersService.GetBoUserById(sslCn);
-
-            if (targetUser != null)
-                return targetUser.Id;
-            
-            var allUsers = await BoUsersService.GetBoUsersAsync();
-
-            return allUsers.FirstOrDefault(itm => itm.CertAliases?.Contains(sslCn) ?? false)?.Id ?? sslCn;
         }
     }
 }
