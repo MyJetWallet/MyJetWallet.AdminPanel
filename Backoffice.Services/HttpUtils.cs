@@ -24,6 +24,11 @@ namespace Backoffice.Services
                 }
                 else
                 {
+                    if (string.IsNullOrEmpty(sslUser.ToString()))
+                    {
+                        Console.WriteLine($"Receive empty x-ssl-user: {sslUser}");
+                        return null;
+                    }
                     sslCn = sslUser.ToString().Split("=").Last();
                 }
 
