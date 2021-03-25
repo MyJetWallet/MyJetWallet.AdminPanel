@@ -49,4 +49,10 @@
       <_ContentIncludedByDefault Remove="Shared\Bo\TwoButtonsDialog.razor" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="Dockerfile">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>
