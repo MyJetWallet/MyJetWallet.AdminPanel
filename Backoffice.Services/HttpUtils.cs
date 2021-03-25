@@ -16,6 +16,12 @@ namespace Backoffice.Services
             StringValues sslUser;
             try
             {
+                if (ctx?.Request?.Headers == null)
+                {
+                    Console.WriteLine("ctx?.Request?.Headers is null!!");
+                    return null;
+                }
+                
                 string sslCn;
                 if (!ctx.Request.Headers.TryGetValue("x-ssl-user", out sslUser))
                 {
