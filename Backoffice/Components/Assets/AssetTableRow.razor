@@ -5,7 +5,7 @@
 
 @inject IAssetsDictionaryService AssetsDictionaryService;
 @inject IToaster ToastService;
-@inject ILogger Logger;
+@inject ILogger<bool> Logger;
 
 <tr style="@(!Item.IsEnabled ? "background: lightgray" : "")">
     <td >@Item.BrokerId</td>
@@ -19,7 +19,10 @@
         <ul class="nav">
             <li><button type="button" class="btn-outline-info btn" @onclick="ShowDetails" >Details</button></li>
             <li><button type="button" class="btn-outline-warning btn" @onclick="ShowEdit" >Edit</button></li>
-            <li><button type="button" class="btn-outline-danger btn" @onclick="ShowDelete" >Delete</button></li>
+            @if (!Item.IsEnabled)
+            {
+                <li><button type="button" class="btn-outline-danger btn" @onclick="ShowDelete">Delete</button></li>
+            }
         </ul>
     </td>
 </tr>
