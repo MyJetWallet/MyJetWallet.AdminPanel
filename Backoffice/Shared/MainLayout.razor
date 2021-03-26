@@ -4,7 +4,7 @@
 
 @inherits LayoutComponentBase
 @inject IBoUsersService BoUsers
-@inject IHttpContextAccessor HttpContext
+@inject MyHttpContextAccessor ContextAccessor
 
 @if (CurrentBoUserUser == null)
 {
@@ -35,9 +35,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        
-        
-        var boUser = await HttpContext.HttpContext.GetBoUserId();
+        var boUser = await ContextAccessor.Context.GetBoUserId();
         CurrentBoUserUser = await BoUsers.GetBoUserById(boUser);
         await base.OnInitializedAsync();
     }

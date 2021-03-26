@@ -5,6 +5,7 @@ using Autofac;
 using Backoffice.Middlewares;
 using Backoffice.Modules;
 using Backoffice.Services;
+using Backoffice.Shared;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -61,7 +62,7 @@ namespace Backoffice
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddHttpContextAccessor();
-            services.AddScoped<HttpContextAccessor>();
+            services.AddScoped<MyHttpContextAccessor>();
 
             services.AddToaster(config =>
             {
