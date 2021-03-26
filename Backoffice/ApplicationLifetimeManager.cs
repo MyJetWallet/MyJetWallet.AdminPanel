@@ -13,14 +13,14 @@ namespace Backoffice
     public class ApplicationLifetimeManager : ApplicationLifetimeManagerBase
     {
         private readonly ILogger<ApplicationLifetimeManager> _logger;
-        private readonly IStatusService _statusService;
         private readonly IBackofficeRolesRepository _backofficeRolesRepository;
         private readonly IBackofficeOfficeService _backofficeOfficeService;
 
         private static readonly TaskTimer StatusTimer = new(TimeSpan.FromSeconds(30));
 
-        public ApplicationLifetimeManager(IHostApplicationLifetime appLifetime, ILogger<ApplicationLifetimeManager> logger,
-            IStatusService statusService,
+        public ApplicationLifetimeManager(
+            IHostApplicationLifetime appLifetime, 
+            ILogger<ApplicationLifetimeManager> logger,
             IBackofficeRolesRepository backofficeRolesRepository,
             IBackofficeOfficeService backofficeOfficeService,
             IBoUsersService boUsersService
@@ -28,7 +28,6 @@ namespace Backoffice
             : base(appLifetime)
         {
             _logger = logger;
-            _statusService = statusService;
             _backofficeRolesRepository = backofficeRolesRepository;
             _backofficeOfficeService = backofficeOfficeService;
 
@@ -39,13 +38,10 @@ namespace Backoffice
         {
             _logger.LogInformation("OnStarted has been called.");
 
-            StatusTimer.Register("CacheSync", async () =>
-            {
-                var crmStatuses = await _statusService.GetTradingStatusesAsync();
-                var tradingStatuses = await _statusService.GetCrmStatusesAsync();
-                var achievementsStatuses = await _statusService.GetAchievementsStatusesAsync();
-                StatusCaches.SyncData(tradingStatuses, crmStatuses, achievementsStatuses);
-            });
+            //StatusTimer.Register("CacheSync", async () =>
+            //{
+                
+            //});
 
             StatusTimer.Register("BoDataSync", async () =>
             {

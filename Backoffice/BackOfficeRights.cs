@@ -5,6 +5,8 @@ namespace Backoffice
     public static class Menu
     {
         public const string Assets = "Assets";
+        public const string SpotInstruments = "SpotInstruments";
+        
 
         
     }
@@ -48,7 +50,9 @@ namespace Backoffice
         //oi pack
         private static readonly List<NavsItem> MenuItems = new()
         {
-            NavsItem.Create("Assets", "Assets", "list-rich", Menu.Assets)
+            NavsItem.Create("Assets", "Assets", "list-rich", Menu.Assets),
+            NavsItem.Create("Spot Instruments", "SpotInstruments", "list-rich", Menu.SpotInstruments)
+            
         };
         
         public static IEnumerable<NavsItem> GenerateMenuItems()
