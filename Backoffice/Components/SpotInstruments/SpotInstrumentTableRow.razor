@@ -180,6 +180,7 @@
 
     private async Task DeleteItem()
     {
+        IsShowDelete = false;
         await OnDeleteCallback.InvokeAsync(Item);
     }
 
