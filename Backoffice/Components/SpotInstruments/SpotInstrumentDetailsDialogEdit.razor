@@ -1,0 +1,143 @@
+﻿@using Backoffice.Services.SpotInstruments
+@using Service.AssetsDictionary.Domain.Models
+
+<BaseTwoButtonsDialog 
+    Caption=@(!IsCreate ? $"{Item.Instrument.Symbol} [{Item.Instrument.BrokerId}]" : "Create a new Asset") 
+    OnClose="OnClose" 
+    YesButtonCaption="@(IsCreate ? "Create" : "Save")"
+    NoButtonCaption="Close"
+    OnSubmit="OnSubmit">
+
+    <table>
+        <tr>
+            <td>
+            
+                <table>
+                    <tr>
+                        <td>Broker</td>
+                        <td class="float-left">
+                            @if (!IsCreate)
+                            {
+                                @Item.Instrument.BrokerId
+                            }
+                            else
+                            {
+                                <input type="text" class="form-control" @bind="Item.Instrument.BrokerId"/>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Symbol</td>
+                        <td class="float-left">
+                            @if (!IsCreate)
+                            {
+                                @Item.Instrument.Symbol
+                            }
+                            else
+                            {
+                                <input type="text" class="form-control" @bind="Item.Instrument.Symbol"/>
+                            }
+                        </td>
+                    </tr>
+                    <tr></tr>
+                    <tr>
+                        <td>IsEnabled</td>
+                        <td class="float-left" style="@(!Item.Instrument.IsEnabled ? "background: red" : "")">
+                            <input type="checkbox" @bind="Item.Instrument.IsEnabled"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Base Asset</td>
+                        <input type="text" class="form-control" @bind="Item.Instrument.BaseAsset"/>
+                    </tr>
+                    <tr>
+                        <td>Quote Asset</td>
+                        <input type="text" class="form-control" @bind="Item.Instrument.QuoteAsset"/>
+                    </tr>
+                    <tr>
+                        <td>Accuracy</td>
+                        <input type="number" class="form-control" @bind="Item.Instrument.Accuracy"/>
+                    </tr>
+                    
+                    <tr>
+                        <td>Min Volume</td>
+                        <input type="number" class="form-control" @bind="Item.Instrument.MinVolume"/>
+                    </tr>
+                    <tr>
+                        <td>Max Volume</td>
+                        <input type="number" class="form-control" @bind="Item.Instrument.MaxVolume"/>
+                    </tr>
+                    <tr>
+                        <td>Max Opposite Volume</td>
+                        <input type="number" class="form-control" @bind="Item.Instrument.MaxOppositeVolume"/>
+                    </tr>
+                    <tr>
+                        <td>Market Order<br>Price Threshold</td>
+                        <input type="number" class="form-control" @bind="Item.Instrument.MarketOrderPriceThreshold"/>
+                    </tr>
+
+                    <tr>
+                        <td>KYC Trading</td>
+                        <td class="float-left" style="background: @(Item.Instrument.KycRequiredForTrade ? "orange" : "#28a745")">
+                            <input type="checkbox" @bind="Item.Instrument.KycRequiredForTrade"/>
+                        </td>
+                    </tr>
+                </table>
+
+            </td>
+        </tr>
+    </table>
+</BaseTwoButtonsDialog>
+
+
+@code {
+    
+    [Parameter]
+    public SpotInstrumentItem Item { get; set; }
+    
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+    
+    [Parameter]
+    public EventCallback<SpotInstrumentItem> OnCreateCallback { get; set; }
+    
+    [Parameter]
+    public EventCallback<SpotInstrumentItem> OnUpdateCallback { get; set; }
+
+    
+    [Parameter]
+    public bool IsCreate { get; set; }
+
+
+    private void OnClose()
+    {
+        OnCloseCallback.InvokeAsync();
+    }
+
+    private async Task OnSubmit()
+    {
+        if (IsCreate)
+            await OnCreateCallback.InvokeAsync(Item);
+        else
+            await OnUpdateCallback.InvokeAsync(Item);
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        if (IsCreate)
+        {
+            Item = new SpotInstrumentItem()
+            {
+                Instrument = new SpotInstrument()
+                {
+                    BrokerId = "jetwallet"
+                },
+                Brands = new List<string>()
+            };
+        }
+
+        Item.Brands ??= new List<string>();
+    }
+}

@@ -152,7 +152,10 @@
         if (IsCreate)
             Item = new AssetItem()
             {
-                Asset = new Asset(),
+                Asset = new Asset()
+                {
+                    BrokerId = "jetwallet"
+                },
                 PaymentSettings = new AssetPaymentSettingsNoSqlEntity()
                 {
                     PaymentSettings = new AssetPaymentSettings()

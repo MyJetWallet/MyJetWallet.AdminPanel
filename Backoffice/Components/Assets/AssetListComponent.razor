@@ -16,7 +16,6 @@
 <table class="table">
     <thead>
         <tr>
-            <th>Broker</th>
             <th>Symbol</th>
             <th>Description</th>
             <th>Enabled</th>
@@ -114,8 +113,6 @@
             await AssetItemManager.DeleteAsset(item);
             
             ToastService.Info($"Asset {item.Asset.Symbol} is deleted", "Delete asset");
-            
-            IsShowAdding = false;
             
             OnRefresh();    
         }

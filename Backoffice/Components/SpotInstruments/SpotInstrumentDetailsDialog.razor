@@ -1,0 +1,48 @@
+﻿@using Backoffice.Services.SpotInstruments
+<BaseOneButtonsDialog Caption=@($"{Item.Instrument.Symbol} [{Item.Instrument.BrokerId}]") OnClose="OnClose" ButtonCaption="Close">
+    <table>
+        <tr>
+            <td>
+            
+                <table>
+                    <tr><td>Broker</td><td class="float-left">@Item.Instrument.BrokerId</td></tr>
+                    <tr><td>Symbol</td><td class="float-left">@Item.Instrument.Symbol</td></tr>
+                    <tr></tr>
+                    <tr><td>IsEnabled</td><td class="float-left">@Item.Instrument.IsEnabled</td></tr>
+                    <tr><td>Base Asset</td><td class="float-left">@Item.Instrument.BaseAsset</td></tr>
+                    <tr><td>Quote Asset</td><td class="float-left">@Item.Instrument.QuoteAsset</td></tr>
+                    <tr><td>Accuracy</td><td class="float-left">@Item.Instrument.Accuracy</td></tr>
+                    
+                    <tr><td>Min Volume</td><td class="float-left">@Item.Instrument.MinVolume</td></tr>
+                    <tr><td>Max Volume</td><td class="float-left">@Item.Instrument.MaxVolume</td></tr>
+                    <tr><td>Max Opposite Volume</td><td class="float-left">@Item.Instrument.MaxOppositeVolume</td></tr>
+                    <tr><td>Market Order<br>Price Threshold</td><td class="float-left">@Item.Instrument.MarketOrderPriceThreshold</td></tr>
+
+                    <tr>
+                        <td>KYC Trading</td>
+                        <td style="background: @(Item.Instrument.KycRequiredForTrade ? "orange" : "#28a745")">
+                            @Item.Instrument.KycRequiredForTrade
+                        </td>
+                    </tr>
+                </table>
+
+            </td>
+        </tr>
+    </table>
+</BaseOneButtonsDialog>
+
+
+@code {
+    
+    [Parameter]
+    public SpotInstrumentItem Item { get; set; }
+    
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+
+    private void OnClose()
+    {
+        OnCloseCallback.InvokeAsync();
+    }
+    
+}

@@ -1,5 +1,121 @@
-﻿<h3>SpotInstrumentComponent</h3>
+﻿@using Backoffice.Services.SpotInstruments
+@using Backoffice.Abstractions.Models
+
+@inject ISpotInstrumentManager SpotInstrumentManager;
+@inject IToaster ToastService
+
+<Loader LoaderConfig="@LoaderConfig"/>
+
+<ul class="nav float-left">
+    <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
+    <li><button @onclick="OnAddInstrument" type="button" class="btn btn-outline-success" style="margin: 5px; border-radius: 10px">Add</button></li>
+</ul>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Symbol</th>
+        <th>Enabled</th>
+            
+        <th>Base</th>
+        <th>Quote</th>
+        <th>Acc.</th>
+        <th>Min<br>Vol</th>
+        <th>Max<br>Vol</th>
+        <th>Max<br>Op-Vol</th>
+        <th>MO<br>Thr-ld</th>
+            
+        <th>Flags</th>
+            
+        <th>Brands</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach(var instrument in InstrumentList)
+    {
+        <SpotInstrumentTableRow Item="@instrument" OnDeleteCallback="DeleteInstrument" />
+    }
+    
+    </tbody>
+</table>
+
+@if (IsShowAdding)
+{
+    <div>
+        <SpotInstrumentDetailsDialogEdit IsCreate="true" OnCloseCallback="OnCloseAddingDialog" OnCreateCallback="OnCreateInstrument" />
+    </div>
+}
 
 @code {
+
+    private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+
+    private List<SpotInstrumentItem> InstrumentList { get; set; } = new();
     
+    private bool IsShowAdding { get; set; }
+
+    private async Task OnRefresh()
+    {
+        LoaderConfig.Enable();
+        
+        InstrumentList = await SpotInstrumentManager.GetAll();
+        
+        LoaderConfig.Disable();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void OnAddInstrument()
+    {
+        IsShowAdding = true;
+        StateHasChanged();   
+    }
+
+    private async Task DeleteInstrument(SpotInstrumentItem item)
+    {
+        try
+        {
+            await SpotInstrumentManager.DeleteInstrument(item);
+            
+            ToastService.Info($"Spot instrument {item.Instrument.Symbol} is deleted", "Instrument deletion");
+            
+            await OnRefresh();    
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Instrument deletion");
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await OnRefresh();
+        
+        await base.OnInitializedAsync();
+    }
+
+    private void OnCloseAddingDialog()
+    {
+        IsShowAdding = false;
+        StateHasChanged();
+    }
+
+    private async Task OnCreateInstrument(SpotInstrumentItem item)
+    {
+        try
+        {
+            await SpotInstrumentManager.AddInstrument(item);
+            
+            ToastService.Info($"Instrument {item.Instrument.Symbol} is created", "Create instrument");
+            
+            IsShowAdding = false;
+            
+            await OnRefresh();    
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Instrument creation");
+        }
+    }
+
 }
