@@ -1,28 +1,47 @@
 ﻿@using Service.AssetsDictionary.Domain.Models
 @using Service.AssetsDictionary.Grpc
 @using Backoffice.Abstractions.Models
+@using Backoffice.Services.Assets
 @using Microsoft.Extensions.Logging
+@using Microsoft.Extensions.Primitives
 
-@inject IAssetsDictionaryService AssetsDictionaryService;
+@inject IAssetItemManager AssetItemManager;
 @inject IToaster ToastService;
-@inject ILogger<bool> Logger;
 
-<tr style="@(!Item.IsEnabled ? "background: lightgray" : "")">
-    <td >@Item.BrokerId</td>
-    <td>@Item.Symbol</td>
-    <td>@Item.Description</td>
-    <td style="@(!Item.IsEnabled ? "background: red" : "")">@Item.IsEnabled</td>
-    <td>@Item.Accuracy</td>
-    <td style="background: @(Item.KycRequiredForDeposit ? "orange" : "#28a745")">@Item.KycRequiredForDeposit</td>
-    <td style="background: @(Item.KycRequiredForWithdrawal ? "orange" : "#28a745")">@Item.KycRequiredForWithdrawal</td>
+
+<tr style="@(!Item.Asset.IsEnabled ? "background: lightgray" : "")">
+    <td >@Item.Asset.BrokerId</td>
+    <td>@Item.Asset.Symbol</td>
+    <td>@Item.Asset.Description</td>
+    <td style="@(!Item.Asset.IsEnabled ? "background: red" : "")">@Item.Asset.IsEnabled</td>
+    <td>@Item.Asset.Accuracy</td>
+    
+    <td>
+        <MyLabel Text="KYC" Color="orange" IsShow="@Item.Asset.KycRequiredForDeposit" />
+        <MyLabel Text="BitGo" Color="lightblue" IsShow="@Item.PaymentSettings?.PaymentSettings?.BitGoCrypto?.IsEnabledDeposit" />
+        <MyLabel Text="PciDss" Color="lightblue" IsShow="@Item.PaymentSettings?.PaymentSettings?.PciDss?.IsEnabledDeposit" />
+    </td>
+    
+    <td>
+        <MyLabel Text="KYC" Color="orange" IsShow="@Item.Asset.KycRequiredForWithdrawal" />
+        <MyLabel Text="BitGo" Color="lightblue" IsShow="@Item.PaymentSettings?.PaymentSettings?.BitGoCrypto?.IsEnabledWithdrawal" />
+    </td>
+    <td>
+        @foreach (var brand in Item.Brands)
+        {
+            <MyLabel Color="lightyellow" Text="@brand" />            
+        }
+    </td>
+
     <td>
         <ul class="nav">
             <li><button type="button" class="btn-outline-info btn" @onclick="ShowDetails" >Details</button></li>
             <li><button type="button" class="btn-outline-warning btn" @onclick="ShowEdit" >Edit</button></li>
-            @if (!Item.IsEnabled)
+            @if (!Item.Asset.IsEnabled)
             {
                 <li><button type="button" class="btn-outline-danger btn" @onclick="ShowDelete">Delete</button></li>
             }
+            <li><button type="button" class="btn-outline-secondary btn" @onclick="ShowBrand">Brand</button></li>
         </ul>
     </td>
 </tr>
@@ -43,16 +62,44 @@
 {
     <div>
         <BaseTwoButtonsDialog
-            Caption=@($"Delete asset {Item.Symbol} [{Item.BrokerId}]")
+            Caption=@($"Delete asset {Item.Asset.Symbol} [{Item.Asset.BrokerId}]")
             OnClose="OnCloseDeleteDialog"
             YesButtonCaption="Delete"
             NoButtonCaption="Cancel"
             OnSubmit="DeleteItem">
             
-            <h3 class="alert-warning">Are you sure you want to delete the asset <b>@Item.Symbol [@Item.BrokerId]?</b></h3>
+            <h3 class="alert-warning">Are you sure you want to delete the asset <b>@Item.Asset.Symbol [@Item.Asset.BrokerId]?</b></h3>
             
         </BaseTwoButtonsDialog>
     </div>
+}
+
+@if (IsShowBrand)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption=@($"Change Brands {Item.Asset.Symbol} [{Item.Asset.BrokerId}]")
+            OnClose="OnCloseBrandDialog"
+            YesButtonCaption="Change"
+            NoButtonCaption="Cancel"
+            OnSubmit="ChangeBrand">
+            
+            <table>
+                <tr>
+                    <td>Brand Id</td>
+                    <td><input type="text" class="form-control" @bind=ChangeBrandId /></td>
+                </tr>
+                
+                <tr>
+                    <td>Assigned</td>
+                    <td><input type="checkbox" @bind=IsBrandAssigned /></td>
+                </tr>
+                
+            </table>
+            
+        </BaseTwoButtonsDialog>
+    </div>
+    
 }
 
 
@@ -60,19 +107,23 @@
 @code {
     
     [Parameter]
-    public Asset Item { get; set; }
+    public AssetItem Item { get; set; }
 
     [Parameter]
     public ILoaderConfiguration LoaderConfig { get; set; }
     
     [Parameter]
-    public EventCallback<Asset> OnDeleteCallback { get; set; }
+    public EventCallback<AssetItem> OnDeleteCallback { get; set; }
     
     private bool IsShowDetails { get; set; }
+    private string ChangeBrandId { get; set; }
+    private bool IsBrandAssigned { get; set; }
     
     private bool IsShowEdit { get; set; }
     
     private bool IsShowDelete { get; set; }
+    
+    private bool IsShowBrand { get; set; }
 
     private void OnCloseAssetDialog()
     {
@@ -98,17 +149,11 @@
         StateHasChanged();
     }
     
-    private async void OnUpdateAsset(Asset asset)
+    private async void OnUpdateAsset(AssetItem asset)
     {
         try
         {
-            var result = await AssetsDictionaryService.UpdateAssetAsync(asset);
-
-            if (!result.IsSuccess)
-            {
-                ToastService.Error(result.ErrorMessage, "Edit asset");
-                return;
-            }
+            await AssetItemManager.UpdateAsset(asset);
 
             IsShowEdit = false;
 
@@ -116,8 +161,7 @@
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Cannot update asset");
-            ToastService.Error($"Cannot update asset, service is not available", "Edit asset");
+            ToastService.Error(ex.Message, "Edit asset");
         }
     }
 
@@ -139,6 +183,41 @@
     {
         IsShowDelete = true;
         StateHasChanged();
+    }
+
+    private void ShowBrand()
+    {
+        IsBrandAssigned = false;
+        ChangeBrandId = "";
+        IsShowBrand = true;
+        StateHasChanged();
+    }
+
+    private void OnCloseBrandDialog()
+    {
+        IsShowBrand = false;
+        StateHasChanged();
+    }
+
+    private async Task ChangeBrand()
+    {
+        try
+        {
+            if (IsBrandAssigned && !string.IsNullOrEmpty(ChangeBrandId))
+                await AssetItemManager.AddBrand(Item, ChangeBrandId);
+            else
+                await AssetItemManager.RemoveBrand(Item, ChangeBrandId);
+            
+            ToastService.Info("Brand is changed", "Change asset brand");
+            
+            IsShowBrand = false;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Change asset brand");
+        }
+
     }
 
 }

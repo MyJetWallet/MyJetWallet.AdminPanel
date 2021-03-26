@@ -162,5 +162,10 @@ namespace Backoffice.Mocks
         {
             throw new System.NotImplementedException();
         }
+
+        public ValueTask<ChangeBrandGrpcResponse> ChangeBrandAsync(ChangeBrandGrpcRequest request)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

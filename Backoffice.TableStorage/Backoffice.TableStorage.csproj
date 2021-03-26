@@ -12,6 +12,6 @@
     <ItemGroup>
         <PackageReference Include="DotNetCoreDecorators" Version="1.0.20" />
         <PackageReference Include="MyAzureBlob" Version="1.0.5" />
-        <PackageReference Include="MyAzureTableStorage" Version="1.1.1" />
+        <PackageReference Include="MyAzureTableStorage" Version="1.1.4" />
     </ItemGroup>
 </Project>

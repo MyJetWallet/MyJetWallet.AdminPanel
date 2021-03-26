@@ -1,79 +1,117 @@
 ﻿@using Service.AssetsDictionary.Domain.Models
 @using Blazorise
 @using Syncfusion.Blazor.RichTextEditor
-@using Color = System.Drawing.Color
+@using Backoffice.Services.Assets
+@using Service.AssetsDictionary.MyNoSql
 
 <BaseTwoButtonsDialog 
-    Caption=@(!IsCreate ? $"{Item.Symbol} [{Item.BrokerId}]" : "Create a new Asset") 
+    Caption=@(!IsCreate ? $"{Item.Asset.Symbol} [{Item.Asset.BrokerId}]" : "Create a new Asset") 
     OnClose="OnClose" 
     YesButtonCaption="@(IsCreate ? "Create" : "Save")"
     NoButtonCaption="Close"
     OnSubmit="OnSubmit">
     
     <table>
+    
         <tr>
-            <td>Broker</td>
-            <td class="float-left">
-                @if (!IsCreate)
-                {
-                    @Item.BrokerId
-                }
-                else
-                {
-                    <input type="text" class="form-control" @bind="Item.BrokerId" />
-                }
-            </td>
-        </tr>
-        <tr>
-            <td>Symbol</td>
-            <td class="float-left">
-                @if (!IsCreate)
-                {
-                    @Item.Symbol
-                }
-                else
-                {
-                    <input type="text" class="form-control" @bind="Item.Symbol" />
-                }
-            </td>
-        </tr>
-        <tr></tr>
-        <tr>
-            <td>Description</td>
-            <td class="float-left">
-                <input type="text" class="form-control" @bind="Item.Description" />
-            </td>
-        </tr>
-        <tr>
-            <td>Accuracy</td>
-            <td class="float-left">
-                <input type="number" class="form-control" @bind="Item.Accuracy" />
-            </td>
-        </tr>
-        <tr>
-            <td>IsEnabled</td>
-            <td class="float-left" style="@(!Item.IsEnabled ? "background: red" : "")">
-                <input type="checkbox" @bind="Item.IsEnabled" />
-            </td>
-        </tr>
-        <tr>
-            <td>KYC</td>
             <td>
-                <table style="font-size: 10px">
+                
+                <table>
                     <tr>
-                        <th >Deposit</th>
-                        <th >Withdrawal</th>
+                        <td>Broker</td>
+                        <td class="float-left">
+                            @if (!IsCreate)
+                            {
+                                @Item.Asset.BrokerId
+                            }
+                            else
+                            {
+                                <input type="text" class="form-control" @bind="Item.Asset.BrokerId"/>
+                            }
+                        </td>
                     </tr>
                     <tr>
-                        <td style="background: @(Item.KycRequiredForDeposit ? "orange" : "#28a745")">
-                            <input type="checkbox" @bind="Item.KycRequiredForDeposit" />
+                        <td>Symbol</td>
+                        <td class="float-left">
+                            @if (!IsCreate)
+                            {
+                                @Item.Asset.Symbol
+                            }
+                            else
+                            {
+                                <input type="text" class="form-control" @bind="Item.Asset.Symbol"/>
+                            }
                         </td>
-                        <td style="background: @(Item.KycRequiredForWithdrawal ? "orange" : "#28a745")">
-                            <input type="checkbox" @bind="Item.KycRequiredForWithdrawal" />
+                    </tr>
+                    <tr></tr>
+                    <tr>
+                        <td>Description</td>
+                        <td class="float-left">
+                            <input type="text" class="form-control" @bind="Item.Asset.Description"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Accuracy</td>
+                        <td class="float-left">
+                            <input type="number" class="form-control" @bind="Item.Asset.Accuracy"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>IsEnabled</td>
+                        <td class="float-left" style="@(!Item.Asset.IsEnabled ? "background: red" : "")">
+                            <input type="checkbox" @bind="Item.Asset.IsEnabled"/>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>KYC Deposit</td>
+                        <td class="float-left" style="background: @(Item.Asset.KycRequiredForDeposit ? "orange" : "#28a745")">
+                            <input type="checkbox" @bind="Item.Asset.KycRequiredForDeposit"/>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>KYC Withdrawal</td>
+                        <td class="float-left" style="background: @(Item.Asset.KycRequiredForWithdrawal ? "orange" : "#28a745")">
+                            <input type="checkbox" @bind="Item.Asset.KycRequiredForWithdrawal"/>
                         </td>
                     </tr>
                 </table>
             </td>
+            
+            <td>
+                
+                <table>
+                    
+                    <tr>
+                        <td>BitGo Deposit</td>
+                        <td class="float-left">
+                            <input type="checkbox" @bind="Item.PaymentSettings.PaymentSettings.BitGoCrypto.IsEnabledDeposit"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>BitGo Withdrawal</td>
+                        <td class="float-left">
+                            <input type="checkbox" @bind="Item.PaymentSettings.PaymentSettings.BitGoCrypto.IsEnabledWithdrawal"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>BitGo MinWithdrawalAmount</td>
+                        <td class="float-left">
+                            <input type="number" class="form-control" @bind="Item.PaymentSettings.PaymentSettings.BitGoCrypto.MinWithdrawalAmount"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>PciDss Deposit</td>
+                        <td class="float-left">
+                            <input type="checkbox" @bind="Item.PaymentSettings.PaymentSettings.PciDss.IsEnabledDeposit"/>
+                        </td>
+                    </tr>
+                    
+                </table>
+                
+            </td>
+            
         </tr>
     </table>
 </BaseTwoButtonsDialog>
@@ -81,7 +119,7 @@
 @code {
     
     [Parameter]
-    public Asset Item { get; set; }
+    public AssetItem Item { get; set; }
     
     [Parameter]
     public bool IsCreate { get; set; }
@@ -90,16 +128,15 @@
     public EventCallback OnCloseCallback { get; set; }
     
     [Parameter]
-    public EventCallback<Asset> OnCreateCallback { get; set; }
+    public EventCallback<AssetItem> OnCreateCallback { get; set; }
     
     [Parameter]
-    public EventCallback<Asset> OnUpdateCallback { get; set; }
+    public EventCallback<AssetItem> OnUpdateCallback { get; set; }
 
     private void OnClose()
     {
         OnCloseCallback.InvokeAsync();
     }
-
 
     private async Task OnSubmit()
     {
@@ -113,7 +150,46 @@
     {
         base.OnInitialized();
         if (IsCreate)
-            Item = new Asset();
-    }
+            Item = new AssetItem()
+            {
+                Asset = new Asset(),
+                PaymentSettings = new AssetPaymentSettingsNoSqlEntity()
+                {
+                    PaymentSettings = new AssetPaymentSettings()
+                    {
+                        PciDss = new AssetPaymentSettings.PciDssSettings(),
+                        BitGoCrypto = new AssetPaymentSettings.BitGoCryptoSettings()
+                    }
+                },
+                Brands = new List<string>()
+            };
 
+        Item.PaymentSettings ??= new AssetPaymentSettingsNoSqlEntity()
+        {
+            PartitionKey = AssetPaymentSettingsNoSqlEntity.GeneratePartitionKey(Item.Asset.BrokerId),
+            RowKey = AssetPaymentSettingsNoSqlEntity.GenerateRowKey(Item.Asset.Symbol),
+            BrokerId = Item.Asset.BrokerId,
+            Symbol = Item.Asset.Symbol
+        };
+
+        Item.PaymentSettings.PaymentSettings ??= new AssetPaymentSettings()
+        {
+            AssetSymbol = Item.Asset.Symbol
+        };
+        
+        Item.PaymentSettings.PaymentSettings.PciDss ??= new AssetPaymentSettings.PciDssSettings()
+        {
+            IsEnabledDeposit = false
+        };
+        
+        Item.PaymentSettings.PaymentSettings.BitGoCrypto ??= new AssetPaymentSettings.BitGoCryptoSettings()
+        {
+            IsEnabledDeposit = false,
+            IsEnabledWithdrawal = false,
+            MinWithdrawalAmount = 0
+        };
+        
+        
+        
+    }
 }

@@ -1,4 +1,5 @@
 using Autofac;
+using MyJetWallet.BitGo.Settings.NoSql;
 using MyNoSqlServer.Abstractions;
 using Service.AssetsDictionary.MyNoSql;
 
@@ -8,6 +9,9 @@ namespace Backoffice.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
+            RegisterMyNoSqlWriter<BitgoAssetMapEntity>(builder, BitgoAssetMapEntity.TableName);
+            RegisterMyNoSqlWriter<BitgoCoinEntity>(builder, BitgoAssetMapEntity.TableName);
+            RegisterMyNoSqlWriter<AssetPaymentSettingsNoSqlEntity>(builder, AssetPaymentSettingsNoSqlEntity.TableName);
             
         }
 

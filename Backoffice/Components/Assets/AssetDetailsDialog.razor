@@ -1,37 +1,66 @@
 ﻿@using Service.AssetsDictionary.Domain.Models
 @using Blazorise
-@using Color = System.Drawing.Color
+@using Backoffice.Services.Assets
 
-<BaseOneButtonsDialog Caption=@($"{Item.Symbol} [{Item.BrokerId}]") OnClose="OnClose" ButtonCaption="Close">
+
+<BaseOneButtonsDialog Caption=@($"{Item.Asset.Symbol} [{Item.Asset.BrokerId}]") OnClose="OnClose" ButtonCaption="Close">
     <table>
-        <tr><td>Broker</td><td class="float-left">@Item.BrokerId</td></tr>
-        <tr><td>Symbol</td><td class="float-left">@Item.Symbol</td></tr>
-        <tr></tr>
-        <tr><td>Description</td><td class="float-left">@Item.Description</td></tr>
-        <tr><td>Accuracy</td><td class="float-left">@Item.Accuracy</td></tr>
-        <tr><td>IsEnabled</td><td class="float-left">@Item.IsEnabled</td></tr>
-        <tr>
-            <td>KYC</td>
-            <td>
-                <table style="font-size: 10px">
-                    <tr>
-                        <th >Deposit</th>
-                        <th >Withdrawal</th>
-                    </tr>
-                    <tr>
-                        <td style="background: @(Item.KycRequiredForWithdrawal ? "orange" : "#28a745")">@Item.KycRequiredForDeposit</td>
-                        <td style="background: @(Item.KycRequiredForWithdrawal ? "orange" : "#28a745")">@Item.KycRequiredForWithdrawal</td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
+    <tr>
+        <td>
+            
+            <table>
+                <tr><td>Broker</td><td class="float-left">@Item.Asset.BrokerId</td></tr>
+                <tr><td>Symbol</td><td class="float-left">@Item.Asset.Symbol</td></tr>
+                <tr></tr>
+                <tr><td>Description</td><td class="float-left">@Item.Asset.Description</td></tr>
+                <tr><td>Accuracy</td><td class="float-left">@Item.Asset.Accuracy</td></tr>
+                <tr><td>IsEnabled</td><td class="float-left">@Item.Asset.IsEnabled</td></tr>
+                
+                <tr>
+                    <td>KYC Deposit</td>
+                    <td style="background: @(Item.Asset.KycRequiredForWithdrawal ? "orange" : "#28a745")">@Item.Asset.KycRequiredForDeposit</td>
+                </tr>
+                
+                <tr>
+                    <td>KYC Withdrawal</td>
+                    <td style="background: @(Item.Asset.KycRequiredForWithdrawal ? "orange" : "#28a745")">@Item.Asset.KycRequiredForWithdrawal</td>
+                </tr>
+                
+            </table>
+
+        </td>
+        <td>
+            
+            <table>
+                
+                @if (Item.PaymentSettings.PaymentSettings?.BitGoCrypto?.IsEnabledDeposit == true)
+                {
+                    <tr><td>BitGo Deposit</td><td class="float-left"><MyLabel Color="lightgreen" Text="Enabled"/></td></tr>
+                }
+
+                @if (Item.PaymentSettings.PaymentSettings?.BitGoCrypto?.IsEnabledWithdrawal == true)
+                {
+                    <tr><td>BitGo Withdrawal</td><td class="float-left"><MyLabel Color="lightgreen" Text="Enabled"/></td></tr>
+                    <tr><td>BitGo MinWithdrawalAmount</td><td class="float-left">@Item.PaymentSettings.PaymentSettings.BitGoCrypto.MinWithdrawalAmount</td></tr>
+                }
+
+                @if (Item.PaymentSettings.PaymentSettings?.PciDss?.IsEnabledDeposit == true)
+                {
+                    <tr><td>BitGo Withdrawal</td><td class="float-left"><MyLabel Color="lightgreen" Text="Enabled"/></td></tr>
+                }
+
+            </table>
+
+        </td>    
+    </tr>
+    
+  </table>
 </BaseOneButtonsDialog>
 
 @code {
     
     [Parameter]
-    public Asset Item { get; set; }
+    public AssetItem Item { get; set; }
     
     [Parameter]
     public EventCallback OnCloseCallback { get; set; }

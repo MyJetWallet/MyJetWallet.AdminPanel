@@ -57,5 +57,10 @@ namespace Backoffice.Mocks
         {
             throw new System.NotImplementedException();
         }
+
+        public ValueTask AddWithdrawalTransactionAsync(AddWithdrawalTransactionRequest request)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

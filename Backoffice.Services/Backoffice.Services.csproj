@@ -11,7 +11,7 @@
     <ItemGroup>
       <PackageReference Include="DotNetCoreDecorators" Version="1.0.20" />
       <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0-preview.2.21154.6" />
       <PackageReference Include="MyCrm.Accounts.Grpc" Version="1.0.17" />
       <PackageReference Include="MyCRM.AccountTransactions.Grpc" Version="1.0.12" />
       <PackageReference Include="MyCrm.AuditLog.Grpc" Version="1.0.4" />
@@ -24,14 +24,16 @@
       <PackageReference Include="MyCRM.Logs.GrpcContracts" Version="1.0.6" />
       <PackageReference Include="MyCrm.MyCrmTradersUtmParametersGrpcContracts" Version="1.0.3" />
       <PackageReference Include="MyCrm.PaymentReport.GrpcContracts" Version="1.0.3" />
-      <PackageReference Include="MyCrm.PersonalData.Grpc" Version="1.0.36" />
+      <PackageReference Include="MyCrm.PersonalData.Grpc" Version="1.0.40" />
       <PackageReference Include="MyCrm.TraderCrmStatuses.Grpc" Version="1.0.1" />
       <PackageReference Include="MyCrm.TraderMarketingSalesData.Grpc" Version="1.0.8" />
       <PackageReference Include="MyCrm.TraderOnlineData.Grpc" Version="1.0.4" />
       <PackageReference Include="MyCrm.AffiliateAccess.Grpc" Version="1.0.2" />
       <PackageReference Include="MyCrm.TradersDocuments.Grpc" Version="1.0.4" />
-        <PackageReference Include="MyCrm.Withdrawals.Grpc" Version="1.0.14" />
-      <PackageReference Include="SimpleTrading.Deposit.Grpc" Version="1.2.13" />
+        <PackageReference Include="MyCrm.Withdrawals.Grpc" Version="1.0.16" />
+        <PackageReference Include="MyJetWallet.Service.AssetsDictionary.Client" Version="1.5.3" />
+        <PackageReference Include="MyNoSqlServer.DataWriter" Version="1.3.1" />
+      <PackageReference Include="SimpleTrading.Deposit.Grpc" Version="1.2.14" />
     </ItemGroup>
 
 </Project>

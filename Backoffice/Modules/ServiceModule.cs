@@ -8,6 +8,7 @@ using Backoffice.Services;
 using Backoffice.Services.Accounts;
 using Backoffice.Services.ActiveDeals;
 using Backoffice.Services.Affiliates;
+using Backoffice.Services.Assets;
 using Backoffice.Services.AuditLog;
 using Backoffice.Services.Backoffice;
 using Backoffice.Services.Comments;
@@ -50,7 +51,10 @@ namespace Backoffice.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            
+            builder
+                .RegisterType<AssetItemManager>()
+                .As<IAssetItemManager>()
+                .SingleInstance();
 
             RegisterGrpcService(builder);
             RegisterTableStorage(builder);
