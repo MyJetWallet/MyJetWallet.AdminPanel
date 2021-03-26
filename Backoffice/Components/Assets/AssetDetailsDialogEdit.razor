@@ -4,15 +4,39 @@
 @using Color = System.Drawing.Color
 
 <BaseTwoButtonsDialog 
-    Caption=@($"{Item.Symbol} [{Item.BrokerId}]") 
+    Caption=@(!IsCreate ? $"{Item.Symbol} [{Item.BrokerId}]" : "Create a new Asset") 
     OnClose="OnClose" 
     YesButtonCaption="@(IsCreate ? "Create" : "Save")"
     NoButtonCaption="Close"
     OnSubmit="OnSubmit">
     
     <table>
-        <tr><td>Broker</td><td class="float-left">@Item.BrokerId</td></tr>
-        <tr><td>Symbol</td><td class="float-left">@Item.Symbol</td></tr>
+        <tr>
+            <td>Broker</td>
+            <td class="float-left">
+                @if (!IsCreate)
+                {
+                    @Item.BrokerId
+                }
+                else
+                {
+                    <input type="text" class="form-control" @bind="Item.BrokerId" />
+                }
+            </td>
+        </tr>
+        <tr>
+            <td>Symbol</td>
+            <td class="float-left">
+                @if (!IsCreate)
+                {
+                    @Item.Symbol
+                }
+                else
+                {
+                    <input type="text" class="form-control" @bind="Item.Symbol" />
+                }
+            </td>
+        </tr>
         <tr></tr>
         <tr>
             <td>Description</td>
@@ -83,6 +107,13 @@
             await OnCreateCallback.InvokeAsync(Item);
         else
             await OnUpdateCallback.InvokeAsync(Item);
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (IsCreate)
+            Item = new Asset();
     }
 
 }

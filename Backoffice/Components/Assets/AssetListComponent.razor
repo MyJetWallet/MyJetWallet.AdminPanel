@@ -1,8 +1,11 @@
 ﻿@using Service.AssetsDictionary.Grpc
 @using Backoffice.Abstractions.Models
+@using Microsoft.Extensions.Logging
 @using Service.AssetsDictionary.Domain.Models
 
 @inject IAssetsDictionaryService AssetsDictionaryService;
+@inject IToaster ToastService
+@inject ILogger Logger;
 
 <Loader LoaderConfig="@LoaderConfig"/>
 
@@ -30,19 +33,26 @@
     <tbody>
         @foreach(var asset in AssetList)
         {
-            <AssetTableRow Item="@asset" LoaderConfig="@LoaderConfig" />
+            <AssetTableRow Item="@asset" LoaderConfig="@LoaderConfig" OnDeleteCallback="DeleteAsset" />
         }
     
     </tbody>
 </table>
 
+@if (IsShowAdding)
+{
+    <div>
+        <AssetDetailsDialogEdit IsCreate="true" OnCloseCallback="OnCloseAddingDialog" OnCreateCallback="OnCreateAsset" />
+    </div>
+}
+
 
 @code {
     private string Message { get; set; } = "-- none --";
     
-    
-    
     public ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+    
+    private bool IsShowAdding { get; set; }
 
     private async void OnGetCountAssets()
     {
@@ -86,7 +96,59 @@
 
     private async Task OnAddAsset()
     {
-        
+        IsShowAdding = true;
+        await InvokeAsync(StateHasChanged);
     }
 
+    private void OnCloseAddingDialog()
+    {
+        IsShowAdding = false;
+        StateHasChanged();
+    }
+    
+    private async void OnCreateAsset(Asset asset)
+    {
+        try
+        {   
+            var result = await AssetsDictionaryService.CreateAssetAsync(asset);
+            if (!result.IsSuccess)
+            {
+                ToastService.Error(result.ErrorMessage, "Create asset");
+                return;
+            }
+
+            ToastService.Info($"Asset {asset.Symbol} is created", "Create asset");
+            
+            IsShowAdding = false;
+            
+            OnRefresh();    
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Cannot create asset");
+            ToastService.Error("Cannot create asset, service is not available", "Asset creation");
+        }
+    }
+
+    private async void DeleteAsset(Asset asset)
+    {
+        try
+        {
+            var result = await AssetsDictionaryService.DeleteAssetAsync(asset);
+            
+            if (result.IsSuccess)
+                ToastService.Info($"Asset {asset.Symbol} is deleted", "Delete asset");
+            else
+                ToastService.Error(result.ErrorMessage, "Delete asset");
+
+            IsShowAdding = false;
+            
+            OnRefresh();    
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Cannot delete asset");
+            ToastService.Error("Cannot delete asset, service is not available", "Asset deletion");
+        }
+    }
 }

@@ -1,8 +1,11 @@
 ﻿@using Service.AssetsDictionary.Domain.Models
 @using Service.AssetsDictionary.Grpc
 @using Backoffice.Abstractions.Models
+@using Microsoft.Extensions.Logging
 
 @inject IAssetsDictionaryService AssetsDictionaryService;
+@inject IToaster ToastService;
+@inject ILogger Logger;
 
 <tr style="@(!Item.IsEnabled ? "background: lightgray" : "")">
     <td >@Item.BrokerId</td>
@@ -16,7 +19,7 @@
         <ul class="nav">
             <li><button type="button" class="btn-outline-info btn" @onclick="ShowDetails" >Details</button></li>
             <li><button type="button" class="btn-outline-warning btn" @onclick="ShowEdit" >Edit</button></li>
-            <li><button type="button" class="btn-outline-danger btn" >Delete</button></li>
+            <li><button type="button" class="btn-outline-danger btn" @onclick="ShowDelete" >Delete</button></li>
         </ul>
     </td>
 </tr>
@@ -33,6 +36,22 @@
     </div>
 }
 
+@if (IsShowDelete)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption=@($"Delete asset {Item.Symbol} [{Item.BrokerId}]")
+            OnClose="OnCloseDeleteDialog"
+            YesButtonCaption="Delete"
+            NoButtonCaption="Cancel"
+            OnSubmit="DeleteItem">
+            
+            <h3 class="alert-warning">Are you sure you want to delete the asset <b>@Item.Symbol [@Item.BrokerId]?</b></h3>
+            
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
 
 
 @code {
@@ -43,9 +62,14 @@
     [Parameter]
     public ILoaderConfiguration LoaderConfig { get; set; }
     
+    [Parameter]
+    public EventCallback<Asset> OnDeleteCallback { get; set; }
+    
     private bool IsShowDetails { get; set; }
     
     private bool IsShowEdit { get; set; }
+    
+    private bool IsShowDelete { get; set; }
 
     private void OnCloseAssetDialog()
     {
@@ -73,14 +97,45 @@
     
     private async void OnUpdateAsset(Asset asset)
     {
-        //Item.IsEnabled = !Item.IsEnabled;
-        
-        await AssetsDictionaryService.UpdateAssetAsync(asset);
+        try
+        {
+            var result = await AssetsDictionaryService.UpdateAssetAsync(asset);
 
-        IsShowEdit = false;
-        
-        await InvokeAsync(StateHasChanged);
+            if (!result.IsSuccess)
+            {
+                ToastService.Error(result.ErrorMessage, "Edit asset");
+                return;
+            }
+
+            IsShowEdit = false;
+
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Cannot update asset");
+            ToastService.Error($"Cannot update asset, service is not available", "Edit asset");
+        }
     }
 
+
+    private void OnCloseDeleteDialog()
+    {
+        IsShowDelete = false;
+        StateHasChanged();
+    }
+
+
+    private async Task DeleteItem()
+    {
+        IsShowDelete = false;
+        await OnDeleteCallback.InvokeAsync(Item);
+    }
+
+    private void ShowDelete()
+    {
+        IsShowDelete = true;
+        StateHasChanged();
+    }
 
 }
