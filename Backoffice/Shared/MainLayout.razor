@@ -35,6 +35,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        
+        
         var boUser = await HttpContext.HttpContext.GetBoUserId();
         CurrentBoUserUser = await BoUsers.GetBoUserById(boUser);
         await base.OnInitializedAsync();
