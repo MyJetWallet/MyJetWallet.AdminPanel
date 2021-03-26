@@ -12,7 +12,7 @@
     return;
 }
 
-<h1>User: @CurrentBoUserUser.Id</h1>
+<p>User: @CurrentBoUserUser.Id</p>
 
 <ToastContainer/>
 <div class="page">
@@ -35,10 +35,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (HttpContext?.HttpContext?.Request?.Headers == null)
-        {
-            Console.WriteLine($"No http context at OnInitializedAsync {HttpContext?.HttpContext == null}|{HttpContext?.HttpContext?.Request==null}|{HttpContext?.HttpContext?.Request?.Headers==null}");
-        }
         var boUser = await HttpContext.HttpContext.GetBoUserId();
         CurrentBoUserUser = await BoUsers.GetBoUserById(boUser);
         await base.OnInitializedAsync();

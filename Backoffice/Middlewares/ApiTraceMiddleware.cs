@@ -24,7 +24,7 @@ namespace Backoffice.Middlewares
 
             if (!path.Contains("isalive") && !path.Contains("metrics"))
             {
-                var user = context.Request.Headers.TryGetValue("", out var sslCn)
+                var user = context.Request.Headers.TryGetValue("x-ssl-user", out var sslCn)
                     ? sslCn.ToString()
                     : "no user";
                         
