@@ -7,6 +7,7 @@ using Backoffice.Modules;
 using Backoffice.Services;
 using Backoffice.Shared;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -63,6 +64,7 @@ namespace Backoffice
             services.AddServerSideBlazor();
             services.AddHttpContextAccessor();
             services.AddScoped<MyHttpContextAccessor>();
+            services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 
             services.AddToaster(config =>
             {
