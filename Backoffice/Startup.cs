@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using System.Text;
 using Autofac;
+using Backoffice.Middlewares;
 using Backoffice.Modules;
 using Backoffice.Services;
 using Microsoft.AspNetCore.Builder;
@@ -72,6 +73,7 @@ namespace Backoffice
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseMiddleware<ApiTraceMiddleware>();
             
             app.BindMetricsMiddleware();
             if (env.IsDevelopment())

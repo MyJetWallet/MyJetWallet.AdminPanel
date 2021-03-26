@@ -19,7 +19,7 @@ namespace Backoffice.Services
                 if (ctx?.Request?.Headers == null)
                 {
                     Console.WriteLine("ctx?.Request?.Headers is null!!");
-                    return null;
+                    return "Ctx is null";
                 }
                 
                 string sslCn;
