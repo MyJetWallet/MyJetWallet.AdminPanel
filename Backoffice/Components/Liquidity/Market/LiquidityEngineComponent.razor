@@ -1,0 +1,137 @@
+﻿@using Service.Liquidity.Engine.Grpc
+@using Service.Liquidity.Engine.Domain.Models.Settings
+@using Backoffice.Abstractions.Models
+
+@inject IMarketMakerSettingsManagerGrpc SettingsManagerGrpc;
+
+@inject IToaster ToastService
+
+<Loader LoaderConfig="@LoaderConfig"/>
+
+
+<div style="font-size: medium">
+    <span>Mode: </span><MyLabel Color="@GlobalModeColor()" Text="@(GeneralSettings?.Mode.ToString())" />
+</div>
+
+<span style="margin-left: 10px" ></span>
+
+<table>
+    <tr>
+        <td><h3>Market Makers</h3></td>
+        <td>
+            <ul class="nav float-left" style="margin-left: 30px">
+                <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
+                <li><button @onclick="OnAdd" type="button" class="btn btn-outline-success" style="margin: 5px; border-radius: 10px">Add</button></li>
+            </ul>
+        </td>
+    </tr>
+</table>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th class="align-middle">Instrument</th>
+            <th class="align-middle">Mode</th>
+            <th class="align-middle">Source</th>
+            <th class="align-middle">Source<br>Symbol</th>
+            <th class="align-middle">Markup</th>
+            <th class="align-middle">Max Buy<br>Side Volume</th>
+            <th class="align-middle">Max Sell<br>Side Volume</th>
+            <th class="align-middle">Wallet</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    
+    @foreach (var provider in ProviderSettings)
+    {
+        <MarketMakerRowComponent Provider="@provider" IsActiveRow="false" UpdateCallback="Update" />
+    }
+    @if (IsAdding)
+    {
+        <MarketMakerRowComponent Provider="NewProvider" IsEditRow="true" IsNewRow="true" IsActiveRow="false" UpdateCallback="Update" />
+    }
+    </tbody>
+    
+</table>
+    
+
+@code {
+
+    private MarketMakerSettings GeneralSettings { get; set; }
+    private List<MirroringLiquiditySettings> ProviderSettings { get; set; } = new List<MirroringLiquiditySettings>();
+    
+    private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+    
+    private bool IsAdding { get; set; }
+    private MirroringLiquiditySettings NewProvider { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await OnRefresh();
+    }
+
+    private string GlobalModeColor()
+    {
+        switch (GeneralSettings?.Mode)
+        {
+            case EngineMode.Disabled:
+                return "red";
+                
+            case EngineMode.Idle:
+                return "yellow";
+                
+            case EngineMode.Active:
+                return "green";
+        }
+
+        return "white";
+    }
+
+    private async Task OnRefresh()
+    {
+        LoaderConfig.Enable();
+        StateHasChanged();
+
+        GeneralSettings = await SettingsManagerGrpc.GetMarketMakerSettingsAsync();
+        var providerSettings = await SettingsManagerGrpc.GetMirroringLiquiditySettingsListAsync();
+        ProviderSettings = providerSettings.List;
+
+        IsAdding = false;
+        NewProvider = new MirroringLiquiditySettings();
+        
+        LoaderConfig.Disable();
+        StateHasChanged();
+
+    }
+
+    private void OnAdd()
+    {
+        IsAdding = true;
+        NewProvider = new MirroringLiquiditySettings();
+        StateHasChanged();
+    }
+
+    private async Task Update(MirroringLiquiditySettings provider)
+    {
+        LoaderConfig.Enable();
+        StateHasChanged();
+
+        try
+        {
+            IsAdding = false;
+            
+            await SettingsManagerGrpc.AddOrUpdateMirroringLiquiditySettingsAsync(provider);
+
+            var action = provider == NewProvider ? "added" : "updated";
+            ToastService.Info($"Provider {provider.InstrumentSymbol} is {action}");
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error($"Provider {provider.InstrumentSymbol} cannot be updated: {ex.Message}");
+        }
+
+        await OnRefresh();
+    }
+
+}

@@ -1,6 +1,7 @@
 using Autofac;
 using Service.AssetsDictionary.Client.Grpc;
 using Service.AssetsDictionary.Grpc;
+using Service.Liquidity.Engine.Client;
 
 namespace Backoffice.Modules
 {
@@ -24,6 +25,8 @@ namespace Backoffice.Modules
                 .RegisterInstance(assetDictionaryFactory.GetBrandAssetsAndInstrumentsService())
                 .As<IBrandAssetsAndInstrumentsService>()
                 .SingleInstance();
+
+            builder.RegisterLiquidityEngineClient(Program.Settings.LiquidityEngineGrpcServiceUrl);
         }
     }
 }

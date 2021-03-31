@@ -6,6 +6,7 @@ namespace Backoffice
     {
         public const string Assets = "Assets";
         public const string SpotInstruments = "SpotInstruments";
+        public const string Liquidity = "Liquidity";
         
 
         
@@ -51,7 +52,8 @@ namespace Backoffice
         private static readonly List<NavsItem> MenuItems = new()
         {
             NavsItem.Create("Assets", "Assets", "list-rich", Menu.Assets),
-            NavsItem.Create("Spot Instruments", "SpotInstruments", "list-rich", Menu.SpotInstruments)
+            NavsItem.Create("Spot Instruments", "SpotInstruments", "list-rich", Menu.SpotInstruments),
+            NavsItem.Create("Liquidity", "LiquidityEngine", "list-rich", Menu.Liquidity)
             
         };
         

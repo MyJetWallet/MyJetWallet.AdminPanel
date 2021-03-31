@@ -65,6 +65,11 @@ namespace Backoffice.Mocks
             throw new System.NotImplementedException();
         }
 
+        public ValueTask UpdateIsWithdrawalDisabledAsync(UpdateWithdrawalDisabledGrpcContracts request)
+        {
+            throw new NotImplementedException();
+        }
+
         public async IAsyncEnumerable<MyCrmPersonalDataGrpcModel> GetByPhraseAsync(GetByPhraseGrpcRequest request)
         {
             yield return new MyCrmPersonalDataGrpcModel()

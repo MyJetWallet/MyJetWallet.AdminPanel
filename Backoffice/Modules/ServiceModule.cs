@@ -126,8 +126,6 @@ namespace Backoffice.Modules
 
             builder.RegisterType<DepositManagerGrpcServiceMoq>().As<IDepositManagerGrpcService>().SingleInstance();
 
-            builder.RegisterType<MyCrmWithdrawalsGrpcServiceMoq>().As<IMyCrmWithdrawalsGrpcService>().SingleInstance();
-
             builder.RegisterType<MyCrmTraderUrmParametersGrpcServiceMoq>().As<IMyCrmTraderUrmParametersGrpcService>()
                 .SingleInstance();
 
