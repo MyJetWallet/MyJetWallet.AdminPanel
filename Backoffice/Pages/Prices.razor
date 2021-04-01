@@ -1,0 +1,91 @@
+﻿@page "/Prices"
+@using Service.MatchingEngine.PriceSource.Client
+@using MyJetWallet.Domain.Prices
+@using MyJetWallet.Sdk.Service.Tools
+@using Microsoft.Extensions.Logging
+
+@inject ICurrentPricesCache PriceService
+@inject ILoggerFactory LoggerFactory
+
+@implements IDisposable
+
+<h3>Prices</h3>
+
+<table class="table" style="width: auto">
+    <thead>
+    <tr>
+        <th>Symbol</th>
+        <th>Price</th>
+        <th>Spread</th>
+        <th>Time</th>
+        <th>Delay</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+        @foreach (var price in _prices)
+        {
+            <tr style="background: @(GetRowBackground(price))">
+                <td>@price.Id</td>
+                <td>
+                    <div>
+                        <div class="row">
+                            <div class="col-md-1">ask:</div>
+                            <div class="col-md-1">@price.Ask</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-1">bid:</div>
+                            <div class="col-md-1">@price.Bid</div>
+                        </div>
+                    </div>
+                </td>
+                <td>@(Math.Round(price.Ask-price.Bid, 8))<br>@(Math.Round((price.Ask-price.Bid)/((price.Ask+price.Bid)/2)*100, 3))%</td>
+                <td>@price.DateTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>@((DateTime.UtcNow - @price.DateTime).ToString())</td>
+            </tr>
+        }
+    </tbody>
+    
+</table>
+
+
+
+
+@code {
+
+    private MyTaskTimer _timer;
+    
+    protected override void OnInitialized()
+    {
+        _prices = PriceService.GetPrices();
+
+        _timer = new MyTaskTimer("PricePage", TimeSpan.FromSeconds(1),
+            LoggerFactory.CreateLogger("PricePage"), DoTime);
+        
+        _timer.Start();
+    }
+
+    private async Task DoTime()
+    {
+        _prices = PriceService.GetPrices();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        _timer?.Stop();
+        _timer?.Dispose();
+        _timer = null;
+    }
+
+    private List<BidAsk> _prices = new ();
+
+    private string GetRowBackground(BidAsk price)
+    {
+        if ((DateTime.UtcNow - price.DateTime).TotalMilliseconds > 5000)
+            return "lightgoldenrodyellow";
+
+        return "white";
+    }
+
+}

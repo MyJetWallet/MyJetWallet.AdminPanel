@@ -54,11 +54,16 @@ namespace Backoffice
 
         [YamlProperty("AdminPanel.MyNoSqlWriterUrl")]
         public string MyNoSqlWriterUrl { get; set; }
+        
+        [YamlProperty("AdminPanel.MyNoSqlReaderHostPort")]
+        public string MyNoSqlReaderHostPort { get; set; }
 
         [YamlProperty("AdminPanel.AssetDictionaryGrpcServiceUrl")]
         public string AssetDictionaryGrpcServiceUrl { get; set; }
         
         [YamlProperty("AdminPanel.LiquidityEngineGrpcServiceUrl")]
         public string LiquidityEngineGrpcServiceUrl { get; set; }
+
+        
     }
 }

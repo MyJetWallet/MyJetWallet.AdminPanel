@@ -7,12 +7,14 @@ using DotNetCoreDecorators;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MyJetWallet.Sdk.Service;
+using MyNoSqlServer.DataReader;
 
 namespace Backoffice
 {
     public class ApplicationLifetimeManager : ApplicationLifetimeManagerBase
     {
         private readonly ILogger<ApplicationLifetimeManager> _logger;
+        private readonly MyNoSqlTcpClient _noSqlTcpClient;
         private readonly IBackofficeRolesRepository _backofficeRolesRepository;
         private readonly IBackofficeOfficeService _backofficeOfficeService;
 
@@ -21,6 +23,7 @@ namespace Backoffice
         public ApplicationLifetimeManager(
             IHostApplicationLifetime appLifetime, 
             ILogger<ApplicationLifetimeManager> logger,
+            MyNoSqlTcpClient noSqlTcpClient,
             IBackofficeRolesRepository backofficeRolesRepository,
             IBackofficeOfficeService backofficeOfficeService,
             IBoUsersService boUsersService
@@ -28,6 +31,7 @@ namespace Backoffice
             : base(appLifetime)
         {
             _logger = logger;
+            _noSqlTcpClient = noSqlTcpClient;
             _backofficeRolesRepository = backofficeRolesRepository;
             _backofficeOfficeService = backofficeOfficeService;
 
@@ -38,6 +42,8 @@ namespace Backoffice
         {
             _logger.LogInformation("OnStarted has been called.");
 
+            _noSqlTcpClient.Start();
+            
             //StatusTimer.Register("CacheSync", async () =>
             //{
                 
@@ -55,6 +61,8 @@ namespace Backoffice
         protected override void OnStopping()
         {
             _logger.LogInformation("OnStopping has been called.");
+            
+            _noSqlTcpClient.Stop();
 
             StatusTimer.Stop();
         }

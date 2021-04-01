@@ -1,14 +1,21 @@
 using Autofac;
+using MyJetWallet.Sdk.Service;
+using MyNoSqlServer.DataReader;
 using Service.AssetsDictionary.Client.Grpc;
 using Service.AssetsDictionary.Grpc;
 using Service.Liquidity.Engine.Client;
+using Service.MatchingEngine.PriceSource.Client;
 
 namespace Backoffice.Modules
 {
     public class ClientsModule : Module
     {
+        private MyNoSqlTcpClient _myNoSqlClient;
+
         protected override void Load(ContainerBuilder builder)
         {
+            RegisterMyNoSqlTcpClient(builder);
+            
             var assetDictionaryFactory = new AssetsDictionaryClientFactory(Program.Settings.AssetDictionaryGrpcServiceUrl);
 
             builder
@@ -27,6 +34,20 @@ namespace Backoffice.Modules
                 .SingleInstance();
 
             builder.RegisterLiquidityEngineClient(Program.Settings.LiquidityEngineGrpcServiceUrl);
+            
+            
+            builder.RegisterMatchingEnginePriceSourceClient(_myNoSqlClient);
+        }
+        
+        private void RegisterMyNoSqlTcpClient(ContainerBuilder builder)
+        {
+            _myNoSqlClient = new MyNoSqlTcpClient(Program.ReloadedSettings(e => e.MyNoSqlReaderHostPort),
+                ApplicationEnvironment.HostName ?? $"{ApplicationEnvironment.AppName}:{ApplicationEnvironment.AppVersion}");
+
+            builder
+                .RegisterInstance(_myNoSqlClient)
+                .AsSelf()
+                .SingleInstance();
         }
     }
 }
