@@ -111,9 +111,16 @@
 
     public void Dispose()
     {
-        _timer?.Stop();
-        _timer?.Dispose();
-        _timer = null;
+        try
+        {
+            _timer?.Stop();
+            _timer?.Dispose();
+            _timer = null;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Skip Exception\n{ex}");
+        }
     }
 
 }
