@@ -9,7 +9,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="DotNetCoreDecorators" Version="1.0.20" />
+      <PackageReference Include="DotNetCoreDecorators" Version="1.0.21" />
       <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0-preview.2.21154.6" />
       <PackageReference Include="MyCrm.Accounts.Grpc" Version="1.0.17" />

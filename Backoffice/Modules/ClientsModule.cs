@@ -5,6 +5,7 @@ using Service.AssetsDictionary.Client.Grpc;
 using Service.AssetsDictionary.Grpc;
 using Service.Liquidity.Engine.Client;
 using Service.MatchingEngine.PriceSource.Client;
+using Service.Simulation.FTX.Client;
 
 namespace Backoffice.Modules
 {
@@ -35,8 +36,7 @@ namespace Backoffice.Modules
 
             builder.RegisterLiquidityEngineClient(Program.Settings.LiquidityEngineGrpcServiceUrl);
 
-            Service.Simulation.FTX.Client.AutofacHelper.RegisterLiquidityEngineClient(builder,
-                Program.Settings.SimulationFtxGrpcServiceUrl);
+            builder.RegisterSimulationFtxClient(Program.Settings.SimulationFtxGrpcServiceUrl);
             
             
             builder.RegisterMatchingEnginePriceSourceClient(_myNoSqlClient);
