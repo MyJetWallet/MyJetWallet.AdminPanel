@@ -34,6 +34,9 @@ namespace Backoffice.Modules
                 .SingleInstance();
 
             builder.RegisterLiquidityEngineClient(Program.Settings.LiquidityEngineGrpcServiceUrl);
+
+            Service.Simulation.FTX.Client.AutofacHelper.RegisterLiquidityEngineClient(builder,
+                Program.Settings.SimulationFtxGrpcServiceUrl);
             
             
             builder.RegisterMatchingEnginePriceSourceClient(_myNoSqlClient);

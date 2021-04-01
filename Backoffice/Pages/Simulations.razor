@@ -1,0 +1,119 @@
+﻿@page "/Simulations"
+@using Service.Simulation.FTX.Grpc
+@using Service.Simulation.FTX.Grpc.Models
+@using MyJetWallet.Sdk.Service.Tools
+@using Microsoft.Extensions.Logging
+
+@inject ISimulationFtxTradingService TradingService
+@inject ISimulationFtxTradeHistoryService HistoryService
+@inject ILoggerFactory LoggerFactory
+
+@implements IDisposable
+
+<table>
+
+    <tr>
+        <td>
+            <h3>Simulations FTX</h3>
+        </td>
+        <td>
+            <ul class="nav float-left">
+                <li><button @onclick="Refresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
+            </ul>
+        </td>
+    </tr>
+    
+</table>
+
+<div>
+    <h4>Balances</h4>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Asset</th>
+            <th>Balance</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var balance in _balances)
+        {
+            <tr>
+                <td>@balance.Symbol</td>
+                <td>@balance.Amount</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+<div>
+    <h4>Trades</h4>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Timestamp</th>
+            <th>Market</th>
+            <th>Side</th>
+            <th>Price</th>
+            <th>Size</th>
+            <th>Id</th>
+            <th>ClientId</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var trade in _trades)
+        {
+            <tr>
+                <td>@trade.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>@trade.Market</td>
+                <td>@trade.Side</td>
+                <td>@trade.Price</td>
+                <td>@trade.Size</td>
+                <td>@trade.Id</td>
+                <td>@trade.ClientId</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+@code {
+
+    private List<GetBalancesResponse.Balance> _balances = new List<GetBalancesResponse.Balance>();
+    private List<FtxSimTrade> _trades = new List<FtxSimTrade>();
+
+    private MyTaskTimer _timer;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await Refresh();
+        _timer = new MyTaskTimer("SimulationFtx", TimeSpan.FromSeconds(5),
+            LoggerFactory.CreateLogger("SimulationFtx"), DoTimer);
+        
+        _timer.Start();
+    }
+
+    private Task DoTimer()
+    {
+        return Refresh();
+    }
+
+    private async Task Refresh()
+    {
+        var balances = await TradingService.GetBalancesAsync();
+        _balances = balances.Balances ?? new List<GetBalancesResponse.Balance>();
+        
+        var history = await HistoryService.GetTradesAsync();
+        _trades = history.Trades ?? new List<FtxSimTrade>();
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        _timer?.Stop();
+        _timer?.Dispose();
+        _timer = null;
+    }
+
+}
