@@ -2,12 +2,15 @@
 
 
 <ul class="nav nav-tabs nav-pills">
-  <li class="nav-item" style="margin: 10px">
-    <button class="nav-link @CheckActive(Menus.Engine)" aria-current="page" @onclick="SetEngine" >Engine</button>
-  </li>
-  <li class="nav-item" style="margin: 10px">
-    <button class="nav-link @CheckActive(Menus.Settings)" @onclick="SetSettings" >Settings</button>
-  </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.Engine)" aria-current="page" @onclick="SetEngine" >Engine</button>
+    </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.Portfolio)" aria-current="page" @onclick="SetPortfolio" >Portfolio</button>
+    </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.Settings)" @onclick="SetSettings" >Settings</button>
+    </li>
 </ul>
 
 <div style="margin: 10px">
@@ -16,6 +19,13 @@
     {
         <LiquidityEngineComponent/>
     }
+    
+    @if (ActivePage == Menus.Portfolio)
+    {
+        <PortfolioComponent />
+    }
+
+    
 
     @if (ActivePage == Menus.Settings)
     {
@@ -58,6 +68,14 @@
     {
         None,
         Engine,
+        Portfolio,
         Settings
     }
+
+    private void SetPortfolio()
+    {
+        ActivePage = Menus.Portfolio;
+        StateHasChanged();
+    }
+
 }

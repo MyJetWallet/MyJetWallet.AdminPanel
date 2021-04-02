@@ -1,0 +1,73 @@
+﻿@using Service.Liquidity.Engine.Grpc
+@using MyJetWallet.Sdk.Service.Tools
+@using Microsoft.Extensions.Logging
+@using Service.Liquidity.Engine.Domain.Models.Portfolio
+
+@inject IWalletPortfolioGrpc PortfolioService
+@inject ILoggerFactory LoggerFactory
+
+@implements IDisposable
+
+
+<h3>Portfolio</h3>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Symbol</th>
+        <th>Side</th>
+        <th>BaseVolume</th>
+        <th>QuoteVolume</th>
+        <th>OpenTime</th>
+        <th>WalletId</th>
+        <th>Id</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var position in _positions.OrderBy(e => e.Symbol))
+    {
+        <tr>
+            <td>@position.Symbol</td>
+            <td>@position.Side</td>
+            <td>@position.BaseVolume  @position.BaseAsset</td>
+            <td>@position.QuoteVolume  @position.QuotesAsset</td>
+            <td>@position.OpenTime</td>
+            <td>@position.WalletId</td>
+            <td>@position.Id</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+
+@code {
+
+    private MyTaskTimer _timer;
+
+    private List<PositionPortfolio> _positions = new();
+    
+    private async Task Refresh()
+    {
+        var data = await PortfolioService.GetPortfolioAsync();
+        _positions = data.List ?? new();
+        
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Refresh();
+        
+        _timer = new MyTaskTimer("PortfolioPage", TimeSpan.FromSeconds(5), 
+            LoggerFactory.CreateLogger("PortfolioPage"), Refresh);
+        _timer.Start();
+    }
+
+
+    public void Dispose()
+    {
+        _timer?.Stop();
+        _timer?.Dispose();
+    }
+
+}
