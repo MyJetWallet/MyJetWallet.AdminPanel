@@ -2,54 +2,194 @@
 @using MyJetWallet.Sdk.Service.Tools
 @using Microsoft.Extensions.Logging
 @using Service.Liquidity.Engine.Domain.Models.Portfolio
+@using Service.Liquidity.Engine.Grpc.Models
+@using Service.Liquidity.Reports.Grpc
+@using Service.Liquidity.Reports.Grpc.Models
 
 @inject IWalletPortfolioGrpc PortfolioService
 @inject ILoggerFactory LoggerFactory
+@inject ILiquidityReportService LiquidityReportService
 
 @implements IDisposable
 
+<ul class="nav nav-tabs nav-pills">
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(PortfolioPages.Portfolio)" aria-current="page" @onclick="SetPortfolio" >Portfolio</button>
+    </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(PortfolioPages.ClosedPositions)" aria-current="page" @onclick="SetClosedPositions" >Closed Positions</button>
+    </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(PortfolioPages.Trades)" @onclick="SetTrades" >Trades</button>
+    </li>
+</ul>
 
-<h3>Portfolio</h3>
+@if (ActivePage == PortfolioPages.Portfolio)
+{
+    <h3>Portfolio</h3>
 
-<table class="table">
-    <thead>
-    <tr>
-        <th>Symbol</th>
-        <th>Side</th>
-        <th>BaseVolume</th>
-        <th>QuoteVolume</th>
-        <th>OpenTime</th>
-        <th>WalletId</th>
-        <th>Id</th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach (var position in _positions.OrderBy(e => e.Symbol))
-    {
+    <table class="table">
+        <thead>
         <tr>
-            <td>@position.Symbol</td>
-            <td>@position.Side</td>
-            <td>@position.BaseVolume  @position.BaseAsset</td>
-            <td>@position.QuoteVolume  @position.QuotesAsset</td>
-            <td>@position.OpenTime</td>
-            <td>@position.WalletId</td>
-            <td>@position.Id</td>
+            <th>Symbol</th>
+            <th>Side</th>
+            <th>BaseVolume</th>
+            <th>QuoteVolume</th>
+            <th>OpenTime</th>
+            <th>WalletId</th>
+            <th>Id</th>
         </tr>
-    }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+        @foreach (var position in _positions.OrderBy(e => e.Symbol))
+        {
+            <tr>
+                <td>@position.Symbol</td>
+                <td>@position.Side</td>
+                <td>@position.BaseVolume @position.BaseAsset</td>
+                <td>@position.QuoteVolume @position.QuotesAsset</td>
+                <td>@position.OpenTime</td>
+                <td>@position.WalletId</td>
+                <td>@position.Id</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@if (ActivePage == PortfolioPages.ClosedPositions)
+{
+    <h3>Closed Positions</h3>
+    
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Symbol</th>
+            <th>Side</th>
+            <th>BaseVolume</th>
+            <th>QuoteVolume</th>
+            <th>OpenTime</th>
+            <th>CloseTime</th>
+            <th>WalletId</th>
+            <th>Id</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var position in _closedPositions)
+        {
+            <tr>
+                <td>@position.Symbol</td>
+                <td>@position.Side</td>
+                <td>@position.BaseVolume @position.BaseAsset</td>
+                <td>@position.QuoteVolume @position.QuotesAsset</td>
+                <td>@position.OpenTime</td>
+                <td>@position.CloseTime</td>
+                <td>@position.WalletId</td>
+                <td>@position.Id</td>
+                <td>
+                    <ul class="nav">
+                        <li><button type="button" class="btn-outline-info btn" @onclick="@(() => { ShowTrades(position.Id); })" >Trades</button></li>
+                    </ul>
+                </td>
+            </tr>
+            @if (SelectedPosition == position.Id)
+            {
+                <tr>
+                    <td colspan="9">
+                        <div class="border" style="margin-left: 20px; width: auto">
+                                <table class="table">
+                                    <thead>
+                                    <tr>
+                                        <th>Source</th>
+                                        <th>Symbol</th>
+                                        <th>Side</th>
+                                        <th>Price</th>
+                                        <th>Vol</th>
+                                        <th>Id</th>
+                                        <th>Time</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    @foreach (var trade in _positionTrades)
+                                    {
+                                        <tr style="background: @TradeBackground(trade)">
+                                            <td>@trade.Source</td>
+                                            <td>@trade.Symbol</td>
+                                            <td>@trade.Side</td>
+                                            <td>@trade.Price</td>
+                                            <td>@trade.BaseVolume</td>
+                                            <td>@trade.TradeId</td>
+                                            <td>@trade.DateTime</td>
+                                        </tr>
+                                    }
+                                    </tbody>
+                                </table>
+                        </div>
+                    </td>
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
+    
+}
+
+@if (ActivePage == PortfolioPages.Trades)
+{
+    <h3>Trades</h3>
+    
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Source</th>
+            <th>Symbol</th>
+            <th>Side</th>
+            <th>Price</th>
+            <th>Vol</th>
+            <th>Id</th>
+            <th>Time</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var trade in _trades)
+        {
+            <tr style="background: @TradeBackground(trade)">
+                <td>@trade.Source</td>
+                <td>@trade.Symbol</td>
+                <td>@trade.Side</td>
+                <td>@trade.Price</td>
+                <td>@trade.BaseVolume</td>
+                <td>@trade.TradeId</td>
+                <td>@trade.DateTime</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
 
 
 @code {
 
     private MyTaskTimer _timer;
-
-    private List<PositionPortfolio> _positions = new();
     
+    
+    
+    private PortfolioPages ActivePage { get; set; }
+    
+    private List<PositionPortfolio> _positions = new();
+    private List<PositionPortfolio> _closedPositions = new();
+    private List<PortfolioTrade> _trades = new();
+    
+    private List<PortfolioTrade> _positionTrades = new();
+
     private async Task Refresh()
     {
         var data = await PortfolioService.GetPortfolioAsync();
         _positions = data.List ?? new();
+
+        _closedPositions = (await LiquidityReportService.GetClosedPositions()).List ?? new();
+        _trades = (await LiquidityReportService.GetTrades()).List ?? new();
         
         await InvokeAsync(StateHasChanged);
     }
@@ -68,6 +208,65 @@
     {
         _timer?.Stop();
         _timer?.Dispose();
+    }
+
+
+    public enum PortfolioPages
+    {
+        Portfolio,
+        ClosedPositions,
+        Trades
+    }
+
+    private void SetPortfolio()
+    {
+        ActivePage = PortfolioPages.Portfolio;
+        StateHasChanged();
+    }
+
+    private void SetClosedPositions()
+    {
+        ActivePage = PortfolioPages.ClosedPositions;
+        StateHasChanged();
+    }
+
+    private void SetTrades()
+    {
+        ActivePage = PortfolioPages.Trades;
+        StateHasChanged();
+    }
+
+    private string CheckActive(PortfolioPages target)
+    {
+        if (ActivePage == target)
+            return "active";
+
+        return "";
+    }
+
+    private string TradeBackground(PortfolioTrade trade)
+    {
+        if (trade.IsInternal) return "lightcyan";
+        return "lightpink";
+    }
+
+    public string SelectedPosition { get; set; }
+    
+    private async void ShowTrades(string positionId)
+    {
+        if (SelectedPosition == positionId)
+        {
+            _positionTrades = new();
+            SelectedPosition = null;
+        }
+        else
+        {
+            _positionTrades = (await LiquidityReportService
+                .GetPositionTrades(new GetPositionTradesRequest() {PositionId = positionId})).List ?? new();
+            SelectedPosition = positionId;
+        }
+        
+        await InvokeAsync(StateHasChanged);
     }
 
 }

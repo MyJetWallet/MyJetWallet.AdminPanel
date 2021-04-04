@@ -66,5 +66,8 @@ namespace Backoffice
 
         [YamlProperty("AdminPanel.SimulationFtxGrpcServiceUrl")]
         public string SimulationFtxGrpcServiceUrl { get; set; }
+
+        [YamlProperty("AdminPanel.LiquidityReportGrpcServiceUrl")]
+        public string LiquidityReportGrpcServiceUrl { get; set; }
     }
 }

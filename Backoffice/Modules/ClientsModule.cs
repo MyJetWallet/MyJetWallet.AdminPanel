@@ -4,6 +4,7 @@ using MyNoSqlServer.DataReader;
 using Service.AssetsDictionary.Client.Grpc;
 using Service.AssetsDictionary.Grpc;
 using Service.Liquidity.Engine.Client;
+using Service.Liquidity.Reports.Client;
 using Service.MatchingEngine.PriceSource.Client;
 using Service.Simulation.FTX.Client;
 
@@ -37,6 +38,8 @@ namespace Backoffice.Modules
             builder.RegisterLiquidityEngineClient(Program.Settings.LiquidityEngineGrpcServiceUrl);
 
             builder.RegisterSimulationFtxClient(Program.Settings.SimulationFtxGrpcServiceUrl);
+
+            builder.RegisterLiquidityReportClient(Program.Settings.LiquidityReportGrpcServiceUrl);
             
             
             builder.RegisterMatchingEnginePriceSourceClient(_myNoSqlClient);
