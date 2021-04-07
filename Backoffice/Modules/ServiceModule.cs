@@ -85,8 +85,6 @@ namespace Backoffice.Modules
 
             builder.RegisterType<MyCrmActiveDealsGrpcServiceMoq>().As<IMyCrmActiveDealsGrpcService>().SingleInstance();
 
-            builder.RegisterType<MyCrmLogsGrpcServiceMoq>().As<IMyCrmLogsGrpcService>().SingleInstance();
-
             builder.RegisterType<MyCrmKycGrpcServiceMoq>().As<IMyCrmKycGrpcService>().SingleInstance();
 
             builder.RegisterType<MyCrmTraderCrmStatusesGrpcServiceMoq>().As<IMyCrmTraderCrmStatusesGrpcService>()
