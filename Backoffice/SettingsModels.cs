@@ -69,5 +69,8 @@ namespace Backoffice
 
         [YamlProperty("AdminPanel.LiquidityReportGrpcServiceUrl")]
         public string LiquidityReportGrpcServiceUrl { get; set; }
+
+        [YamlProperty("AdminPanel.ZipkinUrl")]
+        public string ZipkinUrl { get; set; }
     }
 }

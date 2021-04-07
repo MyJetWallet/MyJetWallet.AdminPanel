@@ -14,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MW.Blazor;
+using MyJetWallet.Sdk.Service;
 using MySettingsReader;
 using Prometheus;
 using SimpleTrading.BaseMetrics;
@@ -74,6 +75,8 @@ namespace Backoffice
             });
 
             services.AddHostedService<ApplicationLifetimeManager>();
+            
+            services.AddMyTelemetry(Program.Settings.ZipkinUrl);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
