@@ -53,36 +53,26 @@
 
 @code {
 
-    private MyTaskTimer _timer;
+    private bool _isDispose = false;
     
     protected override void OnInitialized()
     {
         _prices = PriceService.GetPrices();
 
-        _timer = new MyTaskTimer("PricePage", TimeSpan.FromSeconds(1),
-            LoggerFactory.CreateLogger("PricePage"), DoTime);
-        
-        _timer.Start();
+        GlobalTimers.RefreshTimer.RegisterCallback(nameof(Prices), DoTime);
     }
 
     private async Task DoTime()
     {
+        if (_isDispose) return;
         _prices = PriceService.GetPrices();
         await InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()
     {
-        try
-        {
-            _timer?.Stop();
-            _timer?.Dispose();
-            _timer = null;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Skip Exception\n{ex}");
-        }
+        _isDispose = true;
+        GlobalTimers.RefreshTimer.RemoveCallback(nameof(Prices));
     }
 
     private List<BidAsk> _prices = new ();

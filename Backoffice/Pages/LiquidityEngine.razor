@@ -3,7 +3,10 @@
 
 <ul class="nav nav-tabs nav-pills">
     <li class="nav-item" style="margin: 10px">
-        <button class="nav-link @CheckActive(Menus.Engine)" aria-current="page" @onclick="SetEngine" >Engine</button>
+        <button class="nav-link @CheckActive(Menus.MarketMaker)" aria-current="page" @onclick="SetMarketMaker" >Market Maker</button>
+    </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.Hedger)" aria-current="page" @onclick="SetHedger" >Hedging</button>
     </li>
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(Menus.Portfolio)" aria-current="page" @onclick="SetPortfolio" >Portfolio</button>
@@ -15,17 +18,22 @@
 
 <div style="margin: 10px">
     
-    @if (ActivePage == Menus.Engine)
+    @if (ActivePage == Menus.MarketMaker)
     {
         <LiquidityEngineComponent/>
     }
     
+    @if (ActivePage == Menus.Hedger)
+        {
+            <HedgeComponent/>
+        }
+
     @if (ActivePage == Menus.Portfolio)
     {
-        <PortfolioComponent />
+        <PortfolioComponent/>
     }
 
-    
+
 
     @if (ActivePage == Menus.Settings)
     {
@@ -38,7 +46,7 @@
 
 @code {
 
-    private Menus ActivePage { get; set; } = Menus.Engine;
+    private Menus ActivePage { get; set; } = Menus.MarketMaker;
 
     private string CheckActive(Menus target)
     {
@@ -48,9 +56,9 @@
         return "";
     }
 
-    private void SetEngine()
+    private void SetMarketMaker()
     {
-        SetActive(Menus.Engine);
+        SetActive(Menus.MarketMaker);
     }
 
     private void SetSettings()
@@ -67,7 +75,8 @@
     public enum Menus
     {
         None,
-        Engine,
+        MarketMaker,
+        Hedger,
         Portfolio,
         Settings
     }
@@ -76,6 +85,11 @@
     {
         ActivePage = Menus.Portfolio;
         StateHasChanged();
+    }
+
+    private void SetHedger()
+    {
+        SetActive(Menus.Hedger);
     }
 
 }

@@ -4,18 +4,22 @@
 @using Service.Liquidity.Engine.Grpc.Models
 
 @inject IMarketMakerSettingsManagerGrpc SettingsManagerGrpc;
+@inject IHedgeSettingsManagerGrpc HedgeSettingsGrpc;
 
 @inject IToaster ToastService
 
 <Loader LoaderConfig="@LoaderConfig"/>
 
-<h3>Global Settings</h3>
-
 <table>
+    <tr>
+        <div style="margin: 30px">
+            <h3>Market Maker Settings</h3>
+        </div>
+    </tr>
     <tr>
         <td class="align-middle">Market Maker Mode</td>
         <td class="align-middle">
-            <MyLabel Color="@GlobalModeColor()" Text="@(GeneralSettings.Mode.ToString())" />
+            <MyLabel Color="@GlobalModeColor()" Text="@(GeneralSettings.Mode.ToString())"/>
         </td>
         <td class="align-middle">
             <ul class="nav align-middle">
@@ -37,7 +41,40 @@
     <tr>
         <td class="align-middle">Liquidity Refresh Interval</td>
         <td class="align-middle">
-            <input type="number" class="form-control" @bind="GeneralSettings.MarketMakerRefreshIntervalMSec" />
+            <input type="number" class="form-control" @bind="GeneralSettings.MarketMakerRefreshIntervalMSec"/>
+        </td>
+    </tr>
+    <tr>
+        <div style="margin: 30px">
+            <h3>Hedging Settings</h3>
+        </div>
+    </tr>
+    <tr>
+        <td class="align-middle">Hedging Mode</td>
+        <td class="align-middle">
+            <MyLabel Color="@HedgeGlobalModeColor()" Text="@(HedgeSettings.Mode.ToString())"/>
+        </td>
+        <td class="align-middle">
+            <ul class="nav align-middle">
+                @if (HedgeSettings?.Mode != EngineMode.Active)
+                {
+                    <li><button style="margin-left: 10px" type="button" class="btn-outline-success btn" @onclick="ToActiveHedge">To Active</button></li>
+                }
+                @if (HedgeSettings?.Mode != EngineMode.Idle)
+                {
+                    <li><button style="margin-left: 10px" type="button" class="btn-outline-warning btn" @onclick="ToIdleHedge">To Idle</button></li>
+                }
+                @if (HedgeSettings?.Mode != EngineMode.Disabled)
+                {
+                    <li><button style="margin-left: 10px" type="button" class="btn-outline-danger btn" @onclick="ToDisabledHedge">To Disabled</button></li>
+                }
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td class="align-middle">Hedging Interval</td>
+        <td class="align-middle">
+            <input type="number" class="form-control" @bind="HedgeSettings.HedgeTimerIntervalMSec"/>
         </td>
     </tr>
     <tr>
@@ -49,8 +86,9 @@
             <li><button style="margin-left: 10px" type="button" class="btn-outline-info btn" @onclick="ResetSettings">Reset</button></li>
         </ul>
     </tr>
-    
+
 </table>
+
 
 @if (IsShowQuestion)
 {
@@ -71,6 +109,7 @@
 @code {
 
     private MarketMakerSettings GeneralSettings { get; set; } = new MarketMakerSettings();
+    private HedgeSettings HedgeSettings { get; set; } = new HedgeSettings();
     
     private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
     
@@ -86,14 +125,34 @@
         StateHasChanged();
 
         GeneralSettings = await SettingsManagerGrpc.GetMarketMakerSettingsAsync();
+        this.HedgeSettings = await HedgeSettingsGrpc.GetGlobalHedgeSettingsAsync();
         
         LoaderConfig.Disable();
         StateHasChanged();
     }
 
+    
+
     private string GlobalModeColor()
     {
         switch (GeneralSettings?.Mode)
+        {
+            case EngineMode.Disabled:
+                return "red";
+                
+            case EngineMode.Idle:
+                return "yellow";
+                
+            case EngineMode.Active:
+                return "green";
+        }
+
+        return "white";
+    }
+    
+    private string HedgeGlobalModeColor()
+    {
+        switch (HedgeSettings.Mode)
         {
             case EngineMode.Disabled:
                 return "red";
@@ -172,10 +231,11 @@
 
     private void ApplySettings()
     {
-        AskQuestion("Change Market Maker", "Apply a new Market Maker settings. Are you sure?",
+        AskQuestion("Change Settings", "Apply a new Global settings. Are you sure?",
             async () =>
             {
                 await SettingsManagerGrpc.UpdateMarketMakerSettingsAsync(GeneralSettings);
+                await HedgeSettingsGrpc.UpdateSettingsAsync(HedgeSettings);
                 
                 await OnInitializedAsync();
                 ToastService.Info("Settings updated");
@@ -187,5 +247,37 @@
         await OnInitializedAsync();
         ToastService.Info("Settings reset");
     }
+
+    private void ToActiveHedge()
+    {
+        AskQuestion("Change Hedging Mode", "Change Mode to ACTIVE. Are you sure?",
+            async () =>
+            {
+                HedgeSettings.Mode = EngineMode.Active;
+                await InvokeAsync(StateHasChanged);
+            });
+    }
+
+    private void ToIdleHedge()
+    {
+        AskQuestion("Change Hedging Mode", "Change Mode to IDLE. Are you sure?",
+            async () =>
+            {
+                HedgeSettings.Mode = EngineMode.Idle;
+                await InvokeAsync(StateHasChanged);
+            });
+    }
+    
+    private void ToDisabledHedge()
+    {
+        AskQuestion("Change Hedging Mode", "Change Mode to DISABLE. Are you sure?",
+            async () =>
+            {
+                HedgeSettings.Mode = EngineMode.Disabled;
+                await InvokeAsync(StateHasChanged);
+            });
+    }
+    
+    
 
 }

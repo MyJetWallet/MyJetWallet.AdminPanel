@@ -6,6 +6,8 @@
 
 @inject IToaster ToastService
 
+@implements IDisposable
+
 <Loader LoaderConfig="@LoaderConfig"/>
 
 
@@ -91,7 +93,7 @@
     private async Task OnRefresh()
     {
         LoaderConfig.Enable();
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
 
         GeneralSettings = await SettingsManagerGrpc.GetMarketMakerSettingsAsync();
         var providerSettings = await SettingsManagerGrpc.GetMirroringLiquiditySettingsListAsync();
@@ -101,7 +103,8 @@
         NewProvider = new MirroringLiquiditySettings();
         
         LoaderConfig.Disable();
-        StateHasChanged();
+        
+        await InvokeAsync(StateHasChanged);
 
     }
 
@@ -132,6 +135,10 @@
         }
 
         await OnRefresh();
+    }
+
+    public void Dispose()
+    {
     }
 
 }
