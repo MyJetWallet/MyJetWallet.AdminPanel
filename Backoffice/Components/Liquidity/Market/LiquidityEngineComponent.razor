@@ -1,25 +1,49 @@
 ﻿@using Service.Liquidity.Engine.Grpc
 @using Service.Liquidity.Engine.Domain.Models.Settings
 @using Backoffice.Abstractions.Models
+@using Backoffice.Components.Liquidity.Market.Models
+@using Microsoft.Extensions.Logging
+@using Service.Liquidity.Engine.Domain.Models.Wallets
+@using Service.MatchingEngine.PriceSource.Client
 
 @inject IMarketMakerSettingsManagerGrpc SettingsManagerGrpc;
+@inject IHedgeSettingsManagerGrpc HedgeSettingsGrpc;
+@inject ILpWalletManagerGrpc WalletManagerGrpc;
 
 @inject IToaster ToastService
+
+@inject ILogger<LiquidityEngineComponent> Logger
 
 @implements IDisposable
 
 <Loader LoaderConfig="@LoaderConfig"/>
 
 
-<div style="font-size: medium">
-    <span>Mode: </span><MyLabel Color="@GlobalModeColor()" Text="@(GeneralSettings?.Mode.ToString())" />
+<div>
+    <table style="width: auto">
+        <tr>
+            <td>Market Mode:</td>
+            <td><MyLabel Color="@MarketMakerGlobalModeColor()" Text="@(MarketMakerGeneralSettings?.Mode.ToString())" /></td>
+        </tr>
+        <tr>
+            <td>Hedging Mode:</td>
+            <td><MyLabel Color="@HedgeMakerGlobalModeColor()" Text="@(HedgeGlobalSettings?.Mode.ToString())" /></td>
+        </tr>
+    </table>
 </div>
 
-<span style="margin-left: 10px" ></span>
+<span style="margin: 30px"></span>
+
+<div>
+    @if (IsNewMenu)
+    {
+        <InstrumentDetailsComponent Provider="@NewInstrument" IsEdit="true" IsNew="true" LpWallets="@LpWallets" UpdateCallback="Update" CancelCallback="CancelAdd"/>
+    }
+</div>
 
 <table>
     <tr>
-        <td><h3>Market Makers</h3></td>
+        <td><h3>Market's</h3></td>
         <td>
             <ul class="nav float-left" style="margin-left: 30px">
                 <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
@@ -29,29 +53,25 @@
     </tr>
 </table>
 
-<table class="table">
+<table class="table" style="width: auto; font-size: 12px">
     <thead>
         <tr>
             <th class="align-middle">Instrument</th>
-            <th class="align-middle">Mode</th>
+            <th class="align-middle">Market<br>Mode</th>
+            <th class="align-middle">Hedge<br>Mode</th>
+            <th class="align-middle">Prices</th>
             <th class="align-middle">Source</th>
             <th class="align-middle">Source<br>Symbol</th>
             <th class="align-middle">Markup</th>
-            <th class="align-middle">Max Buy<br>Side Volume</th>
-            <th class="align-middle">Max Sell<br>Side Volume</th>
             <th class="align-middle">Wallet</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
     
-    @foreach (var provider in ProviderSettings)
+    @foreach (var provider in InstrumentSettings)
     {
-        <MarketMakerRowComponent Provider="@provider" IsActiveRow="false" UpdateCallback="Update" />
-    }
-    @if (IsAdding)
-    {
-        <MarketMakerRowComponent Provider="NewProvider" IsEditRow="true" IsNewRow="true" IsActiveRow="false" UpdateCallback="Update" />
+        <MarketMakerRowComponent Provider="@provider" IsActiveRow="false" UpdateCallback="Update" LpWallets="@LpWallets" />
     }
     </tbody>
     
@@ -60,22 +80,41 @@
 
 @code {
 
-    private MarketMakerSettings GeneralSettings { get; set; }
-    private List<MirroringLiquiditySettings> ProviderSettings { get; set; } = new List<MirroringLiquiditySettings>();
+    private MarketMakerSettings MarketMakerGeneralSettings { get; set; }
+    private HedgeSettings HedgeGlobalSettings { get; set; }
+    
+    private List<InstrumentLpSettings> InstrumentSettings { get; set; } = new();
     
     private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
-    
-    private bool IsAdding { get; set; }
-    private MirroringLiquiditySettings NewProvider { get; set; }
+
+    private bool IsNewMenu { get; set; } = false;
+    private InstrumentLpSettings NewInstrument { get; set; } = new();
     
     protected override async Task OnInitializedAsync()
     {
         await OnRefresh();
     }
 
-    private string GlobalModeColor()
+    private string MarketMakerGlobalModeColor()
     {
-        switch (GeneralSettings?.Mode)
+        switch (MarketMakerGeneralSettings?.Mode)
+        {
+            case EngineMode.Disabled:
+                return "red";
+                
+            case EngineMode.Idle:
+                return "yellow";
+                
+            case EngineMode.Active:
+                return "green";
+        }
+
+        return "white";
+    }
+    
+    private string HedgeMakerGlobalModeColor()
+    {
+        switch (HedgeGlobalSettings?.Mode)
         {
             case EngineMode.Disabled:
                 return "red";
@@ -95,50 +134,115 @@
         LoaderConfig.Enable();
         await InvokeAsync(StateHasChanged);
 
-        GeneralSettings = await SettingsManagerGrpc.GetMarketMakerSettingsAsync();
-        var providerSettings = await SettingsManagerGrpc.GetMirroringLiquiditySettingsListAsync();
-        ProviderSettings = providerSettings.List;
-
-        IsAdding = false;
-        NewProvider = new MirroringLiquiditySettings();
+        MarketMakerGeneralSettings = await SettingsManagerGrpc.GetMarketMakerSettingsAsync();
+        HedgeGlobalSettings = await HedgeSettingsGrpc.GetGlobalHedgeSettingsAsync();
         
+        var providerSettings = await SettingsManagerGrpc.GetMirroringLiquiditySettingsListAsync();
+
+        var hedgeInstrumentSettings = await HedgeSettingsGrpc.GetHedgeInstrumentSettingsListAsync();
+
+        var lpWalletList = await WalletManagerGrpc.GetAllAsync();
+
+        LpWallets = lpWalletList.Data.List;
+
+        InstrumentSettings = new();
+        foreach (var lpSettings in providerSettings.List)
+        {
+            var wallet = lpWalletList.Data.List.FirstOrDefault(e => e.Name == lpSettings.WalletName);
+            if (wallet == null)
+                continue;
+            
+            var item = new InstrumentLpSettings()
+            {
+                Symbol = lpSettings.InstrumentSymbol,
+                WalletName = lpSettings.WalletName,
+                Liquidity = lpSettings,
+                WalletId = wallet.WalletId,
+                Wallet = wallet
+            };
+
+            item.Hedge = hedgeInstrumentSettings.List.FirstOrDefault(e =>
+                e.InstrumentSymbol == item.Symbol && e.WalletId == item.WalletId);
+
+            if (item.Hedge == null)
+                item.Hedge = new()
+                {
+                    Mode = EngineMode.Disabled,
+                    ExternalMarket = lpSettings.ExternalMarket,
+                    ExternalSymbol = lpSettings.ExternalSymbol,
+                    InstrumentSymbol = item.Symbol,
+                    WalletId = item.WalletId,
+                    MinVolume = 0
+                };
+
+            InstrumentSettings.Add(item);
+        }
+
         LoaderConfig.Disable();
         
         await InvokeAsync(StateHasChanged);
 
     }
 
-    private void OnAdd()
-    {
-        IsAdding = true;
-        NewProvider = new MirroringLiquiditySettings();
-        StateHasChanged();
-    }
+    private List<LpWallet> LpWallets { get; set; }
 
-    private async Task Update(MirroringLiquiditySettings provider)
+    private async Task<bool> Update(InstrumentLpSettings provider)
     {
         LoaderConfig.Enable();
-        StateHasChanged();
-
+        await InvokeAsync(StateHasChanged);
+        
         try
         {
-            IsAdding = false;
-            
-            await SettingsManagerGrpc.AddOrUpdateMirroringLiquiditySettingsAsync(provider);
+            await SettingsManagerGrpc.AddOrUpdateMirroringLiquiditySettingsAsync(provider.Liquidity);
+            await HedgeSettingsGrpc.AddOrUpdateSettingsAsync(provider.Hedge);
 
-            var action = provider == NewProvider ? "added" : "updated";
-            ToastService.Info($"Provider {provider.InstrumentSymbol} is {action}");
+            var action = provider == NewInstrument ? "added" : "updated";
+            
+            ToastService.Info($"Provider {provider.Symbol} is {action}");
+
+            IsNewMenu = false;
+            await OnRefresh();
+
+            LoaderConfig.Disable();
+            await InvokeAsync(StateHasChanged);
+            
+            return true;
         }
         catch (Exception ex)
         {
-            ToastService.Error($"Provider {provider.InstrumentSymbol} cannot be updated: {ex.Message}");
+            Logger.LogError(ex, $"Provider {provider.Symbol} cannot be updated");
+            
+            ToastService.Error($"Provider {provider.Symbol} cannot be updated: {ex.Message}");
         }
-
+        
         await OnRefresh();
+        
+        LoaderConfig.Disable();
+        await InvokeAsync(StateHasChanged);
+        return false;
     }
 
     public void Dispose()
     {
+    }
+
+    private void OnAdd()
+    {
+        NewInstrument = new InstrumentLpSettings()
+        {
+            Liquidity = new MirroringLiquiditySettings(),
+            Hedge = new HedgeInstrumentSettings()
+        };
+
+        IsNewMenu = true;
+        
+        StateHasChanged();
+    }
+
+    public void CancelAdd(InstrumentLpSettings provider)
+    {
+        IsNewMenu = false;
+        StateHasChanged();
     }
 
 }

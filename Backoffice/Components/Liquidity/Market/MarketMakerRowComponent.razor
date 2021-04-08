@@ -1,108 +1,68 @@
 ﻿@using Service.Liquidity.Engine.Domain.Models.Settings
+@using Backoffice.Components.Liquidity.Market.Models
+@using MyJetWallet.Domain.Prices
+@using Service.Liquidity.Engine.Domain.Models.Wallets
+@using Service.MatchingEngine.PriceSource.Client
+
+@inject ICurrentPricesCache PriceService
+
+@implements IDisposable
         
 <tr>
     <td>
-        @if (IsNewRow)
+        @Provider.Liquidity.InstrumentSymbol
+    </td>
+    <td>
+        <MyLabel Color="@(Provider.Liquidity.Mode == EngineMode.Active ? "green":"red")" Text="@Provider.Liquidity.Mode.ToString()" />
+    </td>
+    <td>
+        <MyLabel Color="@(Provider.Hedge.Mode == EngineMode.Active ? "green":"red")" Text="@Provider.Hedge.Mode.ToString()" />
+    </td>
+    
+    <td>
+        @if (_price != null)
         {
-            <input type="text" @bind="Provider.InstrumentSymbol" />
-        }
-        else
-        {
-            @Provider.InstrumentSymbol   
+            <div style="font-size: 8px; background: @((DateTime.UtcNow - _price.DateTime).TotalSeconds>5 ? "lightpink" : "white")">
+                <div class="row">
+                    <div class="col-md-1">ask:</div>
+                    <div class="col-md-1">@_price.Ask</div>
+                </div>
+                <div class="row">
+                    <div class="col-md-1">bid:</div>
+                    <div class="col-md-1">@_price.Bid</div>
+                </div>
+                <div class="row">
+                    <div class="col-md-1">spred:</div>
+                    <div class="col-md-1">@(Math.Round((_price.Ask-_price.Bid)/((_price.Ask+_price.Bid)/2)*100, 3))%</div>
+                </div>
+            </div>
         }
     </td>
     <td>
-        @if (IsEditRow)
-        {
-            <input type="text" @bind="Provider.Mode" />
-        }
-        else
-        {
-            @Provider.Mode    
-        }
+        @Provider.Liquidity.ExternalMarket
     </td>
     <td>
-        @if (IsEditRow)
-        {
-            <input type="text" @bind="Provider.ExternalMarket" />
-        }
-        else
-        {
-            @Provider.ExternalMarket    
-        }
+        @Provider.Liquidity.ExternalSymbol
     </td>
     <td>
-        @if (IsEditRow)
-        {
-            <input type="text" @bind="Provider.ExternalSymbol" />
-        }
-        else
-        {
-            @Provider.ExternalSymbol    
-        }
+        @Provider.Liquidity.Markup
     </td>
     <td>
-        @if (IsEditRow)
-        {
-            <input type="number" @bind="Provider.Markup" />
-        }
-        else
-        {
-            @Provider.Markup    
-        }
-    </td>
-    <td>
-        @if (IsEditRow)
-        {
-            <input type="number" @bind="Provider.MaxBuySideVolume" />
-        }
-        else
-        {
-            @Provider.MaxBuySideVolume    
-        }
-    </td>
-    <td>
-        @if (IsEditRow)
-        {
-            <input type="number" @bind="Provider.MaxSellSideVolume" />
-        }
-        else
-        {
-            @Provider.MaxSellSideVolume    
-        }
-    </td>
-    <td>
-        @if (IsEditRow)
-        {
-            <input type="text" @bind="Provider.WalletName" />
-        }
-        else
-        {
-            @Provider.WalletName    
-        }
+        @Provider.WalletName    
     </td>
     
     <td>
         <ul class="nav">
-            <li><button type="button" class="btn-outline-info btn" @onclick="ClickDetails" >...</button></li>
-            @if (!IsEditRow)
-            {
-                <li><button type="button" class="btn-outline-warning btn" @onclick="ClickEdit">Edit</button></li>
-            }
-            @if (IsEditRow)
-            {
-                <li><button type="button" class="btn-outline-success btn" @onclick="ClickApply" >Save</button></li>
-                <li><button type="button" class="btn-outline-danger btn" @onclick="ClickCancel" >Cancel</button></li>
-            }
+            <li><button type="button" class="btn-outline-info btn" style="height: 20px; font-size: 10px" @onclick="ClickDetails" >...</button></li>
         </ul>
     </td>
     
 </tr>    
-@if (IsActiveRow && !IsNewRow)
+@if (IsActiveRow)
 {
     <tr>
-        <td colspan="10">
-            <MarketMakerDetailsComponent />
+        <td colspan="8">
+            <InstrumentDetailsComponent Provider="@Provider" LpWallets="@LpWallets" UpdateCallback="UpdateCallback" />
         </td>
     </tr>
 }
@@ -113,42 +73,46 @@
     public bool IsActiveRow { get; set; }
     
     [Parameter]
-    public bool IsEditRow { get; set; }
+    public InstrumentLpSettings Provider { get; set; }
     
     [Parameter]
-    public bool IsNewRow { get; set; }
+    public Func<InstrumentLpSettings, Task<bool>> UpdateCallback { get; set; }
     
     [Parameter]
-    public MirroringLiquiditySettings Provider { get; set; }
-    
-    [Parameter]
-    public Func<MirroringLiquiditySettings, Task> UpdateCallback { get; set; }
+    public List<LpWallet> LpWallets { get; set; }
 
+    private BidAsk _price { get; set; }
+    private bool IsDispose = false;
+    
     private void ClickDetails()
     {
         IsActiveRow = !IsActiveRow;
         StateHasChanged();
     }
 
-    private void ClickEdit()
+    protected override async Task OnInitializedAsync()
     {
-        IsEditRow = true;
-        StateHasChanged();
+        await RefreshPrice();
+        
+        GlobalTimers.RefreshTimer.RegisterCallback($"Price MM {Provider.Symbol}; {Provider.WalletId}", RefreshPrice);
     }
 
-    private async Task ClickApply()
+    private async Task RefreshPrice()
     {
-        if (UpdateCallback != null)
-            await UpdateCallback.Invoke(Provider);
+        if (IsDispose) return;
+        
+        if (Provider.Wallet != null)
+        {
+            _price = PriceService.GetPrice(Provider.Wallet.BrokerId, Provider.Symbol);
+        }
 
-        IsEditRow = false;
         await InvokeAsync(StateHasChanged);
     }
 
-    private void ClickCancel()
+    public void Dispose()
     {
-        IsEditRow = false;
-        StateHasChanged();
+        IsDispose = true;
+        GlobalTimers.RefreshTimer.RemoveCallback($"Price MM {Provider.Symbol}; {Provider.WalletId}");
     }
 
 }

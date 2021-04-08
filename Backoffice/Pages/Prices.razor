@@ -3,9 +3,11 @@
 @using MyJetWallet.Domain.Prices
 @using MyJetWallet.Sdk.Service.Tools
 @using Microsoft.Extensions.Logging
+@using Service.Liquidity.Engine.Grpc
 
 @inject ICurrentPricesCache PriceService
 @inject ILoggerFactory LoggerFactory
+@inject IMarketMakerSettingsManagerGrpc SettingsManagerGrpc;
 
 @implements IDisposable
 
@@ -19,29 +21,35 @@
         <th>Spread</th>
         <th>Time</th>
         <th>Delay</th>
+        <th>Source</th>
+        <th>Source Price</th>
+        <th>Source Spread</th>
         <th></th>
     </tr>
     </thead>
     <tbody>
         @foreach (var price in _prices)
         {
-            <tr style="background: @(GetRowBackground(price))">
-                <td>@price.Id</td>
+            <tr style="background: @(GetRowBackground(price.Price))">
+                <td>@price.Symbol</td>
                 <td>
                     <div>
                         <div class="row">
                             <div class="col-md-1">ask:</div>
-                            <div class="col-md-1">@price.Ask</div>
+                            <div class="col-md-1">@price.Price.Ask</div>
                         </div>
                         <div class="row">
                             <div class="col-md-1">bid:</div>
-                            <div class="col-md-1">@price.Bid</div>
+                            <div class="col-md-1">@price.Price.Bid</div>
                         </div>
                     </div>
                 </td>
-                <td>@(Math.Round(price.Ask-price.Bid, 8))<br>@(Math.Round((price.Ask-price.Bid)/((price.Ask+price.Bid)/2)*100, 3))%</td>
-                <td>@price.DateTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
-                <td>@((DateTime.UtcNow - @price.DateTime).ToString())</td>
+                <td>@(Math.Round(price.Price.Ask-price.Price.Bid, 8))<br>@(Math.Round((price.Price.Ask-price.Price.Bid)/((price.Price.Ask+price.Price.Bid)/2)*100, 3))%</td>
+                <td>@price.Price.DateTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>@((DateTime.UtcNow - @price.Price.DateTime).ToString())</td>
+                <td></td>
+                <td></td>
+                <td></td>
             </tr>
         }
     </tbody>
@@ -55,9 +63,9 @@
 
     private bool _isDispose = false;
     
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        _prices = PriceService.GetPrices();
+        await ReloadData();
 
         GlobalTimers.RefreshTimer.RegisterCallback(nameof(Prices), DoTime);
     }
@@ -65,8 +73,27 @@
     private async Task DoTime()
     {
         if (_isDispose) return;
-        _prices = PriceService.GetPrices();
+        await ReloadData();
+
+
         await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ReloadData()
+    {
+        var prices = PriceService.GetPrices();
+        var lpSettings = await SettingsManagerGrpc.GetMarketMakerSettingsAsync();
+
+        _prices.Clear();
+        foreach (var price in prices)
+        {
+            var item = new PriceItem()
+            {
+                Symbol = price.Id,
+                Price = price
+            };
+            _prices.Add(item);
+        }
     }
 
     public void Dispose()
@@ -75,7 +102,7 @@
         GlobalTimers.RefreshTimer.RemoveCallback(nameof(Prices));
     }
 
-    private List<BidAsk> _prices = new ();
+    private List<PriceItem> _prices = new ();
 
     private string GetRowBackground(BidAsk price)
     {
@@ -85,4 +112,11 @@
         return "white";
     }
 
+
+    private class PriceItem
+    {
+        public string Symbol { get; set; }
+        public BidAsk Price { get; set; }
+        public BidAsk Source { get; set; }
+    }
 }

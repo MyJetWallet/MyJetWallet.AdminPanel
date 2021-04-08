@@ -1,0 +1,231 @@
+﻿@using Service.Liquidity.Engine.Domain.Models.Settings
+@using Backoffice.Components.Liquidity.Market.Models
+@using Microsoft.Extensions.Logging
+@using Service.Liquidity.Engine.Domain.Models.Wallets
+
+@inject ILogger<InstrumentDetailsComponent> Logger
+@inject IToaster ToastService
+
+<table style="width: auto; font-size: 12px;">
+    <tr>
+        <th>Instrument</th>
+        <th>Market Maker</th>
+        <th>Hedging</th>
+    </tr>
+    <tr>
+        <td>
+            <table>
+                <tr>
+                    <td>Internal Symbol</td>
+                    <td>
+                        @if (IsNew)
+                        {
+                            <input type="text" style="width: 80px" @bind="Provider.Symbol" />
+                        }
+                        else
+                        {
+                            @Provider.Symbol
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td>Internal Wallet</td>
+                    <td>
+                        @if (IsNew)
+                        {
+                            <input type="text" style="width: 80px" @bind="Provider.WalletName" />
+                        }
+                        else
+                        {
+                            @Provider.WalletName<br><span style="font-size: 6px">@Provider.WalletId</span>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td>External Market</td>
+                    <td>
+                        @if (IsEdit)
+                        {
+                            <input type="text" style="width: 80px" @bind="Provider.Liquidity.ExternalMarket" />
+                        }
+                        else
+                        {
+                            @Provider.Liquidity.ExternalMarket
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td>External Symbol</td>
+                    <td>
+                        @if (IsEdit)
+                        {
+                            <input type="text" style="width: 80px" @bind="Provider.Liquidity.ExternalSymbol" />
+                        }
+                        else
+                        {
+                            @Provider.Liquidity.ExternalSymbol
+                        }
+                    </td>
+                </tr>                
+            </table>            
+        </td>
+        <td>
+            <table>
+                <tr>
+                    <td>Mode</td>
+                    <td>
+                        @if (IsEdit)
+                        {
+                            <input type="text" style="width: 80px" @bind="Provider.Liquidity.Mode" />
+                        }
+                        else
+                        {
+                            <MyLabel Color="@(Provider.Liquidity.Mode == EngineMode.Active ? "green":"red")" Text="@Provider.Liquidity.Mode.ToString()" />
+                        }                        
+                    </td>
+                </tr>
+                <tr>
+                    <td>Max buy volume</td>
+                    <td>
+                        @if (IsEdit)
+                        {
+                            <input type="number" style="width: 80px" @bind="Provider.Liquidity.MaxBuySideVolume" />
+                        }
+                        else
+                        {
+                            @Provider.Liquidity.MaxBuySideVolume
+                        }                        
+                    </td>
+                </tr>
+                <tr>
+                    <td>Max sell volume</td>
+                    <td>
+                        @if (IsEdit)
+                        {
+                            <input type="number" style="width: 80px" @bind="Provider.Liquidity.MaxSellSideVolume" />
+                        }
+                        else
+                        {
+                            @Provider.Liquidity.MaxSellSideVolume
+                        }                        
+                    </td> 
+                </tr>                
+            </table>            
+        </td>
+        <td>
+            <table>
+                <tr>
+                    <td>Mode</td>
+                    <td>
+                        @if (IsEdit)
+                        {
+                            <input type="text" style="width: 80px" @bind="Provider.Hedge.Mode" />
+                        }
+                        else
+                        {
+                            <MyLabel Color="@(Provider.Hedge.Mode == EngineMode.Active ? "green":"red")" Text="@Provider.Hedge.Mode.ToString()" />
+                        }  
+                    </td>
+                </tr>
+                <tr>
+                    <td>Min hedge volume</td>
+                    <td>
+                        @if (IsEdit)
+                        {
+                            <input type="number" style="width: 80px" @bind="Provider.Hedge.MinVolume" />
+                        }
+                        else
+                        {
+                            @Provider.Hedge.MinVolume
+                        }  
+                    </td>
+                </tr>
+            </table>            
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <ul class="nav">
+                @if (!IsNew && !IsEdit)
+                {
+                    <li><button type="button" class="btn-outline-dark btn" style="height: auto; font-size: 12px" @onclick="EditClick">Edit</button></li>
+                }
+                else
+                {
+                    <li><button type="button" class="btn-outline-success btn" style="height: auto; font-size: 12px" @onclick="SaveClick">Save</button></li>
+                    <li><button type="button" class="btn-outline-danger btn" style="height: auto; font-size: 12px" @onclick="CancelClick">Cancel</button></li>
+                }
+            </ul>
+        </td>
+    </tr>
+</table>
+
+
+@code {
+
+    [Parameter]
+    public bool IsEdit { get; set; }
+    
+    [Parameter]
+    public bool IsNew { get; set; }
+    
+    [Parameter]
+    public InstrumentLpSettings Provider { get; set; }
+    
+    [Parameter]
+    public Func<InstrumentLpSettings, Task<bool>> UpdateCallback { get; set; }
+    
+    [Parameter]
+    public Action<InstrumentLpSettings> CancelCallback { get; set; }
+    
+    [Parameter]
+    public List<LpWallet> LpWallets { get; set; }
+    
+    private void EditClick()
+    {
+        IsEdit = true;
+        StateHasChanged();
+    }
+
+    private async Task SaveClick()
+    {
+        try
+        {
+            var wallet = LpWallets.FirstOrDefault(e => e.Name == Provider.WalletName);
+            if (wallet == null)
+            {
+                ToastService.Error($"Wallet '{Provider.WalletName}' do not found");
+                return;
+            }
+            
+            Provider.Liquidity.WalletName = Provider.WalletName;
+            Provider.Liquidity.InstrumentSymbol = Provider.Symbol;
+            Provider.Liquidity.WalletId = wallet.WalletId;
+            Provider.Hedge.InstrumentSymbol = Provider.Symbol;
+            Provider.Hedge.WalletId = wallet.WalletId;
+            
+            if (UpdateCallback != null)
+                await UpdateCallback.Invoke(Provider);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Cannot update instrument settings");
+            return;
+        }
+
+        if (!IsNew)
+            IsEdit = false;
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void CancelClick()
+    {
+        CancelCallback?.Invoke(Provider);
+
+        if (!IsNew)
+            IsEdit = false;
+        
+        StateHasChanged();
+    }
+}
