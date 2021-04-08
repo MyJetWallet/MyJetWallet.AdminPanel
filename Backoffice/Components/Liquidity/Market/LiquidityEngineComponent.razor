@@ -43,43 +43,56 @@
 
 <table>
     <tr>
-        <td><h3>Market's</h3></td>
         <td>
-            <ul class="nav float-left" style="margin-left: 30px">
-                <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
-                <li><button @onclick="OnAdd" type="button" class="btn btn-outline-success" style="margin: 5px; border-radius: 10px">Add</button></li>
-            </ul>
+            <table>
+                <tr>
+                    <td><h3>Market's</h3></td>
+                    <td>
+                        <ul class="nav float-left" style="margin-left: 30px">
+                            <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
+                            <li><button @onclick="OnAdd" type="button" class="btn btn-outline-success" style="margin: 5px; border-radius: 10px">Add</button></li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+            
+            <table class="table" style="width: auto; font-size: 12px">
+                <thead>
+                <tr>
+                    <th class="align-middle">Instrument</th>
+                    <th class="align-middle">Market<br>Mode</th>
+                    <th class="align-middle">Hedge<br>Mode</th>
+                    <th class="align-middle">Prices</th>
+                    <th class="align-middle">Source</th>
+                    <th class="align-middle">Source<br>Symbol</th>
+                    <th class="align-middle">Markup</th>
+                    <th class="align-middle">Wallet</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+
+                @foreach (var provider in InstrumentSettings)
+                {
+                    <MarketMakerRowComponent Provider="@provider" IsActiveRow="false" UpdateCallback="Update" LpWallets="@LpWallets"/>
+                }
+                </tbody>
+
+            </table>
+        </td>
+        <td style="vertical-align: top">
+            <div style="margin-left: 30px">
+                <ShortClosePositionComponent />
+            </div>
         </td>
     </tr>
-</table>
-
-<table class="table" style="width: auto; font-size: 12px">
-    <thead>
-        <tr>
-            <th class="align-middle">Instrument</th>
-            <th class="align-middle">Market<br>Mode</th>
-            <th class="align-middle">Hedge<br>Mode</th>
-            <th class="align-middle">Prices</th>
-            <th class="align-middle">Source</th>
-            <th class="align-middle">Source<br>Symbol</th>
-            <th class="align-middle">Markup</th>
-            <th class="align-middle">Wallet</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-    
-    @foreach (var provider in InstrumentSettings)
-    {
-        <MarketMakerRowComponent Provider="@provider" IsActiveRow="false" UpdateCallback="Update" LpWallets="@LpWallets" />
-    }
-    </tbody>
-    
 </table>
     
 
 @code {
 
+    //ShortClosePositionComponent
+    
     private MarketMakerSettings MarketMakerGeneralSettings { get; set; }
     private HedgeSettings HedgeGlobalSettings { get; set; }
     

@@ -54,6 +54,7 @@
     <td>
         <ul class="nav">
             <li><button type="button" class="btn-outline-info btn" style="height: 20px; font-size: 10px" @onclick="ClickDetails" >...</button></li>
+            <li><button type="button" class="btn-outline-info btn" style="height: 20px; font-size: 10px" @onclick="ClickBooks" >books</button></li>
         </ul>
     </td>
     
@@ -66,6 +67,15 @@
         </td>
     </tr>
 }
+@if (IsActiveBooks)
+{
+    <tr>
+        <td colspan="8">
+            <LpOrderBookComponent Provider="@Provider" />
+        </td>
+    </tr>
+}
+
         
 @code {
 
@@ -80,6 +90,8 @@
     
     [Parameter]
     public List<LpWallet> LpWallets { get; set; }
+
+    private bool IsActiveBooks { get; set; } = false;
 
     private BidAsk _price { get; set; }
     private bool IsDispose = false;
@@ -113,6 +125,12 @@
     {
         IsDispose = true;
         GlobalTimers.RefreshTimer.RemoveCallback($"Price MM {Provider.Symbol}; {Provider.WalletId}");
+    }
+
+    private void ClickBooks()
+    {
+        IsActiveBooks = !IsActiveBooks;
+        StateHasChanged();
     }
 
 }

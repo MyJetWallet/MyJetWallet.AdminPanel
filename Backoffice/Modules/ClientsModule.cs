@@ -43,6 +43,7 @@ namespace Backoffice.Modules
             
             
             builder.RegisterMatchingEnginePriceSourceClient(_myNoSqlClient);
+            builder.RegisterMatchingEngineOrderBookClient(_myNoSqlClient);
         }
         
         private void RegisterMyNoSqlTcpClient(ContainerBuilder builder)
