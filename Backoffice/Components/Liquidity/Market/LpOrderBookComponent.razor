@@ -162,17 +162,22 @@
         var list = new List<Level>();
 
         var limit = MaxLevelCount > 0 ? MaxLevelCount : 1000;
-        
-        list.AddRange(external.Data.Asks.OrderBy(e => e.Price).Take(limit).Select(e => new Level((decimal) e.Price, 0, (decimal) e.Volume, Provider.Liquidity.ExternalMarket)));
-        list.AddRange(external.Data.Bids.OrderByDescending(e => e.Price).Take(limit).Select(e => new Level((decimal) e.Price, (decimal) e.Volume, 0, Provider.Liquidity.ExternalMarket)));
 
+        if (external?.Data != null)
+        {
+            list.AddRange(external.Data.Asks.OrderBy(e => e.Price).Take(limit).Select(e => new Level((decimal) e.Price, 0, (decimal) e.Volume, Provider.Liquidity.ExternalMarket)));
+            list.AddRange(external.Data.Bids.OrderByDescending(e => e.Price).Take(limit).Select(e => new Level((decimal) e.Price, (decimal) e.Volume, 0, Provider.Liquidity.ExternalMarket)));
+        }
         ExternalBook = list.OrderByDescending(e => e.Price).ToList();
 
         var book = OrderBookService.GetOrderBook(Provider.Wallet.BrokerId, Provider.Symbol);
         list = new List<Level>();
-        list.AddRange(book.SellLevels.OrderBy(e => e.Price).Take(limit).Select(e => new Level(e.Price, 0, e.Volume, "local")));
-        list.AddRange(book.BuyLevels.OrderByDescending(e => e.Price).Take(limit).Select(e => new Level(e.Price, e.Volume, 0, "local")));
-
+        
+        if (book != null)
+        {
+            list.AddRange(book.SellLevels.OrderBy(e => e.Price).Take(limit).Select(e => new Level(e.Price, 0, e.Volume, "local")));
+            list.AddRange(book.BuyLevels.OrderByDescending(e => e.Price).Take(limit).Select(e => new Level(e.Price, e.Volume, 0, "local")));
+        }
         InternalBook = list.OrderByDescending(e => e.Price).ToList();
 
         AllBook = new List<Level>();

@@ -20,7 +20,7 @@
       <PackageReference Include="MyCrm.BusinessCategories.Grpc" Version="1.0.2" />
       <PackageReference Include="MyCrm.Calls.Grpc" Version="1.0.9" />
       <PackageReference Include="MyCrm.Comments.GrpcContracts" Version="1.0.3" />
-      <PackageReference Include="MyCrm.Deposits.Grpc" Version="1.0.30" />
+      <PackageReference Include="MyCrm.Deposits.Grpc" Version="1.0.31" />
       <PackageReference Include="MyCRM.Logs.GrpcContracts" Version="1.0.8" />
       <PackageReference Include="MyCrm.MyCrmTradersUtmParametersGrpcContracts" Version="1.0.3" />
       <PackageReference Include="MyCrm.PaymentReport.GrpcContracts" Version="1.0.3" />
