@@ -85,6 +85,19 @@
                     </td>
                 </tr>
                 <tr>
+                    <td>Markup</td>
+                    <td>
+                        @if (IsEdit)
+                        {
+                            <input type="number" style="width: 80px" @bind="Provider.Liquidity.Markup" />
+                        }
+                        else
+                        {
+                            @Provider.Liquidity.Markup
+                        }                        
+                    </td>
+                </tr>                
+                <tr>
                     <td>Max buy volume</td>
                     <td>
                         @if (IsEdit)
