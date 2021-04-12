@@ -31,7 +31,7 @@ namespace Backoffice
 
         public static void Main(string[] args)
         {
-            Console.Title = "MyJetWallet Service.AssetsDictionary";
+            Console.Title = "MyJetWallet AdminPanel";
 
             Settings = SettingsReader.GetSettings<SettingsModel>(SettingsFileName);
 
