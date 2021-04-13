@@ -206,11 +206,20 @@
         
         try
         {
-            await SettingsManagerGrpc.AddOrUpdateMirroringLiquiditySettingsAsync(provider.Liquidity);
+            var action = "";
+            if (provider == NewInstrument)
+            {
+                await SettingsManagerGrpc.AddMirroringLiquiditySettingsAsync(provider.Liquidity);
+                action = "added";
+            }
+            else
+            {
+                await SettingsManagerGrpc.UpdateMirroringLiquiditySettingsAsync(provider.Liquidity);
+                action = "updated";
+            }
+            
             await HedgeSettingsGrpc.AddOrUpdateSettingsAsync(provider.Hedge);
 
-            var action = provider == NewInstrument ? "added" : "updated";
-            
             ToastService.Info($"Provider {provider.Symbol} is {action}");
 
             IsNewMenu = false;
