@@ -1,0 +1,225 @@
+﻿@using Service.Liquidity.Engine.Grpc
+@using Service.Liquidity.Engine.Grpc.Models
+@using Service.Liquidity.Engine.Domain.Models.Wallets
+@using Service.Balances.Domain.Models
+@using Service.ClientWallets.Grpc
+@using MyJetWallet.Domain
+
+@inject ILpWalletManagerGrpc LpWalletManagerGrpc
+@inject IExternalMarketsGrpc ExternalMarketsManager
+
+<div class="row">
+    <ul class="nav float-left" style="margin-left: 30px">
+        <li><button @onclick="Refresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
+        <li><button @onclick="AddNew" type="button" class="btn btn-outline-success" style="margin: 5px; border-radius: 10px">Add</button></li>
+    </ul>
+</div>
+
+<div class="row">
+
+    <table style="width: auto" class="table">
+        <thead>
+        <tr>
+            <th style="vertical-align: center; horiz-align: center; min-width: 80px"><span>Asset</span></th>
+            @foreach (var wallet in LpWallets)
+            {
+                <th>
+                    <div class="row">@wallet.Name</div>
+                    <div class="row">
+                        <button type="button" @onclick="@(() => DetailsClick(wallet))" class="btn-outline-info btn" style="height: 20px; font-size: 10px">...</button>
+                    </div>
+                </th>
+            }
+            @foreach (var wallet in ExternalWallets)
+            {
+                <th style="background: lightgray" >@wallet</th>
+            }
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var asset in AssetList.Keys.OrderBy(e => e))
+        {
+            <tr>
+                <td><span style="vertical-align: center; horiz-align: center; min-width: 80px">@asset</span></td>
+                
+                @foreach (var wallet in LpWallets)
+                {
+                    <td>
+                        @if (Balances.TryGetValue(wallet.WalletId, out var balanceList) &&
+                             balanceList.TryGetValue(asset, out var item))
+                        {
+                            if (item.Balance < 0)
+                            {
+                                <span style="background: red">Balance  : @item.Balance</span>    
+                            }
+                            else
+                            {
+                                <span>Balance  : @item.Balance</span>
+                            }
+                            <br>
+                            <span><b>Available: @item.Available</b></span>
+                        }
+                    </td>
+                }
+
+                @foreach (var wallet in ExternalWallets)
+                {
+                    <td style="background: lightgray">
+                        @if (Balances.TryGetValue(wallet, out var balanceList) &&
+                             balanceList.TryGetValue(asset, out var item))
+                        {
+                            if (item.Balance < 0)
+                            {
+                                <span style="background: red">Balance  : @item.Balance</span>    
+                            }
+                            else
+                            {
+                                <span>Balance  : @item.Balance</span>
+                            }
+                            <br>
+                            <span><b>Available: @item.Available</b></span>
+                        }
+                    </td>
+                }
+            </tr>
+        }
+        </tbody>
+    </table>
+
+</div>
+
+@if (IsShowDetails)
+{
+    <WalletEditorDialog Wallet="@DetailWallet" OnClose="CloseDialog" OnSubmit="SaveWallet" IsNew="false" />
+}
+
+@if (IsShowAddDialog)
+{
+    <WalletEditorDialog Wallet="@DetailWallet" OnClose="CloseDialog" OnSubmit="AddWallet" IsNew="true" />
+}
+
+
+@code {
+
+    public List<LpWallet> LpWallets { get; set; } = new();
+    public List<string> ExternalWallets { get; set; } = new();
+    
+    public bool IsShowDetails { get; set; }
+    public bool IsShowAddDialog { get; set; }
+    public LpWallet DetailWallet { get; set; }
+
+    public Dictionary<string, string> AssetList = new();
+
+    public Dictionary<string, Dictionary<string, BalanceItem>> Balances = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Refresh();
+    }
+
+    private async Task Refresh()
+    {
+        AssetList = new Dictionary<string, string>();
+        Balances = new Dictionary<string, Dictionary<string, BalanceItem>>();
+        
+        var lpWallets = await LpWalletManagerGrpc.GetAllAsync();
+
+        LpWallets = lpWallets.Data.List ?? new List<LpWallet>();
+
+        foreach (var wallet in LpWallets)
+        {
+            var balanceResp =
+                await LpWalletManagerGrpc.GetBalancesAsync(new WalletNameRequest() {WalletName = wallet.Name});
+
+            Balances[wallet.WalletId] = (balanceResp.Data.List ?? new List<WalletBalance>())
+                .Select(e => new BalanceItem(e.AssetId, e.Balance, e.Balance))
+                .ToDictionary(e => e.Symbol);
+
+            foreach (var balanceItem in Balances[wallet.WalletId])
+            {
+                AssetList[balanceItem.Key] = balanceItem.Key;
+            }
+        }
+
+        var externalMarkets = await ExternalMarketsManager.GetExternalMarketListAsync();
+
+        ExternalWallets = externalMarkets.Data.List ?? new List<string>();
+
+        foreach (var wallet in ExternalWallets)
+        {
+            var balanceResp = await ExternalMarketsManager.GetBalancesAsync(new SourceDto() {Source = wallet});
+
+            Balances[wallet] = (balanceResp.Data.List ?? new List<AssetBalanceDto>())
+                .Select(e => new BalanceItem(e.Asset, e.Balance, e.Free))
+                .ToDictionary(e => e.Symbol);
+            
+            foreach (var balanceItem in Balances[wallet])
+            {
+                AssetList[balanceItem.Key] = balanceItem.Key;
+            }
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    private void AddNew()
+    {
+        DetailWallet = new LpWallet();
+        IsShowAddDialog = true;
+        StateHasChanged();
+    }
+    
+    private void DetailsClick(LpWallet wallet)
+    {
+        DetailWallet = wallet;
+        IsShowAddDialog = true;
+        StateHasChanged();
+    }
+
+    private void CloseDialog()
+    {
+        IsShowDetails = false;
+        IsShowAddDialog = false;
+        StateHasChanged();
+    }
+
+    private void SaveWallet(LpWallet wallet)
+    {
+        IsShowDetails = false;
+        IsShowAddDialog = false;
+        StateHasChanged();
+    }
+    
+    private async void AddWallet(LpWallet wallet)
+    {
+        await LpWalletManagerGrpc.AddWalletAsync(wallet);
+        
+        IsShowDetails = false;
+        IsShowAddDialog = false;
+        StateHasChanged();
+        
+        await Refresh();
+    }
+
+
+
+    public class BalanceItem
+    {
+        public BalanceItem(string symbol, double balance, double available)
+        {
+            Symbol = symbol;
+            Balance = balance;
+            Available = available;
+        }
+
+        public BalanceItem() { }
+
+        public string Symbol { get; set; }
+        public double Balance { get; set; }
+        public double Available { get; set; }
+    }
+
+
+    
+
+}

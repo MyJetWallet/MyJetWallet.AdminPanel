@@ -13,5 +13,6 @@
         <PackageReference Include="DotNetCoreDecorators" Version="1.0.21" />
         <PackageReference Include="MyAzureBlob" Version="1.0.5" />
         <PackageReference Include="MyAzureTableStorage" Version="1.1.4" />
+        <PackageReference Include="MyJetWallet.Service.ClientWallets.Client" Version="1.0.4" />
     </ItemGroup>
 </Project>

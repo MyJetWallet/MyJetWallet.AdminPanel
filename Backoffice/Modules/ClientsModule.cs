@@ -3,6 +3,7 @@ using MyJetWallet.Sdk.Service;
 using MyNoSqlServer.DataReader;
 using Service.AssetsDictionary.Client.Grpc;
 using Service.AssetsDictionary.Grpc;
+using Service.ClientWallets.Client;
 using Service.Liquidity.Engine.Client;
 using Service.Liquidity.Reports.Client;
 using Service.MatchingEngine.PriceSource.Client;
@@ -44,6 +45,8 @@ namespace Backoffice.Modules
             
             builder.RegisterMatchingEnginePriceSourceClient(_myNoSqlClient);
             builder.RegisterMatchingEngineOrderBookClient(_myNoSqlClient);
+
+            builder.RegisterClientWalletsClientsWithoutCache(Program.Settings.ClientWalletsGrpcServiceUrl);
         }
         
         private void RegisterMyNoSqlTcpClient(ContainerBuilder builder)

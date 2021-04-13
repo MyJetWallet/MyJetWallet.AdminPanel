@@ -1,0 +1,100 @@
+﻿@using Service.Liquidity.Engine.Domain.Models.Wallets
+
+<BaseTwoButtonsDialog 
+    Caption="Wallet"
+    OnClose="Close" 
+    YesButtonCaption="Save"
+    NoButtonCaption="Close"
+    OnSubmit="Submit">
+
+    @if (IsNew)
+    {
+        <h3>Create new wallet</h3>
+    }
+    else
+    {
+        <h3>Details</h3>
+    }
+    
+    <table>
+        <tr>
+            <td>WalletName</td>
+            <td>
+                @if (IsNew)
+                {
+                    <input type="text" @bind="Wallet.Name" />
+                }
+                else
+                {
+                    <h3>@Wallet.Name</h3>
+                }
+            </td>
+        </tr>
+        <tr>
+            <td>BrokerId</td>
+            <td>
+                @if (IsNew)
+                {
+                    <input type="text" @bind="Wallet.BrokerId" />
+                }
+                else
+                {
+                    <h3>@Wallet.BrokerId</h3>
+                }
+            </td>
+        </tr>
+        <tr>
+            <td>ClientId</td>
+            <td>
+                @if (IsNew)
+                {
+                    <input type="text" @bind="Wallet.ClientId" />
+                }
+                else
+                {
+                    <h3>@Wallet.ClientId</h3>
+                }
+            </td>
+        </tr>
+        <tr>
+            <td>WalletId</td>
+            <td>
+                @if (IsNew)
+                {
+                    <input type="text" @bind="Wallet.WalletId" />
+                }
+                else
+                {
+                    <h3>@Wallet.WalletId</h3>
+                }
+            </td>
+        </tr>
+    </table>
+
+</BaseTwoButtonsDialog>
+
+@code {
+
+    [Parameter]
+    public LpWallet Wallet { get; set; }
+    
+    [Parameter]
+    public Action OnClose { get; set; }
+    
+    [Parameter]
+    public Action<LpWallet> OnSubmit { get; set; }
+    
+    [Parameter]
+    public bool IsNew { get; set; }
+
+    private void Close()
+    {
+        OnClose?.Invoke();
+    }
+
+    private void Submit()
+    {
+        OnSubmit?.Invoke(Wallet);
+    }
+
+}

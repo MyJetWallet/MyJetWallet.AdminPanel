@@ -72,5 +72,8 @@ namespace Backoffice
 
         [YamlProperty("AdminPanel.ZipkinUrl")]
         public string ZipkinUrl { get; set; }
+
+        [YamlProperty("AdminPanel.ClientWalletsGrpcServiceUrl")]
+        public string ClientWalletsGrpcServiceUrl { get; set; }
     }
 }

@@ -1,11 +1,20 @@
 ﻿@using Service.Liquidity.Engine.Domain.Models.Settings
 @using Backoffice.Components.Liquidity.Market.Models
+@using Backoffice.Services.SpotInstruments
 @using Microsoft.Extensions.Logging
+@using Service.AssetsDictionary.Client
 @using Service.Liquidity.Engine.Domain.Models.Wallets
+@using Service.Liquidity.Engine.Grpc
+@using Service.Liquidity.Engine.Grpc.Models
 
 @inject ILogger<InstrumentDetailsComponent> Logger
 @inject IToaster ToastService
+@inject ISpotInstrumentManager InstrumentDictionary 
+@inject ILpWalletManagerGrpc WalletManager
+@inject IExternalMarketsGrpc ExternalMarketsManager
 
+
+<EditForm Model="@this">
 <table style="width: auto; font-size: 12px;">
     <tr>
         <th>Instrument</th>
@@ -20,7 +29,13 @@
                     <td>
                         @if (IsNew)
                         {
-                            <input type="text" style="width: 80px" @bind="Provider.Symbol" />
+                            <InputSelect @bind-Value="@Provider.Symbol">
+                                @foreach (var symbol in InstrumentList)
+                                {
+                                    <option value="@symbol">@symbol</option>
+                                }
+                            </InputSelect>
+                            
                         }
                         else
                         {
@@ -33,7 +48,12 @@
                     <td>
                         @if (IsNew)
                         {
-                            <input type="text" style="width: 80px" @bind="Provider.WalletName" />
+                            <InputSelect @bind-Value="@Provider.Liquidity.WalletId">
+                                @foreach (var wallet in Wallets)
+                                {
+                                    <option value="@wallet.WalletId">@wallet.Name (@wallet.WalletId)</option>
+                                }
+                            </InputSelect>
                         }
                         else
                         {
@@ -46,7 +66,12 @@
                     <td>
                         @if (IsEdit)
                         {
-                            <input type="text" style="width: 80px" @bind="Provider.Liquidity.ExternalMarket" />
+                            <InputSelect @bind-Value="@ExternalMarketSelected">
+                                @foreach (var market in ExternalMarkets.Keys)
+                                {
+                                    <option value="@market">@market</option>
+                                }
+                            </InputSelect>
                         }
                         else
                         {
@@ -59,7 +84,12 @@
                     <td>
                         @if (IsEdit)
                         {
-                            <input type="text" style="width: 80px" @bind="Provider.Liquidity.ExternalSymbol" />
+                            <InputSelect @bind-Value="@Provider.Liquidity.ExternalSymbol">
+                                @foreach (var symbol in ExternalInstrumentList)
+                                {
+                                    <option value="@symbol">@symbol</option>
+                                }
+                            </InputSelect>                            
                         }
                         else
                         {
@@ -76,7 +106,11 @@
                     <td>
                         @if (IsEdit)
                         {
-                            <input type="text" style="width: 80px" @bind="Provider.Liquidity.Mode" />
+                            <InputSelect @bind-Value="@Provider.Liquidity.Mode">
+                                <option value="@EngineMode.Active"><MyLabel Color="green" Text="Active" /></option>
+                                <option value="@EngineMode.Idle"><MyLabel Color="red" Text="Idle" /></option>
+                                <option value="@EngineMode.Disabled"><MyLabel Color="red" Text="Disabled" /></option>
+                            </InputSelect>
                         }
                         else
                         {
@@ -132,7 +166,12 @@
                     <td>
                         @if (IsEdit)
                         {
-                            <input type="text" style="width: 80px" @bind="Provider.Hedge.Mode" />
+                            <InputSelect @bind-Value="@Provider.Hedge.Mode">
+                                <option value="@EngineMode.Active"><MyLabel Color="green" Text="Active" /></option>
+                                <option value="@EngineMode.Idle"><MyLabel Color="red" Text="Idle" /></option>
+                                <option value="@EngineMode.Disabled"><MyLabel Color="red" Text="Disabled" /></option>
+                            </InputSelect>  
+
                         }
                         else
                         {
@@ -172,6 +211,7 @@
         </td>
     </tr>
 </table>
+</EditForm>
 
 
 @code {
@@ -204,14 +244,17 @@
     {
         try
         {
-            var wallet = LpWallets.FirstOrDefault(e => e.Name == Provider.WalletName);
+            var wallet = LpWallets.FirstOrDefault(e => e.WalletId == Provider.Liquidity.WalletId);
             if (wallet == null)
             {
                 ToastService.Error($"Wallet '{Provider.WalletName}' do not found");
                 return;
             }
-            
-            Provider.Liquidity.WalletName = Provider.WalletName;
+
+            Provider.Wallet = wallet;
+            Provider.WalletId = wallet.WalletId;
+            Provider.WalletName = wallet.Name;
+            Provider.Liquidity.WalletName = wallet.Name;
             Provider.Liquidity.InstrumentSymbol = Provider.Symbol;
             Provider.Liquidity.WalletId = wallet.WalletId;
             Provider.Hedge.InstrumentSymbol = Provider.Symbol;
@@ -240,5 +283,62 @@
             IsEdit = false;
         
         StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        InstrumentList = (await InstrumentDictionary.GetAll())
+            .Where(e => e.Instrument.IsEnabled)
+            .Select(e => e.Instrument.Symbol)
+            .OrderBy(e => e)
+            .ToList();
+
+        var wallets = await WalletManager.GetAllAsync();
+        
+        Wallets = wallets.Data.List.OrderBy(e => e.Name).ToList();
+        
+        var externalMarketList = await ExternalMarketsManager.GetExternalMarketListAsync();
+
+        ExternalMarkets = new Dictionary<string, List<string>>();
+
+        foreach (var market in externalMarketList.Data.List)
+        {
+            var data = await ExternalMarketsManager.GetInstrumentsAsync(new SourceDto() {Source = market});
+
+            ExternalMarkets[market] = data.Data.List.Select(e => e.Market).ToList();
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private List<LpWallet> Wallets { get; set; } = new();
+
+    private List<string> InstrumentList { get; set; } = new();
+
+    private Dictionary<string, List<string>> ExternalMarkets { get; set; } = new();
+
+    private string ExternalMarketSelected
+    {
+        get => Provider.Liquidity.ExternalMarket;
+        set
+        {
+            Provider.Liquidity.ExternalMarket = value;
+            StateHasChanged();
+        }
+    }
+
+    private List<string> ExternalInstrumentList
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(Provider?.Liquidity?.ExternalMarket))
+                return new List<string>();
+        
+            if (ExternalMarkets.TryGetValue(Provider.Liquidity.ExternalMarket, out var data))
+            {
+                return data;
+            }
+            return new List<string>();
+        }
     }
 }

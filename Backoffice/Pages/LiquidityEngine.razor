@@ -11,6 +11,9 @@
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(Menus.Settings)" @onclick="SetSettings" >Settings</button>
     </li>
+    <li class="nav-item" style="margin: 10px">
+            <button class="nav-link @CheckActive(Menus.Wallets)" @onclick="SetWallets" >Wallets</button>
+        </li>
 </ul>
 
 <div style="margin: 10px">
@@ -20,9 +23,9 @@
         <LiquidityEngineComponent/>
     }
     
-    @if (ActivePage == Menus.Hedger)
+    @if (ActivePage == Menus.Wallets)
         {
-            <HedgeComponent/>
+            <LpWalletsComponent />
         }
 
     @if (ActivePage == Menus.Portfolio)
@@ -73,9 +76,9 @@
     {
         None,
         MarketMaker,
-        Hedger,
         Portfolio,
-        Settings
+        Settings,
+        Wallets
     }
     
 
@@ -85,9 +88,9 @@
         StateHasChanged();
     }
 
-    private void SetHedger()
+    private void SetWallets()
     {
-        SetActive(Menus.Hedger);
+        SetActive(Menus.Wallets);
     }
 
 }
