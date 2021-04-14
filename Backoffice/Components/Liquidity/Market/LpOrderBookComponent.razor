@@ -189,7 +189,7 @@
             
             var bestBid = book.BuyLevels
                 .OrderByDescending(e => e.Price)
-                .FirstOrDefault(e => e.WalletId == Provider.WalletId);
+                .FirstOrDefault(e => e.WalletId != Provider.WalletId);
 
             if (bestAsk != null)
             {
