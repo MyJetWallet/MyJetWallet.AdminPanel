@@ -45,7 +45,8 @@ namespace Backoffice.Modules
             
             builder.RegisterMatchingEnginePriceSourceClient(_myNoSqlClient);
             builder.RegisterMatchingEngineOrderBookClient(_myNoSqlClient);
-
+            builder.RegisterMatchingEngineDetailOrderBookClient(_myNoSqlClient);
+            
             builder.RegisterClientWalletsClientsWithoutCache(Program.Settings.ClientWalletsGrpcServiceUrl);
         }
         

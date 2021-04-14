@@ -1,0 +1,106 @@
+﻿@using Service.MatchingEngine.PriceSource.Client
+@using Service.MatchingEngine.PriceSource.MyNoSql
+
+@inject IDetailOrderBookService DetailOrderBookService
+
+<table style="font-size: 8px;">
+    <tr>
+        <td>
+            <table style="width: auto">
+                <thead>
+                <tr>
+                    <th>buy</th>
+                    <th>price</th>
+                    <th>sell</th>
+                    <th style="width: 30px"></th>
+                    <th>seq-id</th>
+                    <th>order-id</th>
+                    <th>wallet-id</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var level in Levels)
+                {
+                    @if (level.Volume < 0)
+                    {
+                        <tr style="background: lightcoral">
+                            <td></td>
+                            <td>@level.Price</td>
+                            <td>@level.Volume</td>
+                            <td></td>
+                            <td>@level.SequenceId</td>
+                            <td>@level.OrderId</td>
+                            <td>@level.WalletId</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        <tr style="background: lightgreen">
+                            <td>@level.Volume</td>
+                            <td>@level.Price</td>
+                            <td></td>
+                            <td></td>
+                            <td>@level.SequenceId</td>
+                            <td>@level.OrderId</td>
+                            <td>@level.WalletId</td>
+                        </tr>
+                    }
+                }
+                
+                </tbody>
+            </table>
+        </td>
+        <td>
+            <ul class="nav float-left" style="margin-left: 30px">
+                <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
+            </ul>            
+        </td>
+    </tr>
+</table>
+
+@code {
+
+    [Parameter]
+    public string BrokerId { get; set; } = "jetwallet";
+    
+    [Parameter]
+    public string Symbol { get; set; }
+
+
+    protected override void OnInitialized()
+    {
+        Refresh();
+    }
+    
+    private List<OrderBookLevel> Levels { get; set; }
+    
+    private void Refresh()
+    {
+        Levels = new List<OrderBookLevel>();
+        
+        if (string.IsNullOrEmpty(BrokerId) || string.IsNullOrEmpty(Symbol))
+        {
+            return;
+        }
+        var orderBook = DetailOrderBookService.GetOrderBook(BrokerId, Symbol);
+
+        if (orderBook == null)
+        {
+            return;
+        }
+
+        Levels.AddRange(orderBook.SellLevels);
+        Levels.AddRange(orderBook.BuyLevels);
+        Levels = Levels.OrderByDescending(e => e.Price).ToList();
+        
+
+        StateHasChanged();
+    }
+
+
+    private void OnRefresh()
+    {
+        Refresh();
+    }
+
+}

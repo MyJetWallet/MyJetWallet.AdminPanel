@@ -4,6 +4,7 @@
 @using MyJetWallet.Sdk.Service.Tools
 @using Microsoft.Extensions.Logging
 @using Service.Liquidity.Engine.Grpc
+@using Syncfusion.Blazor.Diagrams
 
 @inject ICurrentPricesCache PriceService
 @inject ILoggerFactory LoggerFactory
@@ -13,7 +14,7 @@
 
 <h3>Prices</h3>
 
-<table class="table" style="width: auto">
+<table class="table" style="width: auto; font-size: 10px;">
     <thead>
     <tr>
         <th>Symbol</th>
@@ -50,7 +51,20 @@
                 <td></td>
                 <td></td>
                 <td></td>
+                <td>
+                    <ul class="nav">
+                        <li><button type="button" class="btn-outline-info btn" style="height: 20px; font-size: 10px" @onclick="@(() => ClickDetails(price.Symbol))" >book</button></li>
+                    </ul>                    
+                </td>
             </tr>
+            @if (price.Symbol == SelectedSymbol)
+            {
+                <tr>
+                    <td colspan="9">
+                        <OrderBookComponent Symbol="@price.Symbol" />
+                    </td>
+                </tr>
+            }
         }
     </tbody>
     
@@ -62,6 +76,8 @@
 @code {
 
     private bool _isDispose = false;
+    
+    private string SelectedSymbol { get; set; }
     
     protected override async Task OnInitializedAsync()
     {
@@ -117,6 +133,13 @@
     {
         public string Symbol { get; set; }
         public BidAsk Price { get; set; }
-        public BidAsk Source { get; set; }
     }
+
+    private void ClickDetails(string symbol)
+    {
+        SelectedSymbol = SelectedSymbol == symbol ? "" : symbol;
+
+        StateHasChanged();
+    }
+
 }

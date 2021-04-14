@@ -132,7 +132,7 @@
                 await LpWalletManagerGrpc.GetBalancesAsync(new WalletNameRequest() {WalletName = wallet.Name});
 
             Balances[wallet.WalletId] = (balanceResp.Data.List ?? new List<WalletBalance>())
-                .Select(e => new BalanceItem(e.AssetId, e.Balance, e.Balance))
+                .Select(e => new BalanceItem(e.AssetId, e.Balance, Math.Round(e.Balance-e.Reserve, 4)))
                 .ToDictionary(e => e.Symbol);
 
             foreach (var balanceItem in Balances[wallet.WalletId])

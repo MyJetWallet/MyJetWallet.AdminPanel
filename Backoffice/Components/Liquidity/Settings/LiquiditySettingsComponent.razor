@@ -39,11 +39,24 @@
         </td>
     </tr>
     <tr>
-        <td class="align-middle">Liquidity Refresh Interval</td>
+        <td class="align-middle">Liquidity Refresh Interval (msec)</td>
         <td class="align-middle">
             <input type="number" class="form-control" @bind="GeneralSettings.MarketMakerRefreshIntervalMSec"/>
         </td>
     </tr>
+    <tr>
+        <td class="align-middle">Use External Balance %</td>
+        <td class="align-middle">
+            <input type="number" class="form-control" @bind="GeneralSettings.UseExternalBalancePercentage"/>
+        </td>
+    </tr>
+    <tr>
+        <td class="align-middle">External Balance Refresh Interval (msec)</td>
+        <td class="align-middle">
+            <input type="number" class="form-control" @bind="GeneralSettings.RefreshExternalBalanceIntervalMSec"/>
+        </td>
+    </tr>
+
     <tr>
         <div style="margin: 30px">
             <h3>Hedging Settings</h3>

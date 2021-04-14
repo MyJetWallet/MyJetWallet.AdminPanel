@@ -9,6 +9,7 @@
 
 @inject IOrderBookManagerGrpc OrderBookManagerGrpc
 @inject IOrderBookService OrderBookService
+@inject IDetailOrderBookService DetailOrderBookService
 
 <div style="width: auto">
     <div class="row">
@@ -21,7 +22,7 @@
                 </tr>
                 @foreach (var level in InternalBook)
                 {
-                    <tr style="background: @(level.BuyVolume != 0 ? "lightgreen": "lightcoral")">
+                    <tr style="background: @(level.BuyVolume != 0 ? "lightgreen": "lightcoral"); font-weight: @(level.IsLocal ? "normal" : "bolder")">
                         <td>
                             @if (level.BuyVolume != 0)
                             {
@@ -95,7 +96,7 @@
                                 @level.SellVolume
                             }
                         </td>
-                        <td style="background: @(level.Source == "local" ? "lightblue": "orange")">
+                        <td style="background: @(level.Source.StartsWith("local") ? "lightblue": (level.Source == Provider.Liquidity.ExternalMarket ? "orange" : "yellow"))">
                             @level.Source
                         </td>
                     </tr>
@@ -157,7 +158,6 @@
             Symbol = Provider.Liquidity.ExternalSymbol
         });
 
-
         var list = new List<Level>();
 
         var limit = MaxLevelCount > 0 ? MaxLevelCount : 1000;
@@ -169,14 +169,45 @@
         }
         ExternalBook = list.OrderByDescending(e => e.Price).ToList();
 
-        var book = OrderBookService.GetOrderBook(Provider.Wallet.BrokerId, Provider.Symbol);
+        var book = DetailOrderBookService.GetOrderBook(Provider.Wallet.BrokerId, Provider.Symbol); 
         list = new List<Level>();
-        
+
         if (book != null)
         {
-            list.AddRange(book.SellLevels.OrderBy(e => e.Price).Take(limit).Select(e => new Level(e.Price, 0, e.Volume, "local")));
-            list.AddRange(book.BuyLevels.OrderByDescending(e => e.Price).Take(limit).Select(e => new Level(e.Price, e.Volume, 0, "local")));
+            list.AddRange(book.SellLevels.OrderBy(e => e.Price)
+                .Where(e => e.WalletId == Provider.WalletId)
+                .Take(limit)
+                .Select(e => new Level(e.Price, 0, e.Volume, $"local {Provider.WalletName}")));
+            list.AddRange(book.BuyLevels.OrderByDescending(e => e.Price)
+                .Where(e => e.WalletId == Provider.WalletId)
+                .Take(limit)
+                .Select(e => new Level(e.Price, e.Volume, 0, $"local {Provider.WalletName}")));
+            
+            var bestAsk = book.SellLevels
+                .OrderBy(e => e.Price)
+                .FirstOrDefault(e => e.WalletId != Provider.WalletId);
+            
+            var bestBid = book.BuyLevels
+                .OrderByDescending(e => e.Price)
+                .FirstOrDefault(e => e.WalletId == Provider.WalletId);
+
+            if (bestAsk != null)
+            {
+                list.Add(new Level(bestAsk.Price, 0, bestAsk.Volume, bestAsk.WalletId)
+                    {
+                        IsLocal = false
+                    });
+            }
+            
+            if (bestBid != null)
+            {
+                list.Add(new Level(bestBid.Price, bestBid.Volume, 0, bestBid.WalletId)
+                {
+                    IsLocal = false
+                });
+            }
         }
+
         InternalBook = list.OrderByDescending(e => e.Price).ToList();
 
         AllBook = new List<Level>();
@@ -210,6 +241,8 @@
         public decimal SellVolume { get; set; }
         
         public string Source { get; set; }
+
+        public bool IsLocal { get; set; } = true;
     }
 
     private void DisableRefresh()
