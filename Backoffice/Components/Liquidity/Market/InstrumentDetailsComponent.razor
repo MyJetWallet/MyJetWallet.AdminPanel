@@ -259,6 +259,8 @@
             Provider.Liquidity.WalletId = wallet.WalletId;
             Provider.Hedge.InstrumentSymbol = Provider.Symbol;
             Provider.Hedge.WalletId = wallet.WalletId;
+            Provider.Hedge.ExternalMarket = Provider.Liquidity.ExternalMarket;
+            Provider.Hedge.ExternalSymbol = Provider.Liquidity.ExternalSymbol;
             
             if (UpdateCallback != null)
                 await UpdateCallback.Invoke(Provider);
