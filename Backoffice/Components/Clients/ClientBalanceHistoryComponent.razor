@@ -1,0 +1,132 @@
+﻿@using Backoffice.Components.Clients.Model
+@using Microsoft.Extensions.Logging
+@using Service.BalanceHistory.Domain.Models
+@using Service.BalanceHistory.Grpc
+@using Service.BalanceHistory.Grpc.Models
+
+@inject IWalletBalanceUpdateService _balanceHistoryService
+@inject ILogger<ClientBalanceHistoryComponent> Logger
+
+<h3>Balance History</h3>
+
+
+@if (Wallet != null)
+{
+    
+    <table class="table" style="font-size: 12px; width: auto">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Time</th>
+            <th>Symbol</th>
+            <th>Balance<br>Change</th>
+            <th>Reserve<br>Change</th>
+            <th>Type</th>
+            <th>OperationId</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        <tr>
+            <td colspan="7">
+                <ul class="nav">
+                    @if (BalanceUpdates?.Any() == true)
+                    {
+                        <li><button type="button" class="btn-outline-info btn" @onclick="NextPage">>>> Next >>></button></li>
+                    }
+                    <li><button type="button" class="btn-outline-secondary btn" @onclick="Refresh">Refresh</button></li>
+                    <li>Count in page: <input type="number" style="width: 40px" @bind="CountInPage"/></li>
+                </ul>
+            </td>
+        </tr>
+
+        @foreach (var item in BalanceUpdates)
+        {
+            <tr>
+                <td>@item.Index</td>
+                <td>@item.Update.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>@item.Update.Symbol</td>
+                <td style="@(ChangeColor(@item.Update.AmountBalance))">@item.Update.AmountBalance</td>
+                <td style="@(ChangeColor(@item.Update.AmountReserve))">@item.Update.AmountReserve</td>
+                <td>@item.Update.EventType</td>
+                <td>@item.Update.OperationId</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    
+    [CascadingParameter(Name = "Wallet")]
+    public WalletModel Wallet { get; set; }
+
+    private long? _lastSequenceId = null;
+    private long _index = 0;
+
+    private List<Item> BalanceUpdates { get; set; } = new();
+
+    private int CountInPage { get; set; } = 30;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        _index = 0;
+        _lastSequenceId = null;
+
+        await NextPage();
+    }
+
+    private string ChangeColor(double amount)
+    {
+        if (amount > 0)
+            return "background: lightgreen";
+
+        if (amount < 0)
+            return "background: lightpink";
+
+        return "";
+    }
+
+    private async Task NextPage()
+    {
+        try
+        {
+            _lastSequenceId = BalanceUpdates.LastOrDefault()?.Update.SequenceId;
+
+            var data = await _balanceHistoryService.GetBalanceUpdatesAsync(new GetBalanceUpdateRequest()
+            {
+                WalletId = Wallet.WalletId,
+                Take = CountInPage,
+                LastSequenceId = _lastSequenceId
+            });
+
+            BalanceUpdates = data.BalanceUpdates.Select(e => new Item()
+            {
+                Update = e,
+                Index = ++_index
+            }).ToList();
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Cannot execute NextPage");
+        }
+    }
+
+    private Task Refresh()
+    {
+        _index = 0;
+        _lastSequenceId = null;
+        return NextPage();
+    }
+
+    public class Item
+    {
+        public WalletBalanceUpdate Update { get; set; }
+        public long Index { get; set; }
+    }
+
+    
+
+}

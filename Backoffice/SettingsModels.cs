@@ -75,5 +75,14 @@ namespace Backoffice
 
         [YamlProperty("AdminPanel.ClientWalletsGrpcServiceUrl")]
         public string ClientWalletsGrpcServiceUrl { get; set; }
+        
+        [YamlProperty("AdminPanel.BalancesGrpcServiceUrl")]
+        public string BalancesGrpcServiceUrl { get; set; }
+        
+        [YamlProperty("AdminPanel.ChangeBalanceGatewayGrpcServiceUrl")]
+        public string ChangeBalanceGatewayGrpcServiceUrl { get; set; }
+
+        [YamlProperty("AdminPanel.BalanceHistoryGrpcServiceUrl")]
+        public string BalanceHistoryGrpcServiceUrl { get; set; }
     }
 }

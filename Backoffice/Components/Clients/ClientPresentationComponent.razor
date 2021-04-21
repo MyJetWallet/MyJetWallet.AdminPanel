@@ -1,44 +1,121 @@
-﻿<h3>ClientPresentationComponent</h3>
+﻿@using Backoffice.Components.Clients.Model
+<h3>ClientPresentationComponent</h3>
 
-<table>
-    <tr>
-        <ClientInfoComponent />
-    </tr>
-    <tr>
-        <ul class="nav nav-tabs nav-pills">
-            <li class="nav-item" style="margin: 5px">
-                <button class="nav-link " aria-current="page" @onclick="@(() => SetPage(ClientPage.Balances))" >Balances</button>
-            </li>
-            <li class="nav-item" style="margin: 5px">
-                <button class="nav-link " aria-current="page" @onclick="@(() => SetPage(ClientPage.BalanceHistory))" >Balance History</button>
-            </li>
-            <li class="nav-item" style="margin: 5px">
-                <button class="nav-link " @onclick="@(() => SetPage(ClientPage.ActiveOrders))" >Active Orders</button>
-            </li>
-            <li class="nav-item" style="margin: 5px">
-                <button class="nav-link " @onclick="@(() => SetPage(ClientPage.TradeHistory))" >Trades</button>
-            </li>
-            <li class="nav-item" style="margin: 5px">
-                <button class="nav-link " @onclick="@(() => SetPage(ClientPage.BlockchainDepositAddress))" >Blockchain Addresses</button>
-            </li>
-        </ul>
-    </tr>
-    <tr>
-        <div style="height: 100px; horiz-align: center; vertical-align: center">
-            @ActivePage
-        </div>
-    </tr>
-</table>
+@if (Client != null)
+{
+    <table>
+        <tr>
+            <ClientInfoComponent Client="@Client"/>
+        </tr>
+        <tr>
+            Client Wallets:
+            <ul class="nav nav-tabs nav-pills">
+                @foreach (var wallet in Client.Wallets)
+                {
+                    <li class="nav-item" style="margin: 5px">
+                        @if (ActiveWallet == wallet)
+                        {
+                            <button class="page-link" style="color: #1b1e21; background: lightskyblue" @onclick="@(() => SetWallet(wallet))">
+                                <span>@wallet.Name</span>
+                                @if (wallet.IsDefault)
+                                {
+                                    <span> (*)</span>
+                                }
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="page-link" style="color: #1b1e21" @onclick="@(() => SetWallet(wallet))">
+                                <span>@wallet.Name</span>
+                                @if (wallet.IsDefault)
+                                {
+                                    <span> (*)</span>
+                                }
+                            </button>
+                        }
+                    </li>                    
+                }
+            </ul>
+        </tr>
+        @if (ActiveWallet != null)
+        {
 
+            <tr>
+                <ul class="nav nav-tabs nav-pills">
+                    <li class="nav-item">
+                        <button class="page-link" style="@(GetMenuStyle(ClientPage.Balances))" aria-current="page" @onclick="@(() => SetPage(ClientPage.Balances))">Balances</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="page-link" style="@(GetMenuStyle(ClientPage.BalanceHistory))" aria-current="page" @onclick="@(() => SetPage(ClientPage.BalanceHistory))">Balance History</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="page-link" style="@(GetMenuStyle(ClientPage.ActiveOrders))" @onclick="@(() => SetPage(ClientPage.ActiveOrders))">Active Orders</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="page-link" style="@(GetMenuStyle(ClientPage.TradeHistory))" @onclick="@(() => SetPage(ClientPage.TradeHistory))">Trades</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="page-link" style="@(GetMenuStyle(ClientPage.BlockchainDepositAddress))" @onclick="@(() => SetPage(ClientPage.BlockchainDepositAddress))">Blockchain Addresses</button>
+                    </li>
+                </ul>
+            </tr>
+            <tr>
+                <div style="margin: 20px">
+                    <CascadingValue Value="@ActiveWallet" Name="Wallet">
+                    @switch (ActivePage)
+                    {
+                        case ClientPage.Balances:
+                            <ClientBalancesComponent/>
+                            break;
+
+                        case ClientPage.BalanceHistory:
+                            <ClientBalanceHistoryComponent/>
+                            break;
+
+                        case ClientPage.ActiveOrders:
+                            <p>ActiveOrders</p>
+                            break;
+
+                        case ClientPage.TradeHistory:
+                            <p>TradeHistory</p>
+                            break;
+
+                        case ClientPage.BlockchainDepositAddress:
+                            <p>BlockchainDepositAddress</p>
+                            break;
+                    }
+                    </CascadingValue>
+                </div>
+
+            </tr>
+        }
+    </table>
+}
 
 
 @code {
+    
+    [Parameter]
+    public string ClientId { get; set; }
+    
+    [Parameter]
+    public string WalletId { get; set; }
 
     private ClientPage ActivePage { get; set; }
+
+    private ClientModel Client { get; set; }
     
+    private WalletModel ActiveWallet { get; set; }
+
     private void SetPage(ClientPage page)
     {
         ActivePage = page;
+        StateHasChanged();
+    }
+    
+    private void SetWallet(WalletModel wallet)
+    {
+        ActiveWallet = wallet;
         StateHasChanged();
     }
 
@@ -51,5 +128,37 @@
         TradeHistory,
         BlockchainDepositAddress
     }
-    
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(ClientId))
+            return;
+
+        Client = new ClientModel("jetwallet", ClientId, "default-brand");
+        
+        Client.Wallets.Add(new WalletModel("Default", "jetwallet", ClientId, "default-brand", "SP-"+ClientId, true));
+        Client.Wallets.Add(new WalletModel("test", "jetwallet", ClientId, "default-brand", "SP-"+ClientId+"-1", false));
+        Client.Wallets.Add(new WalletModel("second", "jetwallet", ClientId, "default-brand", "SP-"+ClientId+"-2", false));
+
+        ActiveWallet = null;
+        
+        if (!string.IsNullOrEmpty(WalletId))
+        {
+            ActiveWallet = Client.Wallets.FirstOrDefault(e => e.WalletId == WalletId);
+        }
+
+        ActiveWallet ??= Client.Wallets.FirstOrDefault();
+    }
+
+    private string GetMenuStyle(ClientPage page)
+    {
+        if (ActivePage == page)
+        {
+            return "background: lightblue";
+        }
+
+        return "";
+    }
+
 }

@@ -1,0 +1,248 @@
+﻿@using Backoffice.Components.Clients.Model
+@using Service.Balances.Domain.Models
+@using Service.Balances.Grpc
+@using Service.Balances.Grpc.Models
+@using Backoffice.Abstractions.Models
+@using Backoffice.Services.Assets
+@using Microsoft.Extensions.Logging
+@using MyJetWallet.Domain
+@using Service.AssetsDictionary.Client
+@using Service.AssetsDictionary.Domain.Models
+@using Service.ChangeBalanceGateway.Grpc
+@using Service.ChangeBalanceGateway.Grpc.Models
+@using System.Text.Json
+
+@inject IWalletBalanceService _balanceService
+@inject ISpotChangeBalanceService _changeBalanceService
+@inject IAssetItemManager AssetItemManager; 
+@inject IToaster Toaster
+@inject ILogger<ClientBalancesComponent> _logger
+
+<Loader LoaderConfig="@LoaderConfig"/>
+
+<h3>Balances</h3>
+
+<table class="table" style="font-size: 12px; width: auto">
+    <thead>
+    <tr>
+        <th>Asset</th>
+        <th>Balance</th>
+        <th>Reserve</th>
+        <th>LastUpdate</th>
+        <td>
+            <button @onclick="Refresh" type="button" class="btn btn-outline-success">Refresh</button>
+        </td>
+        <td>
+            <button @onclick="ManualCorrection" type="button" class="btn btn-outline-success">Balance Correction</button>
+        </td>
+        
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var balance in Balances.OrderBy(e => e.AssetId))
+    {
+        <tr>
+            <td>@balance.AssetId</td>
+            <td>@balance.Balance</td>
+            <td>@balance.Reserve</td>
+            <td>@balance.LastUpdate.ToString("yyyy-MM-dd HH:mm:ss")</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@if (IsChangeBalance)
+{
+    <BaseOneButtonsDialog
+        Caption="Manual Change Balance"
+        OnClose="OnClose"
+        ButtonCaption="Close">
+        
+        <EditForm Model="@this">
+            <table>
+                <tr>
+                    <td>Asset:</td>
+                    <td>
+                        <InputSelect @bind-Value="@ChangeAsset">
+                            @foreach (var item in AssetList.OrderBy(e => e.Asset.Symbol))
+                            {
+                                <option value="@item.Asset.Symbol">@item.Asset.Symbol</option>
+                            }
+                        </InputSelect> 
+                    </td>
+                </tr>
+                <tr>
+                    <td>Amount:</td>
+                    <td>
+                        <InputNumber @bind-Value="ChangeAmount" DisplayName="Amount" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>Comment:</td>
+                    <td>
+                        <InputTextArea @bind-Value="ChangeComment" DisplayName="Comment" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>Officer:</td>
+                    <td>
+                        <InputText @bind-Value="ChangeOfficer" DisplayName="Officer" />
+                    </td>
+                </tr>
+                <tr>
+                    <ul class="nav">
+                        <li style="margin: 10px"><button type="button" class="btn-outline-danger btn" @onclick="CashIn" >Cash IN</button></li>
+                        <li style="margin: 10px"><button type="button" class="btn-outline-danger btn" @onclick="CashOut" >Cash OUT</button></li>
+                    </ul>
+                </tr>
+            </table> 
+        </EditForm>
+        
+    </BaseOneButtonsDialog>
+}
+
+@code {
+
+    [CascadingParameter(Name = "Wallet")]
+    public WalletModel Wallet { get; set; }
+
+    private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+    
+    private List<WalletBalance> Balances { get; set; } = new();
+    
+    private bool IsChangeBalance { get; set; }
+    private bool IsDeposit { get; set; }
+    private string ChangeAsset { get; set; }
+    private decimal ChangeAmount { get; set; }
+    private string ChangeComment { get; set; }
+    private string ChangeOfficer { get; set; }
+
+    private List<AssetItem> AssetList { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Wallet != null)
+        {
+            await Refresh();
+
+            var list = await AssetItemManager.GetAll();
+
+            list = list
+                .Where(e => e.Asset.BrokerId == Wallet.BrokerId && e.Brands.Contains(Wallet.BrandId))
+                .ToList();
+            
+            AssetList = list;
+        }
+    }
+
+    
+
+
+    private async Task Refresh()
+    {
+        LoaderConfig.Enable();
+        StateHasChanged();
+            
+        var balancesDto = await _balanceService.GetWalletBalancesAsync(new GetWalletBalancesRequest()
+        {
+            WalletId = Wallet.WalletId
+        });
+
+        Balances = balancesDto.Balances;
+            
+        LoaderConfig.Disable();
+        StateHasChanged();
+    }
+
+    private void OnClose()
+    {
+        IsChangeBalance = false;
+        StateHasChanged();
+    }
+
+    private Task CashIn()
+    {
+        return ChangeBalance(true);
+    }
+
+    private Task CashOut()
+    {
+        return ChangeBalance(false);
+    }
+
+    private async Task ChangeBalance(bool isDeposit)
+    {
+        if (ChangeAsset == null)
+        {
+            Toaster.Error("Please select asset");
+            return;
+        }
+
+        if (ChangeAmount <= 0)
+        {
+            Toaster.Error("Amount should be more 0");
+            return;
+        }
+
+        if (string.IsNullOrEmpty(ChangeComment))
+        {
+            Toaster.Error("Please add a comment");
+            return;
+        }
+        
+        if (string.IsNullOrEmpty(ChangeOfficer))
+        {
+            Toaster.Error("Officer cannot be empty");
+            return;
+        }
+
+        var amount = isDeposit ? ChangeAmount : -1 * ChangeAmount;
+
+        var request = new ManualChangeBalanceGrpcRequest()
+        {
+            AssetSymbol = ChangeAsset,
+            BrokerId = Wallet.BrokerId,
+            ClientId = Wallet.ClientId,
+            WalletId = Wallet.WalletId,
+            Officer = ChangeOfficer,
+            Amount = (double)amount,
+            Comment = ChangeComment,
+            TransactionId = Guid.NewGuid().ToString("N")
+        };
+        
+        try
+        {
+            _logger.LogInformation("Try manual change balance: {requestJson}", JsonSerializer.Serialize(request));
+            
+            var result = await _changeBalanceService.ManualChangeBalanceAsync(request);
+            
+            if (!result.Result)
+            {
+                Toaster.Error(result.ErrorMessage);
+                return;
+            }
+            
+            Toaster.Info($"Balance changed. Asset: {request.Amount} {request.AssetSymbol}");
+            
+            IsChangeBalance = false;
+
+            await Refresh();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Cannot change balance. Request: {requestJson}", JsonSerializer.Serialize(request));
+        }
+    }
+
+    private void ManualCorrection()
+    {
+        ChangeAsset = null;
+        ChangeAmount = 0;
+        ChangeComment = string.Empty;
+        ChangeOfficer = string.Empty;
+
+        IsChangeBalance = true;
+        StateHasChanged();
+    }
+
+}
