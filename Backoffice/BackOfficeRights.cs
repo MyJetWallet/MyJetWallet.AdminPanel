@@ -9,6 +9,7 @@ namespace Backoffice
         public const string Liquidity = "Liquidity";
         public const string Prices = "Prices";
         public const string Simulations = "Simulations";
+        public const string Clients = "Clients";
 
     }
     
@@ -55,7 +56,8 @@ namespace Backoffice
             NavsItem.Create("Spot Instruments", "SpotInstruments", "list-rich", Menu.SpotInstruments),
             NavsItem.Create("Liquidity", "LiquidityEngine", "list-rich", Menu.Liquidity),
             NavsItem.Create("Prices", "Prices", "list-rich", Menu.Prices),
-            NavsItem.Create("Simulations", "Simulations", "list-rich", Menu.Simulations)
+            NavsItem.Create("Simulations", "Simulations", "list-rich", Menu.Simulations),
+            NavsItem.Create("Clients", "Clients", "list-rich", Menu.Clients)
             
         };
         

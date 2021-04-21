@@ -1,0 +1,55 @@
+﻿<h3>ClientPresentationComponent</h3>
+
+<table>
+    <tr>
+        <ClientInfoComponent />
+    </tr>
+    <tr>
+        <ul class="nav nav-tabs nav-pills">
+            <li class="nav-item" style="margin: 5px">
+                <button class="nav-link " aria-current="page" @onclick="@(() => SetPage(ClientPage.Balances))" >Balances</button>
+            </li>
+            <li class="nav-item" style="margin: 5px">
+                <button class="nav-link " aria-current="page" @onclick="@(() => SetPage(ClientPage.BalanceHistory))" >Balance History</button>
+            </li>
+            <li class="nav-item" style="margin: 5px">
+                <button class="nav-link " @onclick="@(() => SetPage(ClientPage.ActiveOrders))" >Active Orders</button>
+            </li>
+            <li class="nav-item" style="margin: 5px">
+                <button class="nav-link " @onclick="@(() => SetPage(ClientPage.TradeHistory))" >Trades</button>
+            </li>
+            <li class="nav-item" style="margin: 5px">
+                <button class="nav-link " @onclick="@(() => SetPage(ClientPage.BlockchainDepositAddress))" >Blockchain Addresses</button>
+            </li>
+        </ul>
+    </tr>
+    <tr>
+        <div style="height: 100px; horiz-align: center; vertical-align: center">
+            @ActivePage
+        </div>
+    </tr>
+</table>
+
+
+
+@code {
+
+    private ClientPage ActivePage { get; set; }
+    
+    private void SetPage(ClientPage page)
+    {
+        ActivePage = page;
+        StateHasChanged();
+    }
+
+
+    private enum ClientPage
+    {
+        Balances,
+        BalanceHistory,
+        ActiveOrders,
+        TradeHistory,
+        BlockchainDepositAddress
+    }
+    
+}
