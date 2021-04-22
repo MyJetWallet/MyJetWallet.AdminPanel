@@ -16,6 +16,7 @@
                     <th>seq-id</th>
                     <th>order-id</th>
                     <th>wallet-id</th>
+                    <th></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -31,6 +32,12 @@
                             <td>@level.SequenceId</td>
                             <td>@level.OrderId</td>
                             <td>@level.WalletId</td>
+                            <td>
+                                <ul class="nav">
+                                    <li><button type="button" class="btn-outline-danger btn" style="height: 20px; font-size: 10px" @onclick="@(() => CancelOrder(level.OrderId))">Cancel</button></li>
+                                </ul>
+                            </td>
+
                         </tr>
                     }
                     else
@@ -43,11 +50,16 @@
                             <td>@level.SequenceId</td>
                             <td>@level.OrderId</td>
                             <td>@level.WalletId</td>
+                            <td>
+                                <ul class="nav">
+                                    <li><button type="button" class="btn-outline-danger btn" style="height: 20px; font-size: 10px" @onclick="@(() => CancelOrder(level.OrderId))">Cancel</button></li>
+                                </ul>
+                            </td>
                         </tr>
                     }
                 }
-                
                 </tbody>
+                
             </table>
         </td>
         <td>
@@ -101,6 +113,11 @@
     private void OnRefresh()
     {
         Refresh();
+    }
+
+    private async Task CancelOrder(string levelOrderId)
+    {
+        
     }
 
 }

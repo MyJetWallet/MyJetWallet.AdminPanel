@@ -3,17 +3,28 @@
 @using Service.BalanceHistory.Domain.Models
 @using Service.BalanceHistory.Grpc
 @using Service.BalanceHistory.Grpc.Models
+@using Backoffice.Abstractions.Models
 
 @inject IWalletBalanceUpdateService _balanceHistoryService
 @inject ILogger<ClientBalanceHistoryComponent> Logger
+
+<Loader LoaderConfig="@LoaderConfig"/>
 
 <h3>Balance History</h3>
 
 
 @if (Wallet != null)
 {
-    
+    <ul class="nav">
+        @if (BalanceUpdates?.Any() == true)
+        {
+            <li><button type="button" class="btn-outline-info btn" @onclick="NextPage">>>> Next >>></button></li>
+        }
+        <li><button type="button" class="btn-outline-secondary btn" @onclick="Refresh">Refresh</button></li>
+        <li>Count in page: <input type="number" style="width: 40px" @bind="CountInPage"/></li>
+    </ul>
     <table class="table" style="font-size: 12px; width: auto">
+
         <thead>
         <tr>
             <th>#</th>
@@ -26,20 +37,6 @@
         </tr>
         </thead>
         <tbody>
-
-        <tr>
-            <td colspan="7">
-                <ul class="nav">
-                    @if (BalanceUpdates?.Any() == true)
-                    {
-                        <li><button type="button" class="btn-outline-info btn" @onclick="NextPage">>>> Next >>></button></li>
-                    }
-                    <li><button type="button" class="btn-outline-secondary btn" @onclick="Refresh">Refresh</button></li>
-                    <li>Count in page: <input type="number" style="width: 40px" @bind="CountInPage"/></li>
-                </ul>
-            </td>
-        </tr>
-
         @foreach (var item in BalanceUpdates)
         {
             <tr>
@@ -60,13 +57,15 @@
     
     [CascadingParameter(Name = "Wallet")]
     public WalletModel Wallet { get; set; }
+    
+    private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
 
     private long? _lastSequenceId = null;
     private long _index = 0;
 
     private List<Item> BalanceUpdates { get; set; } = new();
 
-    private int CountInPage { get; set; } = 30;
+    private int CountInPage { get; set; } = 20;
     
     protected override async Task OnInitializedAsync()
     {
@@ -91,6 +90,9 @@
     {
         try
         {
+            LoaderConfig.Enable();
+            StateHasChanged();
+            
             _lastSequenceId = BalanceUpdates.LastOrDefault()?.Update.SequenceId;
 
             var data = await _balanceHistoryService.GetBalanceUpdatesAsync(new GetBalanceUpdateRequest()
@@ -106,6 +108,7 @@
                 Index = ++_index
             }).ToList();
 
+            LoaderConfig.Disable();
             StateHasChanged();
         }
         catch (Exception ex)
@@ -118,6 +121,7 @@
     {
         _index = 0;
         _lastSequenceId = null;
+        BalanceUpdates = new List<Item>();
         return NextPage();
     }
 

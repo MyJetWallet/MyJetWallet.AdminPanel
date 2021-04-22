@@ -1,6 +1,9 @@
 using Autofac;
+using Google.Protobuf;
 using MyJetWallet.Sdk.Service;
 using MyNoSqlServer.DataReader;
+using Service.ActiveOrders.Client;
+using Service.ActiveOrders.Grpc;
 using Service.AssetsDictionary.Client.Grpc;
 using Service.AssetsDictionary.Grpc;
 using Service.BalanceHistory.Client;
@@ -11,6 +14,7 @@ using Service.Liquidity.Engine.Client;
 using Service.Liquidity.Reports.Client;
 using Service.MatchingEngine.PriceSource.Client;
 using Service.Simulation.FTX.Client;
+using Service.TradeHistory.Client;
 
 namespace Backoffice.Modules
 {
@@ -57,6 +61,14 @@ namespace Backoffice.Modules
             builder.RegisterSpotChangeBalanceGatewayClient(Program.Settings.ChangeBalanceGatewayGrpcServiceUrl);
 
             builder.RegisterBalanceHistoryClient(Program.Settings.BalanceHistoryGrpcServiceUrl);
+
+            var activeOrderClientFactory = new ActiveOrdersClientFactory(Program.Settings.ActiveOrdersGrpcServiceUrl, null);
+            builder
+                .RegisterInstance(activeOrderClientFactory.ActiveOrderServiceGrpc())
+                .As<IActiveOrderService>()
+                .SingleInstance();
+
+            builder.RegisterTradeHistoryClient(Program.Settings.TradeHistoryGrpcServiceUrl);
         }
         
         private void RegisterMyNoSqlTcpClient(ContainerBuilder builder)

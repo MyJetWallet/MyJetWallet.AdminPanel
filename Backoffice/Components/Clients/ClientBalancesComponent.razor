@@ -22,6 +22,9 @@
 
 <h3>Balances</h3>
 
+<ul class="nav">
+    <li><button @onclick="Refresh" type="button" class="btn btn-outline-success">Refresh</button></li>
+</ul>
 <table class="table" style="font-size: 12px; width: auto">
     <thead>
     <tr>
@@ -29,13 +32,6 @@
         <th>Balance</th>
         <th>Reserve</th>
         <th>LastUpdate</th>
-        <td>
-            <button @onclick="Refresh" type="button" class="btn btn-outline-success">Refresh</button>
-        </td>
-        <td>
-            <button @onclick="ManualCorrection" type="button" class="btn btn-outline-success">Balance Correction</button>
-        </td>
-        
     </tr>
     </thead>
     <tbody>
@@ -50,6 +46,9 @@
     }
     </tbody>
 </table>
+<ul class="nav">
+    <li><button @onclick="ManualCorrection" type="button" class="btn btn-outline-danger">Balance Correction</button></li>
+</ul>
 
 @if (IsChangeBalance)
 {
