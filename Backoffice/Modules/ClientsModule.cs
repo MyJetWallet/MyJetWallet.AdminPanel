@@ -13,6 +13,7 @@ using Service.ClientWallets.Client;
 using Service.Liquidity.Engine.Client;
 using Service.Liquidity.Reports.Client;
 using Service.MatchingEngine.PriceSource.Client;
+using Service.Service.KYC.Client;
 using Service.Simulation.FTX.Client;
 using Service.TradeHistory.Client;
 
@@ -70,6 +71,7 @@ namespace Backoffice.Modules
 
             builder.RegisterTradeHistoryClient(Program.Settings.TradeHistoryGrpcServiceUrl);
 
+            builder.RegisterKycStatusClientsGrpcOnly(Program.Settings.KycGrpcServiceUrl);
         }
         
         private void RegisterMyNoSqlTcpClient(ContainerBuilder builder)

@@ -90,6 +90,8 @@ namespace Backoffice
         
         [YamlProperty("AdminPanel.TradeHistoryGrpcServiceUrl")]
         public string TradeHistoryGrpcServiceUrl { get; set; }
-        
+
+        [YamlProperty("AdminPanel.KycGrpcServiceUrl")]
+        public string KycGrpcServiceUrl { get; set; }
     }
 }

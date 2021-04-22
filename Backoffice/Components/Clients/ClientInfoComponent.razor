@@ -1,4 +1,11 @@
 ﻿@using Backoffice.Components.Clients.Model
+@using Service.Service.KYC.Client
+@using Service.Service.KYC.Domain.Models
+@using Service.Service.KYC.Grpc
+@using Service.Service.KYC.Grpc.Models
+
+@inject IKycStatusService _kycStatusClient
+
 <div style="height: 100px">
 
     <table>
@@ -14,6 +21,12 @@
             <td><b>Client Id:</b></td>
             <td>@Client.ClientId</td>
         </tr>
+        <tr>
+            <td><b>KYC Status:</b></td>
+            <td>
+                <MyLabel Text="@KysStatus.ToString()" Color="@GetKysColor()" IsShow="true" />
+            </td>
+        </tr>
     </table>    
     
 </div>
@@ -24,4 +37,31 @@
     [Parameter]
     public ClientModel Client { get; set; }
     
+    private KycStatus KysStatus { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var status = await _kycStatusClient.GetKycStatusAsync(new KycStatusRequest()
+        {
+            BrokerId = Client.BrokerId,
+            ClientId = Client.ClientId
+        });
+
+        KysStatus = status.Status;
+    }
+
+
+    private string GetKysColor()
+    {
+        switch (KysStatus)
+        {
+            case KycStatus.NotVerified: return "lightgray";
+            case KycStatus.OnVerification: return "lightyellow";
+            case KycStatus.Restricted: return "red";
+            case KycStatus.Verified: return "lightgreen";
+        }
+
+        return "white";
+    }
+
 }
