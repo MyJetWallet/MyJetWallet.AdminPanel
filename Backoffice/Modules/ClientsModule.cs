@@ -69,6 +69,7 @@ namespace Backoffice.Modules
                 .SingleInstance();
 
             builder.RegisterTradeHistoryClient(Program.Settings.TradeHistoryGrpcServiceUrl);
+
         }
         
         private void RegisterMyNoSqlTcpClient(ContainerBuilder builder)

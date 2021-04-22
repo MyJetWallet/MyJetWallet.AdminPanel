@@ -147,7 +147,7 @@
             WalletId = Wallet.WalletId
         });
 
-        Balances = balancesDto.Balances;
+        Balances = balancesDto.Balances ?? new List<WalletBalance>();
             
         LoaderConfig.Disable();
         StateHasChanged();

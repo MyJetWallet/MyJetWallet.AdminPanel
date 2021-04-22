@@ -1,5 +1,9 @@
 ﻿@page "/Clients"
-@using Backoffice.Components.Clients.Model
+
+@using Service.ClientWallets.Grpc
+@using Service.ClientWallets.Grpc.Models
+
+@inject IClientWalletService _walletService
 
 <table style="width: 100%; height: 100%">
     <tr>
@@ -20,20 +24,49 @@
             </tr>
         </table>
     </tr>
-    @if (ClientId != null)
-    {
-        <tr>
-            <td rowspan="4">
-                <ClientPresentationComponent ClientId="@ClientId"/>
-            </td>
-        </tr>
-    }
     @if (ShowError)
     {
         <tr>
             Client do not found.
         </tr>
+    }    
+    @if (SearchResult != null)
+    {
+        <table>
+            <thead>
+            <tr>
+                <th>ClientId</th>
+                <th>BrokerId</th>
+                <th>BrandId</th>
+                <th>Count Wallets</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in SearchResult)
+            {
+            <tr>
+                <td style="min-width: 80px">
+                    <a href="" @onclick="@(() => SelectClient(item))" @onclick:preventDefault>@item.ClientId</a>
+                </td>
+                <td style="min-width: 80px">@item.BrokerId</td>
+                <td style="min-width: 80px">@item.BrandId</td>
+                <td>
+                    <div style="text-align: center; width: 100%">@item.Count</div>
+                </td>
+            </tr>
+            }
+            </tbody>
+        </table>
     }
+    @if (Client != null)
+    {
+        <tr>
+            <td rowspan="4">
+                <ClientPresentationComponent ClientId="@Client.ClientId" BrandId="@Client.BrandId" BrokerId="@Client.BrokerId"/>
+            </td>
+        </tr>
+    }
+
 </table>
 
 @code {
@@ -42,21 +75,55 @@
 
     private bool ShowError { get; set; } = false;
     
-    private string ClientId { get; set; }
+    private SearchWallet Client { get; set; }
+    
+    private List<SearchWallet> SearchResult { get; set; }
 
     private async Task Search()
     {
-        if (!string.IsNullOrEmpty(SearchText))
+        ShowError = false;
+        Client = null;
+        SearchResult = null;
+        
+        StateHasChanged();
+        
+        if (string.IsNullOrEmpty(SearchText))
         {
-            ClientId = SearchText;
-            ShowError = false;
-        }
-        else
-        {
-            ClientId = null;
             ShowError = true;
+            StateHasChanged();
+            return;
         }
         
+        var clients = await _walletService.SearchClientsAsync(new SearchWalletsRequest()
+        {
+            SearchText = SearchText,
+            Take = 10
+        });
+
+        if (clients.Clients?.Any() != true)
+        {
+            ShowError = true;
+            StateHasChanged();
+            return;
+        }
+        
+        if (clients.Clients?.Count == 1)
+        {
+            Client = clients.Clients[1];
+            StateHasChanged();
+            return;
+        }
+
+        SearchResult = clients.Clients;
+        
+        StateHasChanged();
+    }
+
+
+    private void SelectClient(SearchWallet wallet)
+    {
+        SearchResult = null;
+        Client = wallet;
         StateHasChanged();
     }
 

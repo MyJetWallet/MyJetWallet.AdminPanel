@@ -102,7 +102,7 @@
                 LastSequenceId = _lastSequenceId
             });
 
-            BalanceUpdates = data.BalanceUpdates.Select(e => new Item()
+            BalanceUpdates = (data.BalanceUpdates ?? new List<WalletBalanceUpdate>()).Select(e => new Item()
             {
                 Update = e,
                 Index = ++_index

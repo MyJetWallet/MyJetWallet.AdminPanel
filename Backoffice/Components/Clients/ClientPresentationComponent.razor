@@ -1,5 +1,9 @@
 ﻿@using Backoffice.Components.Clients.Model
-<h3>ClientPresentationComponent</h3>
+@using MyJetWallet.Domain
+@using Service.ClientWallets.Domain.Models
+@using Service.ClientWallets.Grpc
+
+@inject IClientWalletService _walletService
 
 @if (Client != null)
 {
@@ -96,6 +100,12 @@
 @code {
     
     [Parameter]
+    public string BrokerId { get; set; }
+    
+    [Parameter]
+    public string BrandId { get; set; }
+    
+    [Parameter]
     public string ClientId { get; set; }
     
     [Parameter]
@@ -135,12 +145,13 @@
         if (string.IsNullOrEmpty(ClientId))
             return;
 
-        Client = new ClientModel("jetwallet", ClientId, "default-brand");
-        
-        Client.Wallets.Add(new WalletModel("Default", "jetwallet", ClientId, "default-brand", "SP-"+ClientId, true));
-        Client.Wallets.Add(new WalletModel("test", "jetwallet", ClientId, "default-brand", "SP-"+ClientId+"-1", false));
-        Client.Wallets.Add(new WalletModel("second", "jetwallet", ClientId, "default-brand", "SP-"+ClientId+"-2", false));
+        var wallets = await _walletService.GetWalletsByClient(new JetClientIdentity(BrokerId, BrandId, ClientId));
 
+        Client = new ClientModel(BrokerId, ClientId, BrandId);
+        Client.Wallets = (wallets.Wallets ?? new List<ClientWallet>())
+            .Select(e => new WalletModel(e.Name, BrokerId, ClientId, BrandId, e.WalletId, e.IsDefault))
+            .ToList();
+        
         ActiveWallet = null;
         
         if (!string.IsNullOrEmpty(WalletId))
