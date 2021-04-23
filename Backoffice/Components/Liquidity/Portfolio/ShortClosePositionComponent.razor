@@ -47,8 +47,14 @@
         if (_isDispose) return;
 
         var minTime = DateTime.UtcNow.AddHours(-24);
+
+        var request = new GetClosedPositionsRequest()
+        {
+            Take = 30,
+            LastSeenDateTime = DateTime.UtcNow
+        };
         
-        _closedPositions = (await LiquidityReportService.GetClosedPositions())
+        _closedPositions = (await LiquidityReportService.GetClosedPositions(request))
             ?.List
             ?.OrderByDescending(e => e.CloseTime)
             .Where(e => e.CloseTime.HasValue && e.CloseTime > minTime)

@@ -36,7 +36,7 @@
       <PackageReference Include="MyJetWallet.Service.ChangeBalanceGateway.Client" Version="1.7.1" />
       <PackageReference Include="MyJetWallet.Service.ClientWallets.Client" Version="1.1.4" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Engine.Client" Version="1.2.2" />
-      <PackageReference Include="MyJetWallet.Service.Liquidity.Reports.Client" Version="1.0.8" />
+      <PackageReference Include="MyJetWallet.Service.Liquidity.Reports.Client" Version="1.0.9" />
       <PackageReference Include="MyJetWallet.Service.MatchingEngine.PriceSource.Client" Version="1.2.1" />
       <PackageReference Include="MyJetWallet.Service.Service.KYC.Client" Version="1.0.6" />
       <PackageReference Include="MyJetWallet.Service.Simulation.FTX.Client" Version="1.2.2" />

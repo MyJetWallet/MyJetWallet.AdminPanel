@@ -6,6 +6,7 @@
 @using Service.Liquidity.Reports.Grpc
 @using Service.Liquidity.Reports.Grpc.Models
 @using Backoffice.GlobalTimers
+@using Syncfusion.Blazor.Data
 
 @inject IWalletPortfolioGrpc PortfolioService
 @inject ILoggerFactory LoggerFactory
@@ -61,7 +62,15 @@
 @if (ActivePage == PortfolioPages.ClosedPositions)
 {
     <h3>Closed Positions</h3>
-    
+   
+    <ul class="nav">
+        @if (_closedPositions?.Any() == true)
+        {
+            <li><button type="button" class="btn-outline-info btn" @onclick="NextPageClosedPosition">>>> Next >>></button></li>
+        }
+        <li><button type="button" class="btn-outline-secondary btn" @onclick="RefreshClosedPosition">Refresh</button></li>
+        <li>Count in page: <input type="number" style="width: 40px" @bind="CountInPage"/></li>
+    </ul>
     <table class="table">
         <thead>
         <tr>
@@ -142,6 +151,14 @@
 {
     <h3>Trades</h3>
     
+    <ul class="nav">
+        @if (_closedPositions?.Any() == true)
+        {
+            <li><button type="button" class="btn-outline-info btn" @onclick="NextPageTrades">>>> Next >>></button></li>
+        }
+        <li><button type="button" class="btn-outline-secondary btn" @onclick="RefreshTrades">Refresh</button></li>
+        <li>Count in page: <input type="number" style="width: 40px" @bind="CountInPage"/></li>
+    </ul>
     <table class="table">
         <thead>
         <tr>
@@ -183,6 +200,11 @@
     private List<PortfolioTrade> _trades = new();
     
     private List<PortfolioTrade> _positionTrades = new();
+    
+    private int CountInPage { get; set; } = 20;
+    private DateTime _lastSeen = DateTime.UtcNow;
+    
+    private string SelectedPosition { get; set; }
 
     private async Task Refresh()
     {
@@ -190,14 +212,7 @@
         
         var data = await PortfolioService.GetPortfolioAsync();
         _positions = data.List ?? new();
-        
-        _closedPositions = (await LiquidityReportService.GetClosedPositions()).List ?? new();
 
-        if (ActivePage == PortfolioPages.Trades)
-            _trades = (await LiquidityReportService.GetTrades()).List ?? new();
-        else
-            _trades = new List<PortfolioTrade>();
-        
 #pragma warning disable 4014
         InvokeAsync(StateHasChanged);
 #pragma warning restore 4014
@@ -218,29 +233,28 @@
     }
 
 
-    public enum PortfolioPages
-    {
-        Portfolio,
-        ClosedPositions,
-        Trades
-    }
-
     private void SetPortfolio()
     {
         ActivePage = PortfolioPages.Portfolio;
         StateHasChanged();
     }
 
-    private void SetClosedPositions()
+    private async Task SetClosedPositions()
     {
         ActivePage = PortfolioPages.ClosedPositions;
+        _closedPositions = new List<PositionPortfolio>();
         StateHasChanged();
+
+        await RefreshClosedPosition();
     }
 
-    private void SetTrades()
+    private async Task SetTrades()
     {
         ActivePage = PortfolioPages.Trades;
+        _trades = new List<PortfolioTrade>();
         StateHasChanged();
+
+        await RefreshTrades();
     }
 
     private string CheckActive(PortfolioPages target)
@@ -257,8 +271,6 @@
         return "lightpink";
     }
 
-    public string SelectedPosition { get; set; }
-    
     private async void ShowTrades(string positionId)
     {
         if (SelectedPosition == positionId)
@@ -276,4 +288,77 @@
         await InvokeAsync(StateHasChanged);
     }
 
+    private async Task RefreshClosedPosition()
+    {
+        _lastSeen = DateTime.UtcNow;
+        
+        var request = new GetClosedPositionsRequest()
+        {
+            Take = CountInPage,
+            LastSeenDateTime = _lastSeen
+        };
+        
+        _closedPositions = (await LiquidityReportService.GetClosedPositions(request)).List ?? new();
+        
+        StateHasChanged();
+    }
+
+    private async Task NextPageClosedPosition()
+    {
+        if (_closedPositions?.Any() != true)
+            return;
+
+        _lastSeen = _closedPositions.Min(e => e.CloseTime) ?? DateTime.UtcNow;
+        
+        var request = new GetClosedPositionsRequest()
+        {
+            Take = CountInPage,
+            LastSeenDateTime = _lastSeen
+        };
+        
+        _closedPositions = (await LiquidityReportService.GetClosedPositions(request)).List ?? new();
+        
+        StateHasChanged();
+    }
+
+    private async Task RefreshTrades()
+    {
+        _lastSeen = DateTime.UtcNow;
+        
+        var request = new GetTradesRequest()
+        {
+            Take = CountInPage,
+            LastSeenDateTime = _lastSeen
+        };
+        
+        _trades = (await LiquidityReportService.GetTrades(request)).List ?? new();
+        
+        StateHasChanged();
+    }
+
+    private async Task NextPageTrades()
+    {
+        if (_trades?.Any() != true)
+            return;
+
+        _lastSeen = _trades.Min(e => e.DateTime);
+        
+        var request = new GetTradesRequest()
+        {
+            Take = CountInPage,
+            LastSeenDateTime = _lastSeen
+        };
+        
+        _trades = (await LiquidityReportService.GetTrades(request)).List ?? new();
+        
+        StateHasChanged();
+    }
+
+    
+    public enum PortfolioPages
+    {
+        Portfolio,
+        ClosedPositions,
+        Trades
+    }
 }
