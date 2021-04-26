@@ -50,7 +50,7 @@
                 <td>@position.Side</td>
                 <td>@position.BaseVolume @position.BaseAsset</td>
                 <td>@position.QuoteVolume @position.QuotesAsset</td>
-                <td>@position.OpenTime</td>
+                <td>@position.OpenTime.ToString("O")</td>
                 <td>@position.WalletId</td>
                 <td>@position.Id</td>
             </tr>
@@ -95,8 +95,8 @@
                 <td>@position.BaseVolume @position.BaseAsset</td>
                 <td><b>@position.QuoteVolume @position.QuotesAsset</b></td>
                 <td>@position.ResultPercentage %</td>
-                <td>@position.OpenTime</td>
-                <td>@position.CloseTime</td>
+                <td>@position.OpenTime.ToString("O")</td>
+                <td>@position.CloseTime?.ToString("O")</td>
                 <td>@position.WalletId</td>
                 <td>@position.Id</td>
                 <td>
@@ -132,7 +132,7 @@
                                             <td>@trade.Price</td>
                                             <td>@trade.BaseVolume</td>
                                             <td>@trade.TradeId</td>
-                                            <td>@trade.DateTime</td>
+                                            <td>@trade.DateTime.ToString("O")</td>
                                         </tr>
                                     }
                                     </tbody>

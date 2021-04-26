@@ -83,7 +83,7 @@
 
     private string GetClosedPositionColor(PositionPortfolio position)
     {
-        if ((DateTime.UtcNow - position.CloseTime).Value.TotalSeconds <= 30)
+        if ((DateTime.UtcNow - (position.CloseTime ?? DateTime.UtcNow)).TotalSeconds <= 30)
         {
             return "yellow";
         }
