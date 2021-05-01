@@ -25,7 +25,7 @@
       <PackageReference Include="MyCrm.MyCrmTradersUtmParametersGrpcContracts" Version="1.0.3" />
       <PackageReference Include="MyCrm.PaymentReport.GrpcContracts" Version="1.0.3" />
       <PackageReference Include="MyCrm.PersonalData.Grpc" Version="1.0.43" />
-      <PackageReference Include="MyCrm.TraderCrmStatuses.Grpc" Version="1.0.1" />
+      <PackageReference Include="MyCrm.TraderCrmStatuses.Grpc" Version="1.0.2" />
       <PackageReference Include="MyCrm.TraderMarketingSalesData.Grpc" Version="1.0.8" />
       <PackageReference Include="MyCrm.TraderOnlineData.Grpc" Version="1.0.4" />
       <PackageReference Include="MyCrm.AffiliateAccess.Grpc" Version="1.0.2" />
