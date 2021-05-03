@@ -1,0 +1,203 @@
+﻿@using Microsoft.Extensions.Logging
+@using Backoffice.Abstractions.Models
+@using Service.Liquidity.Engine.Domain.Models.Settings
+@using Service.Liquidity.Engine.Domain.Models.Wallets
+@using Service.Liquidity.Engine.Grpc
+@using System.Text.Json
+@using Elasticsearch.Net
+
+@inject IToaster ToastService
+@inject ILogger<LiquidityEngineComponent> Logger
+
+@inject IMarketMakerSettingsManagerGrpc SettingsManagerGrpc;
+@inject ILpWalletManagerGrpc WalletManagerGrpc;
+@inject IHedgeSettingsManagerGrpc HedgeSettingsGrpc;
+
+<Loader LoaderConfig="@LoaderConfig"/>
+
+<div>
+    <table style="width: auto">
+        <tr>
+            <td>Market Mode:</td>
+            <td><MyLabel Color="@MarketMakerGlobalModeColor()" Text="@(MarketMakerGeneralSettings?.Mode.ToString())" /></td>
+        </tr>
+        <tr>
+            <td>Hedging Mode:</td>
+            <td><MyLabel Color="@HedgeMakerGlobalModeColor()" Text="@(HedgeGlobalSettings?.Mode.ToString())" /></td>
+        </tr>
+    </table>
+</div>
+
+<span style="margin: 30px"></span>
+
+<table>
+    <tr>
+        <td style="vertical-align: top">
+            <table>
+                <tr>
+                    <td><h3>Market's</h3></td>
+                    <td>
+                        <ul class="nav float-left" style="margin-left: 30px">
+                            <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
+                            <li><button @onclick="OnAdd" type="button" class="btn btn-outline-success" style="margin: 5px; border-radius: 10px">Add</button></li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+            
+            <table class="table" style="width: auto; font-size: 12px">
+                <thead>
+                <tr>
+                    <th class="align-middle">Instrument</th>
+                    <th class="align-middle">Mode<br>Market</th>
+                    <th class="align-middle">Mode<br>Hedge</th>
+                    <th class="align-middle">Prices</th>
+                    <th class="align-middle">Wallet</th>
+                    <th class="align-middle">Market<br>Sources</th>
+                    <th class="align-middle">Hedge<br>Sources</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+
+                @foreach (var provider in LiquidityProviderSettings)
+                {
+                    <LiquidityProviderRowComponent Provider="@provider" IsNew="false" IsActiveRow="false" UpdateCallback="Update" LpWallets="@LpWallets"/>
+                }
+                
+                @if (NewItem != null)
+                {
+                    <LiquidityProviderRowComponent Provider="@NewItem" IsNew="true" IsActiveRow="true" UpdateCallback="CreateCall" LpWallets="@LpWallets"/>
+                }
+                </tbody>
+
+            </table>
+        </td>
+        <td style="vertical-align: top">
+            <div style="margin-left: 30px">
+                <ShortClosePositionComponent />
+            </div>
+        </td>
+    </tr>
+</table>
+
+@code {
+
+    private List<LiquidityProviderInstrumentSettings> LiquidityProviderSettings { get; set; } = new();
+
+    private List<LpWallet> LpWallets { get; set; } = new();
+    
+    private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+    
+    private MarketMakerSettings MarketMakerGeneralSettings { get; set; }
+    private HedgeSettings HedgeGlobalSettings { get; set; }
+
+    private LiquidityProviderInstrumentSettings NewItem { get; set; } = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await OnRefresh();
+    }
+
+    
+
+    private string MarketMakerGlobalModeColor()
+    {
+        switch (MarketMakerGeneralSettings?.Mode)
+        {
+            case EngineMode.Disabled:
+                return "red";
+                
+            case EngineMode.Idle:
+                return "yellow";
+                
+            case EngineMode.Active:
+                return "green";
+        }
+
+        return "white";
+    }
+    
+    private string HedgeMakerGlobalModeColor()
+    {
+        switch (HedgeGlobalSettings?.Mode)
+        {
+            case EngineMode.Disabled:
+                return "red";
+                
+            case EngineMode.Idle:
+                return "yellow";
+                
+            case EngineMode.Active:
+                return "green";
+        }
+
+        return "white";
+    }
+
+    private async Task OnRefresh()
+    {
+        var settingResponse = await SettingsManagerGrpc.GetLiquidityProviderInstrumentSettingsListAsync();
+        LiquidityProviderSettings = settingResponse.List;
+        
+        var lpWalletList = await WalletManagerGrpc.GetAllAsync();
+        LpWallets = lpWalletList.Data.List;
+        
+        MarketMakerGeneralSettings = await SettingsManagerGrpc.GetMarketMakerSettingsAsync();
+        HedgeGlobalSettings = await HedgeSettingsGrpc.GetGlobalHedgeSettingsAsync();
+        
+        StateHasChanged();
+    }
+
+    private void OnAdd()
+    {
+        NewItem = new LiquidityProviderInstrumentSettings()
+        {
+            Mode = EngineMode.Disabled,
+            Symbol = string.Empty,
+            LpHedges = new(),
+            LpSources = new(),
+            ModeHedge = EngineMode.Disabled,
+            LpWalletName = string.Empty
+        };
+        
+        StateHasChanged();
+    }
+
+    private async Task<bool> Update(LiquidityProviderInstrumentSettings setting)
+    {
+        try
+        {
+            await SettingsManagerGrpc.UpdateLiquidityProviderInstrumentSettingsAsync(setting);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Cannot update settings. {settingsJson}", JsonSerializer.Serialize(setting));
+            ToastService.Error($"Cannot update settings. {setting.Symbol}");
+            return false;
+        }
+
+        StateHasChanged();
+        
+        ToastService.Info($"Settings updated. {setting.Symbol}");
+        return true;
+    }
+    
+    private async Task<bool> CreateCall(LiquidityProviderInstrumentSettings setting)
+    {
+        try
+        {
+            await SettingsManagerGrpc.AddLiquidityProviderInstrumentSettingsAsync(setting);
+            NewItem = null;
+            ToastService.Info($"Settings Created. {setting.Symbol}");
+            await OnRefresh();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Cannot Create settings. {settingsJson}", JsonSerializer.Serialize(setting));
+            ToastService.Error($"Cannot Create settings. {setting.Symbol}");
+            return false;
+        }
+    }
+}

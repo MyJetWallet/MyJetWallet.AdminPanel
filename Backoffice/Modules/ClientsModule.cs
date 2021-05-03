@@ -72,6 +72,7 @@ namespace Backoffice.Modules
             builder.RegisterTradeHistoryClient(Program.Settings.TradeHistoryGrpcServiceUrl);
 
             builder.RegisterKycStatusClientsGrpcOnly(Program.Settings.KycGrpcServiceUrl);
+            
         }
         
         private void RegisterMyNoSqlTcpClient(ContainerBuilder builder)

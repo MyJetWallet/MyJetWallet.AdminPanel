@@ -1,0 +1,111 @@
+﻿@using Service.Liquidity.Engine.Domain.Models.Settings
+@using Service.Liquidity.Engine.Domain.Models.Wallets
+@using Service.MatchingEngine.PriceSource.Client
+@using MyJetWallet.Domain.Prices
+
+
+    <tr>
+        <td>@Provider.Symbol</td>
+        <td>
+            <MyLabel Color="@(Provider.Mode == EngineMode.Active ? "green" : "red")" Text="@Provider.Mode.ToString()"/>
+        </td>
+        <td>
+            <MyLabel Color="@(Provider.ModeHedge == EngineMode.Active ? "green" : "red")" Text="@Provider.ModeHedge.ToString()"/>
+        </td>
+        <td>
+            @if (!IsNew)
+            {
+                <ShowPriceComponent Symbol="@Provider?.Symbol" BrokerId="@Wallet?.BrokerId"/>
+            }
+        </td>
+        <td>
+            @Provider.LpWalletName
+        </td>
+        <td>
+            @(GetLpSources())
+        </td>
+        <td>
+            @(GetLpHedgesSources())
+        </td>
+        <td>
+            <ul class="nav">
+                <li><button type="button" class="btn-outline-info btn" style="height: 20px; font-size: 10px" @onclick="ClickDetails">...</button></li>
+                <li><button type="button" class="btn-outline-info btn" style="height: 20px; font-size: 10px" @onclick="ClickBooks">books</button></li>
+            </ul>
+        </td>
+    </tr>
+
+@if (IsActiveRow)
+{
+    <tr>
+        <td colspan="8">
+            <LpDetailComponent Provider="@Provider" IsEdit="@IsNew" IsNew="@IsNew" UpdateCallback="UpdateCallback"/>
+        </td>
+    </tr>
+}
+
+@code {
+    
+    [Parameter]
+    public LiquidityProviderInstrumentSettings Provider { get; set; }
+    
+    [Parameter]
+    public bool IsActiveRow { get; set; }
+    
+    [Parameter]
+    public Func<LiquidityProviderInstrumentSettings, Task<bool>> UpdateCallback { get; set; }
+    
+    [Parameter]
+    public List<LpWallet> LpWallets { get; set; }
+
+    [Parameter]
+    public bool IsNew { get; set; } = false;
+    
+    
+    private LpWallet Wallet { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Wallet = LpWallets?.FirstOrDefault(e => e.Name == Provider?.LpWalletName);
+    }
+
+    
+
+    private string GetLpSources()
+    {
+        if (Provider?.LpSources == null || !Provider.LpSources.Any(e => e.Mode == EngineMode.Active)) return string.Empty;
+        
+        var text = Provider.LpSources
+            .Where(e => e.Mode == EngineMode.Active)
+            .Select(e => e.ExternalMarket)
+            .Aggregate((s, s1) => s += ", " + s1);
+        
+        return text;
+    }
+    
+    private string GetLpHedgesSources()
+    {
+        if (Provider?.LpHedges == null || !Provider.LpHedges.Any(e => e.Mode == EngineMode.Active)) return string.Empty;
+        
+        var textData = Provider.LpHedges
+            .Where(e => e.Mode == EngineMode.Active)
+            .Select(e => e.ExternalMarket)
+            .ToList();
+
+        return textData.Any() 
+            ? textData.Aggregate((s, s1) => s += ", " + s1) 
+            : string.Empty;
+    }
+
+    private void ClickDetails()
+    {
+        IsActiveRow = !IsActiveRow;
+        StateHasChanged();
+    }
+
+    private void ClickBooks()
+    {
+        
+    }
+
+}

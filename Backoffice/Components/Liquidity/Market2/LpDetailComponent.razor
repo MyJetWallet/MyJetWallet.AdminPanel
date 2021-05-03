@@ -1,0 +1,192 @@
+﻿@using Service.Liquidity.Engine.Domain.Models.Settings
+@using Backoffice.Services.SpotInstruments
+@using Microsoft.AspNetCore.Components
+@using Service.Liquidity.Engine.Domain.Models.Wallets
+@using Service.Liquidity.Engine.Grpc
+@using Service.Liquidity.Engine.Grpc.Models
+
+@inject ISpotInstrumentManager InstrumentDictionary 
+@inject ILpWalletManagerGrpc WalletManager
+@inject IExternalMarketsGrpc ExternalMarketsManager
+
+<EditForm Model="@this">
+    <table style="width: auto; font-size: 12px;">
+        <tr>
+            <th>Instrument</th>
+            <th>Market Maker</th>
+            <th>Hedging</th>
+        </tr>
+        <tr>
+            <td>
+                <table>
+                    <tr>
+                        <td>Instrument Symbol</td>
+                        <td>
+                            @if (IsNew)
+                            {
+                                <InputSelect @bind-Value="@Provider.Symbol">
+                                    @foreach (var symbol in InstrumentList)
+                                    {
+                                        <option value="@symbol">@symbol</option>
+                                    }
+                                </InputSelect>
+                            }
+                            else
+                            {
+                                @Provider.Symbol
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Internal Wallet</td>
+                        <td>
+                            @if (IsEdit)
+                            {
+                                <InputSelect @bind-Value="@Provider.LpWalletName">
+                                    @foreach (var wallet in Wallets)
+                                    {
+                                        <option value="@wallet.Name">@wallet.Name (@wallet.WalletId)</option>
+                                    }
+                                </InputSelect>
+                            }
+                            else
+                            {
+                                @Provider.LpWalletName
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Market Mode</td>
+                        <td>
+                            @if (IsEdit)
+                            {
+                                <InputSelect @bind-Value="@Provider.Mode">
+                                    <option value="@EngineMode.Active"><MyLabel Color="green" Text="@(EngineMode.Active.ToString())" /></option>
+                                    <option value="@EngineMode.Idle"><MyLabel Color="yellow" Text="@(EngineMode.Idle.ToString())" /></option>
+                                    <option value="@EngineMode.Disabled"><MyLabel Color="red" Text="@(EngineMode.Disabled.ToString())" /></option>
+                                </InputSelect>
+                            }
+                            else
+                            {
+                                <MyLabel Color="@(Provider.Mode == EngineMode.Active ? "green":"red")" Text="@Provider.Mode.ToString()" />
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Hedge Mode</td>
+                        <td>
+                            @if (IsEdit)
+                            {
+                                <InputSelect @bind-Value="@Provider.ModeHedge">
+                                    <option value="@EngineMode.Active"><MyLabel Color="green" Text="@(EngineMode.Active.ToString())" /></option>
+                                    <option value="@EngineMode.Idle"><MyLabel Color="yellow" Text="@(EngineMode.Idle.ToString())" /></option>
+                                    <option value="@EngineMode.Disabled"><MyLabel Color="red" Text="@(EngineMode.Disabled.ToString())" /></option>
+                                </InputSelect>
+                            }
+                            else
+                            {
+                                <MyLabel Color="@(Provider.ModeHedge == EngineMode.Active ? "green":"red")" Text="@Provider.ModeHedge.ToString()" />
+                            }
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td>
+                <LpSourceSettingsComponent Sources="@Provider.LpSources" ExternalMarkets="@ExternalMarkets" IsEdit="@IsEdit" />
+            </td>
+            <td>
+                <table>
+                    
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                @if (!IsEdit)
+                {
+                    <ul class="nav">
+                        <li><button type="button" class="btn-outline-info btn" style="height: 20px; font-size: 10px" @onclick="ClickEdit" >Edit</button></li>
+                    </ul>
+                }
+                else
+                {
+                    <ul class="nav">
+                        <li><button type="button" class="btn-outline-success btn" style="height: 20px; font-size: 10px" @onclick="ClickSave" >Save</button></li>
+                        <li><button type="button" class="btn-outline-danger btn" style="height: 20px; font-size: 10px" @onclick="ClickCancel" >Cancel</button></li>
+                    </ul>
+                }
+            </td>
+        </tr>
+    </table>
+</EditForm>
+
+@code {
+    [Parameter]
+    public LiquidityProviderInstrumentSettings Provider { get; set; }
+    
+    [Parameter]
+    public bool IsNew { get; set; }
+    
+    [Parameter]
+    public bool IsEdit { get; set; }
+    
+    [Parameter]
+    public Func<LiquidityProviderInstrumentSettings, Task<bool>> UpdateCallback { get; set; }
+    
+    private List<string> InstrumentList { get; set; } = new();
+    private Dictionary<string, List<string>> ExternalMarkets { get; set; } = new();
+    private List<LpWallet> Wallets { get; set; } = new();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        InstrumentList = (await InstrumentDictionary.GetAll())
+            .Where(e => e.Instrument.IsEnabled)
+            .Select(e => e.Instrument.Symbol)
+            .OrderBy(e => e)
+            .ToList();
+
+        var wallets = await WalletManager.GetAllAsync();
+        
+        Wallets = wallets.Data.List.OrderBy(e => e.Name).ToList();
+        
+        var externalMarketList = await ExternalMarketsManager.GetExternalMarketListAsync();
+
+        ExternalMarkets = new Dictionary<string, List<string>>();
+
+        foreach (var market in externalMarketList.Data.List)
+        {
+            var data = await ExternalMarketsManager.GetInstrumentsAsync(new SourceDto() {Source = market});
+
+            ExternalMarkets[market] = data.Data.List.Select(e => e.Market).ToList();
+        }
+
+        StateHasChanged();
+    }
+
+    private void ClickEdit()
+    {
+        IsEdit = true;
+        StateHasChanged();
+    }
+
+    private async Task ClickSave()
+    {
+        if (UpdateCallback != null)
+        {
+            var result = await UpdateCallback.Invoke(Provider);
+        }
+        else
+        {
+            IsEdit = false;
+            IsNew = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ClickCancel()
+    {
+        IsEdit = false;
+        StateHasChanged();
+    }
+
+}
