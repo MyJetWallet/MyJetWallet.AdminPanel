@@ -78,8 +78,6 @@ namespace Backoffice.Modules
         {
             builder.RegisterType<MyCrmPersonalDataGrpcServiceMoq>().As<IMyCrmPersonalDataGrpcService>().SingleInstance();
 
-            builder.RegisterType<MyCrmAccountsGrpcServiceMoq>().As<IMyCrmAccountsGrpcService>().SingleInstance();
-
             builder.RegisterType<MyCrmAccountTransactionsGrpcServiceMoq>().As<IMyCrmAccountTransactionsGrpcService>()
                 .SingleInstance();
 
