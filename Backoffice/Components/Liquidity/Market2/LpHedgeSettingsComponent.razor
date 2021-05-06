@@ -1,0 +1,155 @@
+﻿@using Service.Liquidity.Engine.Domain.Models.Settings
+@using Syncfusion.Blazor.RichTextEditor
+
+<EditForm Model="@this">
+    <table>
+        <tr>
+            <th>Market</th>
+            @foreach (var item in Sources)
+            {
+                <td>
+                    @if (IsEdit)
+                    {
+                        <InputSelect @bind-Value="@item.ExternalMarket">
+                            @foreach (var market in ExternalMarkets.Keys)
+                            {
+                                <option value="@market">@market</option>
+                            }
+                        </InputSelect>
+                    }
+                    else
+                    {
+                        @item.ExternalMarket
+                    }
+                </td>
+            }
+        </tr>
+        <tr>
+            <th>Mode</th>
+            @foreach (var item in Sources)
+            {
+                <td>
+                    @if (IsEdit)
+                    {
+                        <InputSelect @bind-Value="@item.Mode">
+                            <option value="@EngineMode.Active"><MyLabel Color="green" Text="@(EngineMode.Active.ToString())"/></option>
+                            <option value="@EngineMode.Idle"><MyLabel Color="yellow" Text="@(EngineMode.Idle.ToString())"/></option>
+                            <option value="@EngineMode.Disabled"><MyLabel Color="red" Text="@(EngineMode.Disabled.ToString())"/></option>
+                        </InputSelect>
+                    }
+                    else
+                    {
+                        <MyLabel Color="@(item.Mode == EngineMode.Active ? "green" : "red")" Text="@item.Mode.ToString()"/>
+                    }
+                </td>
+            }
+        </tr>
+        <tr>
+            <th>Symbol</th>
+            @foreach (var item in Sources)
+            {
+                <td>
+                    @if (IsEdit)
+                    {
+                        <InputSelect @bind-Value="@item.ExternalSymbol">
+                            @foreach (var symbol in GetExternalInstrumentList(item.ExternalMarket))
+                            {
+                                <option value="@symbol">@symbol</option>
+                            }
+                        </InputSelect>
+                    }
+                    else
+                    {
+                        @item.ExternalSymbol
+                    }
+                </td>
+            }
+        </tr>
+        <tr>
+            <th>Min Volume</th>
+            @foreach (var item in Sources)
+            {
+                <td>
+                    @if (IsEdit)
+                    {
+                        <input type="number" style="width: 80px" @bind="item.MinVolume"/>
+                    }
+                    else
+                    {
+                        @item.MinVolume
+                    } 
+                </td>
+            }
+        </tr>
+        <tr>
+            <th></th>
+            @foreach (var item in Sources)
+            {
+                <td>
+                    @if (IsEdit)
+                    {
+                        <ul class="nav">
+                            <li><button type="button" class="btn-outline-danger btn" style="height: 20px; font-size: 10px" @onclick="@(() => ClickDelete(item))">Delete</button></li>
+                        </ul>
+                    }
+                </td>
+            }
+        </tr>
+        
+        @if (IsEdit)
+        {
+            <tr>
+                <td colspan="@(Sources.Count+1)">
+                    <ul class="nav">
+                        <li><button type="button" class="btn-outline-success btn" style="height: 20px; font-size: 10px" @onclick="AddItem">Add</button></li>
+                    </ul>
+                </td>
+            </tr>
+        }
+    </table>
+</EditForm>
+
+
+@code {
+    
+    [Parameter]
+    public List<LpHedgeSettings> Sources { get; set; }
+    
+    [Parameter]
+    public bool IsEdit { get; set; }
+    
+    [Parameter]
+    public Dictionary<string, List<string>> ExternalMarkets { get; set; } = new();
+
+    private List<string> GetExternalInstrumentList(string market)
+    {
+        if (string.IsNullOrEmpty(market))
+            return new List<string>();
+
+        if (ExternalMarkets.TryGetValue(market, out var data))
+        {
+            return data;
+        }
+        return new List<string>();
+    }
+
+    private void ClickDelete(LpHedgeSettings item)
+    {
+        Sources.Remove(item);
+        StateHasChanged();
+    }
+
+    private void AddItem()
+    {
+        var item = new LpHedgeSettings()
+        {
+            Mode = EngineMode.Disabled,
+            ExternalMarket = string.Empty,
+            ExternalSymbol = string.Empty,
+            MinVolume = 0
+        };
+        
+        Sources.Add(item);
+        StateHasChanged();
+    }
+}

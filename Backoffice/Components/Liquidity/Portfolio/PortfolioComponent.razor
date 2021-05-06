@@ -61,131 +61,12 @@
 
 @if (ActivePage == PortfolioPages.ClosedPositions)
 {
-    <h3>Closed Positions</h3>
-   
-    <ul class="nav">
-        @if (_closedPositions?.Any() == true)
-        {
-            <li><button type="button" class="btn-outline-info btn" @onclick="NextPageClosedPosition">>>> Next >>></button></li>
-        }
-        <li><button type="button" class="btn-outline-secondary btn" @onclick="RefreshClosedPosition">Refresh</button></li>
-        <li>Count in page: <input type="number" style="width: 40px" @bind="CountInPage"/></li>
-    </ul>
-    <table class="table">
-        <thead>
-        <tr>
-            <th>Symbol</th>
-            <th>Side</th>
-            <th>BaseVolume</th>
-            <th>QuoteVolume</th>
-            <th>Result</th>
-            <th>OpenTime</th>
-            <th>CloseTime</th>
-            <th>WalletId</th>
-            <th>Id</th>
-            <th></th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var position in _closedPositions)
-        {
-            <tr style="background: @(position.QuoteVolume < 0 ? "lightcoral" : "lightgreen") ">
-                <td>@position.Symbol</td>
-                <td>@position.Side</td>
-                <td>@position.BaseVolume @position.BaseAsset</td>
-                <td><b>@position.QuoteVolume @position.QuotesAsset</b></td>
-                <td>@position.ResultPercentage %</td>
-                <td>@position.OpenTime.ToString("O")</td>
-                <td>@position.CloseTime?.ToString("O")</td>
-                <td>@position.WalletId</td>
-                <td>@position.Id</td>
-                <td>
-                    <ul class="nav">
-                        <li><button type="button" class="btn-outline-info btn" @onclick="@(() => { ShowTrades(position.Id); })" >Trades</button></li>
-                    </ul>
-                </td>
-            </tr>
-            @if (SelectedPosition == position.Id)
-            {
-                <tr>
-                    <td colspan="9">
-                        <div class="border" style="margin-left: 20px; width: auto">
-                                <table class="table">
-                                    <thead>
-                                    <tr>
-                                        <th>Source</th>
-                                        <th>Symbol</th>
-                                        <th>Side</th>
-                                        <th>Price</th>
-                                        <th>Vol</th>
-                                        <th>Id</th>
-                                        <th>Time</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    @foreach (var trade in _positionTrades)
-                                    {
-                                        <tr style="background: @TradeBackground(trade)">
-                                            <td>@trade.Source</td>
-                                            <td>@trade.Symbol</td>
-                                            <td>@trade.Side</td>
-                                            <td>@trade.Price</td>
-                                            <td>@trade.BaseVolume</td>
-                                            <td>@trade.TradeId</td>
-                                            <td>@trade.DateTime.ToString("O")</td>
-                                        </tr>
-                                    }
-                                    </tbody>
-                                </table>
-                        </div>
-                    </td>
-                </tr>
-            }
-        }
-        </tbody>
-    </table>
-    
+    <LeClosedPositionComponent />
 }
 
 @if (ActivePage == PortfolioPages.Trades)
 {
-    <h3>Trades</h3>
-    
-    <ul class="nav">
-        @if (_closedPositions?.Any() == true)
-        {
-            <li><button type="button" class="btn-outline-info btn" @onclick="NextPageTrades">>>> Next >>></button></li>
-        }
-        <li><button type="button" class="btn-outline-secondary btn" @onclick="RefreshTrades">Refresh</button></li>
-        <li>Count in page: <input type="number" style="width: 40px" @bind="CountInPage"/></li>
-    </ul>
-    <table class="table">
-        <thead>
-        <tr>
-            <th>Source</th>
-            <th>Symbol</th>
-            <th>Side</th>
-            <th>Price</th>
-            <th>Vol</th>
-            <th>Id</th>
-            <th>Time</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var trade in _trades)
-        {
-            <tr style="background: @TradeBackground(trade)">
-                <td>@trade.Source</td>
-                <td>@trade.Symbol</td>
-                <td>@trade.Side</td>
-                <td>@trade.Price</td>
-                <td>@trade.BaseVolume</td>
-                <td>@trade.TradeId</td>
-                <td>@trade.DateTime</td>
-            </tr>
-        }
-        </tbody>
-    </table>
+    <LeTradesComponent />
 }
 
 
@@ -196,16 +77,7 @@
     private PortfolioPages ActivePage { get; set; }
     
     private List<PositionPortfolio> _positions = new();
-    private List<PositionPortfolio> _closedPositions = new();
-    private List<PortfolioTrade> _trades = new();
     
-    private List<PortfolioTrade> _positionTrades = new();
-    
-    private int CountInPage { get; set; } = 20;
-    private DateTime _lastSeen = DateTime.UtcNow;
-    
-    private string SelectedPosition { get; set; }
-
     private async Task Refresh()
     {
         if (_isDispose) return;
@@ -242,19 +114,13 @@
     private async Task SetClosedPositions()
     {
         ActivePage = PortfolioPages.ClosedPositions;
-        _closedPositions = new List<PositionPortfolio>();
         StateHasChanged();
-
-        await RefreshClosedPosition();
     }
 
     private async Task SetTrades()
     {
         ActivePage = PortfolioPages.Trades;
-        _trades = new List<PortfolioTrade>();
         StateHasChanged();
-
-        await RefreshTrades();
     }
 
     private string CheckActive(PortfolioPages target)
@@ -264,96 +130,6 @@
 
         return "";
     }
-
-    private string TradeBackground(PortfolioTrade trade)
-    {
-        if (trade.IsInternal) return "lightcyan";
-        return "lightpink";
-    }
-
-    private async void ShowTrades(string positionId)
-    {
-        if (SelectedPosition == positionId)
-        {
-            _positionTrades = new();
-            SelectedPosition = null;
-        }
-        else
-        {
-            _positionTrades = (await LiquidityReportService
-                .GetPositionTrades(new GetPositionTradesRequest() {PositionId = positionId})).List ?? new();
-            SelectedPosition = positionId;
-        }
-        
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private async Task RefreshClosedPosition()
-    {
-        _lastSeen = DateTime.UtcNow;
-        
-        var request = new GetClosedPositionsRequest()
-        {
-            Take = CountInPage,
-            LastSeenDateTime = _lastSeen
-        };
-        
-        _closedPositions = (await LiquidityReportService.GetClosedPositions(request)).List ?? new();
-        
-        StateHasChanged();
-    }
-
-    private async Task NextPageClosedPosition()
-    {
-        if (_closedPositions?.Any() != true)
-            return;
-
-        _lastSeen = _closedPositions.Min(e => e.CloseTime) ?? DateTime.UtcNow;
-        
-        var request = new GetClosedPositionsRequest()
-        {
-            Take = CountInPage,
-            LastSeenDateTime = _lastSeen
-        };
-        
-        _closedPositions = (await LiquidityReportService.GetClosedPositions(request)).List ?? new();
-        
-        StateHasChanged();
-    }
-
-    private async Task RefreshTrades()
-    {
-        _lastSeen = DateTime.UtcNow;
-        
-        var request = new GetTradesRequest()
-        {
-            Take = CountInPage,
-            LastSeenDateTime = _lastSeen
-        };
-        
-        _trades = (await LiquidityReportService.GetTrades(request)).List ?? new();
-        
-        StateHasChanged();
-    }
-
-    private async Task NextPageTrades()
-    {
-        if (_trades?.Any() != true)
-            return;
-
-        _lastSeen = _trades.Min(e => e.DateTime);
-        
-        var request = new GetTradesRequest()
-        {
-            Take = CountInPage,
-            LastSeenDateTime = _lastSeen
-        };
-        
-        _trades = (await LiquidityReportService.GetTrades(request)).List ?? new();
-        
-        StateHasChanged();
-    }
-
     
     public enum PortfolioPages
     {

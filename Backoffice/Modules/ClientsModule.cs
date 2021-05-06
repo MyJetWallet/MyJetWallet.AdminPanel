@@ -1,4 +1,5 @@
 using Autofac;
+using Backoffice.Services.Simulations;
 using Google.Protobuf;
 using MyJetWallet.Sdk.Service;
 using MyNoSqlServer.DataReader;
@@ -46,7 +47,8 @@ namespace Backoffice.Modules
 
             builder.RegisterLiquidityEngineClient(Program.Settings.LiquidityEngineGrpcServiceUrl);
 
-            builder.RegisterSimulationFtxClient(Program.Settings.SimulationFtxGrpcServiceUrl);
+            var simulationManager = new SimulationsManager(Program.Settings.Simulations);
+            builder.RegisterInstance(simulationManager).As<ISimulationsManager>().SingleInstance();
 
             builder.RegisterLiquidityReportClient(Program.Settings.LiquidityReportGrpcServiceUrl);
             

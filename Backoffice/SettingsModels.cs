@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using MyYamlParser;
 
 namespace Backoffice
@@ -25,8 +26,7 @@ namespace Backoffice
         [YamlProperty("AdminPanel.LiquidityEngineGrpcServiceUrl")]
         public string LiquidityEngineGrpcServiceUrl { get; set; }
 
-        [YamlProperty("AdminPanel.SimulationFtxGrpcServiceUrl")]
-        public string SimulationFtxGrpcServiceUrl { get; set; }
+        
 
         [YamlProperty("AdminPanel.LiquidityReportGrpcServiceUrl")]
         public string LiquidityReportGrpcServiceUrl { get; set; }
@@ -54,5 +54,8 @@ namespace Backoffice
 
         [YamlProperty("AdminPanel.KycGrpcServiceUrl")]
         public string KycGrpcServiceUrl { get; set; }
+        
+        [YamlProperty("AdminPanel.Simulations")]
+        public Dictionary<string, string> Simulations { get; set; }
     }
 }

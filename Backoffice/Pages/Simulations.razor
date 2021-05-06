@@ -1,117 +1,47 @@
 ﻿@page "/Simulations"
-@using Service.Simulation.FTX.Grpc
-@using Service.Simulation.FTX.Grpc.Models
-@using MyJetWallet.Sdk.Service.Tools
-@using Microsoft.Extensions.Logging
 
-@inject ISimulationFtxTradingService TradingService
-@inject ISimulationFtxTradeHistoryService HistoryService
-@inject ILoggerFactory LoggerFactory
+@using Backoffice.Components.Simulations
+@using Backoffice.Services.Simulations
 
-@implements IDisposable
+@inject ISimulationsManager _manager
 
-<table>
+@{
+    var simulations = _manager.GetSimulations();
+}
 
-    <tr>
-        <td>
-            <h3>Simulations FTX</h3>
-        </td>
-        <td>
-            <ul class="nav float-left">
-                <li><button @onclick="Refresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
-            </ul>
-        </td>
-    </tr>
-    
-</table>
+<ul class="nav nav-tabs nav-pills">
+    @foreach (var simulation in simulations)
+    {
+        <li class="nav-item" style="margin: 10px">
+            <button class="nav-link" aria-current="page" @onclick="@(() => SetSimulation(simulation))" >@simulation.Name</button>
+        </li>
+    }
+</ul>
 
-<div>
-    <h4>Balances</h4>
-    <table class="table">
-        <thead>
-        <tr>
-            <th>Asset</th>
-            <th>Balance</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var balance in _balances)
-        {
-            <tr>
-                <td>@balance.Symbol</td>
-                <td>@balance.Amount</td>
-            </tr>
-        }
-        </tbody>
-    </table>
-</div>
+@foreach (var simulation in simulations)
+{
+    if (ActiveSimulation == simulation)
+    {
+        <ExternalMarketSimulationComponent Simulation="@simulation"/>
+    }
+}
 
-<div>
-    <h4>Trades</h4>
-    <table class="table">
-        <thead>
-        <tr>
-            <th>Timestamp</th>
-            <th>Market</th>
-            <th>Side</th>
-            <th>Price</th>
-            <th>Size</th>
-            <th>Id</th>
-            <th>ClientId</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var trade in _trades)
-        {
-            <tr>
-                <td>@trade.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</td>
-                <td>@trade.Market</td>
-                <td>@trade.Side</td>
-                <td>@trade.Price</td>
-                <td>@trade.Size</td>
-                <td>@trade.Id</td>
-                <td>@trade.ClientId</td>
-            </tr>
-        }
-        </tbody>
-    </table>
-</div>
+
+
 
 @code {
 
-    private List<GetBalancesResponse.Balance> _balances = new List<GetBalancesResponse.Balance>();
-    private List<FtxSimTrade> _trades = new List<FtxSimTrade>();
+    private SimulationService ActiveSimulation { get; set; }
 
-    private bool _isDispose;
-
-    protected override async Task OnInitializedAsync()
+    private void SetSimulation(SimulationService simulation)
     {
-        await Refresh();
-
-        GlobalTimers.RefreshTimer.RegisterCallback(nameof(Simulations), DoTimer);
-    }
-
-    private async Task DoTimer()
-    {
-        if (_isDispose) return;
-        await Refresh();
-    }
-
-    private async Task Refresh()
-    {
-        var balances = await TradingService.GetBalancesAsync();
-        _balances = balances.Balances ?? new List<GetBalancesResponse.Balance>();
+        ActiveSimulation = null;
+        StateHasChanged();
         
-        var history = await HistoryService.GetTradesAsync();
-        _trades = history.Trades ?? new List<FtxSimTrade>();
-
-        await InvokeAsync(StateHasChanged);
+        ActiveSimulation = simulation;
+        StateHasChanged();
     }
 
-    public void Dispose()
-    {
-        _isDispose = true;
-        GlobalTimers.RefreshTimer.RemoveCallback(nameof(Simulations));
-    }
+    
 
 }

@@ -138,8 +138,14 @@
     private async Task OnRefresh()
     {
         var settingResponse = await SettingsManagerGrpc.GetLiquidityProviderInstrumentSettingsListAsync();
-        LiquidityProviderSettings = settingResponse.List;
+        LiquidityProviderSettings = settingResponse.List ?? new ();
         
+        LiquidityProviderSettings.ForEach(e =>
+        {
+            e.LpSources ??= new();
+            e.LpHedges ??= new();
+        });
+
         var lpWalletList = await WalletManagerGrpc.GetAllAsync();
         LpWallets = lpWalletList.Data.List;
         
