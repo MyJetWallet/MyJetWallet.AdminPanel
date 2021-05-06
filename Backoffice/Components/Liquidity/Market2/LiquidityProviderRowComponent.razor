@@ -44,6 +44,15 @@
     </tr>
 }
 
+@if (IsActiveBook)
+{
+    <tr>
+        <td colspan="8">
+            <LpOrderBookComponent Symbol="@Provider.Symbol" BrokerId="@Wallet.BrokerId" WalletId="@Wallet.WalletId" WalletName="@Wallet.Name" />            
+        </td>
+    </tr>
+}
+
 @code {
     
     [Parameter]
@@ -61,11 +70,15 @@
     [Parameter]
     public bool IsNew { get; set; } = false;
     
+    private bool IsActiveBook { get; set; }
+    
     
     private LpWallet Wallet { get; set; }
 
     protected override void OnInitialized()
     {
+        IsActiveBook = false;
+        
         Wallet = LpWallets?.FirstOrDefault(e => e.Name == Provider?.LpWalletName);
     }
 
@@ -105,7 +118,8 @@
 
     private void ClickBooks()
     {
-        
+        IsActiveBook = !IsActiveBook;
+        StateHasChanged();
     }
 
 }
