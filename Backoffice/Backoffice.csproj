@@ -24,7 +24,7 @@
       <PackageReference Include="Highsoft.Highcharts" Version="9.0.1.1" />
       <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.17.0" />
       <PackageReference Include="MW.Blazor.TagSelector" Version="1.2.3" />
-      <PackageReference Include="MyCrm.Accounts.Grpc" Version="1.0.20" />
+      <PackageReference Include="MyCrm.Accounts.Grpc" Version="1.0.21" />
       <PackageReference Include="MyCrm.AutoOwnerProfiles.Grpc" Version="1.0.1" />
       <PackageReference Include="MyCrm.MyCrmTradersUtmParametersGrpcContracts" Version="1.0.3" />
       <PackageReference Include="MyCrm.TradersDocuments.Grpc" Version="1.0.4" />
@@ -46,7 +46,7 @@
       <PackageReference Include="MyTokenGeneratorUtils" Version="1.0.1" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
       <PackageReference Include="protobuf-net.Grpc" Version="1.0.152" />
-      <PackageReference Include="Radzen.Blazor" Version="3.2.7" />
+      <PackageReference Include="Radzen.Blazor" Version="3.2.8" />
       <PackageReference Include="SimpleTrading.BaseMetrics" Version="1.0.3" />
       <PackageReference Include="SimpleTrading.Deposit.Grpc" Version="1.2.14" />
       <PackageReference Include="SimpleTrading.ServiceStatusReporterConnector" Version="1.0.7" />
