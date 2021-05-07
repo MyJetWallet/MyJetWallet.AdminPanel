@@ -67,7 +67,7 @@
                         <td>@level.Status.ToString()</td>
                         <td>@level.Source</td>
                         <td>
-                            <span title="@level.Message">
+                            <span title="@(!string.IsNullOrEmpty(level.Message) ? level.Message : level.MeStatus)">
                                 @if (!string.IsNullOrEmpty(level.MeStatus))
                                 {
                                     @level.MeStatus
@@ -76,7 +76,6 @@
                                 {
                                     <span>----</span>
                                 }
-                                
                             </span>
                         </td>
                     </tr>

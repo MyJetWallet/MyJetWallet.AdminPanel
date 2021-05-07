@@ -158,6 +158,12 @@
             ExternalMarkets[market] = data.Data.List.Select(e => e.Market).ToList();
         }
 
+        if (IsNew)
+        {
+            Provider.Symbol = InstrumentList.FirstOrDefault();
+            Provider.LpWalletName = Wallets.FirstOrDefault()?.Name;
+        }
+
         StateHasChanged();
     }
 
