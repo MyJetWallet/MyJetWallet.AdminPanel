@@ -51,7 +51,7 @@
       <PackageReference Include="SimpleTrading.Deposit.Grpc" Version="1.2.14" />
       <PackageReference Include="SimpleTrading.ServiceStatusReporterConnector" Version="1.0.7" />
       <PackageReference Include="Sotsera.Blazor.Toaster" Version="3.0.0" />
-      <PackageReference Include="Syncfusion.Blazor" Version="19.1.0.59" />
+      <PackageReference Include="Syncfusion.Blazor" Version="19.1.0.63" />
       <PackageReference Include="MySettingsReader" Version="1.2.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0-preview.3.21201.4" />
       <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0-preview.3.21201.4" />
