@@ -3,6 +3,7 @@
 @using MyJetWallet.Domain.ExternalMarketApi.Models
 
 @inject IExternalMarketsGrpc ExternalMarketsManager
+@inject IOrderBookManagerGrpc OrderBookManagerGrpc
 
 <ul class="nav nav-tabs nav-pills">
     @foreach (var market in MarketList)
@@ -21,39 +22,54 @@
     <div class="row">
         <table class="table" style="width: auto">
             <thead>
-            <tr>
-                <th>Symbol</th>
-                <th>Base</th>
-                <th>Quote</th>
-                <th>Min Volume</th>
-                <th>Price accuracy</th>
-                <th>Volume Accuracy</th>
-            </tr>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Base</th>
+                    <th>Quote</th>
+                    <th>Min Volume</th>
+                    <th>Price accuracy</th>
+                    <th>Volume Accuracy</th>
+                    <th></th>
+                </tr>
             </thead>
             <tbody>
-            @foreach (var instrument in Instruments)
-            {
-                <tr>
-                    <td>@instrument.Market</td>
-                    <td>@instrument.BaseAsset</td>
-                    <td>@instrument.QuoteAsset</td>
-                    <td>@((decimal)instrument.MinVolume)</td>
-                    <td>@instrument.PriceAccuracy</td>
-                    <td>@instrument.VolumeAccuracy</td>
-                </tr>
-            }
+                @foreach (var instrument in Instruments)
+                {
+                    <tr>
+                        <td>@instrument.Market</td>
+                        <td>@instrument.BaseAsset</td>
+                        <td>@instrument.QuoteAsset</td>
+                        <td>@((decimal)instrument.MinVolume)</td>
+                        <td>@instrument.PriceAccuracy</td>
+                        <td>@instrument.VolumeAccuracy</td>
+                        <td>
+                            <ul class="nav">
+                                <li><button type="button" class="btn-outline-info btn" style="height: 20px; font-size: 10px" @onclick="() => ClickBooks(instrument.Market)">books</button></li>
+                            </ul>
+                        </td>
+                    </tr>
+
+                    @if (BookedSymbol == instrument.Market)
+                    {
+                        <tr>
+                            <td colspan="8">
+                                <ExternalMarketOrderBookComponent Symbol="@instrument.Market" ActiveMarket="@ActiveMarket" />            
+                            </td>
+                        </tr>
+                    }
+                }
             </tbody>
         </table>
     </div>
 }
 
-
 @code {
 
-    private List<string> MarketList { get; set; } = new ();
+    private List<string> MarketList { get; set; } = new();
     private List<ExchangeMarketInfo> Instruments { get; set; } = new();
     private string ActiveMarket { get; set; }
-    
+    private string BookedSymbol { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         var marketsResp = await ExternalMarketsManager.GetExternalMarketListAsync();
@@ -61,23 +77,27 @@
 
         Instruments = new();
         ActiveMarket = string.Empty;
+        BookedSymbol = string.Empty;
     }
 
     private async Task SetMarket(string market)
     {
-        var resp = await  ExternalMarketsManager.GetInstrumentsAsync(new SourceDto()
+        var resp = await ExternalMarketsManager.GetInstrumentsAsync(new SourceDto
         {
             Source = market
         });
 
         Instruments = resp.Data.List ?? new List<ExchangeMarketInfo>();
         ActiveMarket = market;
-        
+
         StateHasChanged();
     }
 
-    
+    private void ClickBooks(string symbol)
+    {
+        BookedSymbol = symbol;
 
-
+        StateHasChanged();
+    }
 
 }

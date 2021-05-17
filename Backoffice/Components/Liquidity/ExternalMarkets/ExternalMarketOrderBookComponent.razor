@@ -1,0 +1,132 @@
+﻿@using Service.MatchingEngine.PriceSource.Client
+@using Service.Liquidity.Engine.Grpc
+@using Service.Liquidity.Engine.Grpc.Models
+
+@inject IDetailOrderBookService DetailOrderBookService
+@inject IOrderBookManagerGrpc OrderBookManagerGrpc
+
+<div style="width: auto">
+    <div class="row">
+        <div class="col" style="horiz-align: center">
+            <table>
+                <tr>
+                    <td colspan="3">
+                        @Symbol
+                    </td>
+                </tr>
+                @foreach (var level in InternalBook)
+                {
+                    <tr style="background: @(level.BuyVolume != 0 ? "lightgreen" : "lightcoral"); font-weight: @(level.IsLocal ? "normal" : "bolder")">
+                        <td>
+                            @if (level.BuyVolume != 0)
+                            {
+                                @level.BuyVolume
+                            }
+                        </td>
+                        <td>
+                            @level.Price
+                        </td>
+                        <td>
+                            @if (level.SellVolume != 0)
+                            {
+                                @level.SellVolume
+                            }
+                        </td>
+                    </tr>
+                }
+            </table>
+        </div>
+        <div class="col">
+            <button @onclick="UpdateData" type="button" class="btn btn-outline-success" style="margin: 5px; border-radius: 10px">Refresh</button>
+            <br>
+            count levels: <input type="number" @bind="MaxLevelCount" /><br>
+        </div>
+    </div>
+</div>
+
+@code {
+    
+    [Parameter]
+    public string Symbol { get; set; }
+
+    [Parameter]
+    public string ActiveMarket { get; set; }
+
+    private int MaxLevelCount { get; set; } = 10;
+    private List<Level> InternalBook { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UpdateData();
+    }
+    
+    private async Task UpdateData()
+    {
+        var limit = MaxLevelCount > 0 ? MaxLevelCount : 1000;
+
+        var booksResp = await OrderBookManagerGrpc.GetOrderBookAsync(new GetOrderBookRequest
+        {
+            Symbol = Symbol,
+            Source = ActiveMarket
+        });
+
+        var book = booksResp.Data;
+
+        var list = new List<Level>();
+
+        if (book != null)
+        {
+            list.AddRange(book.Asks.OrderBy(e => e.Price)
+                .Take(limit)
+                .Select(e => new Level(Convert.ToDecimal(e.Price), 0, Convert.ToDecimal(e.Volume))));
+            list.AddRange(book.Bids.OrderByDescending(e => e.Price)
+                .Take(limit)
+                .Select(e => new Level(Convert.ToDecimal(e.Price), Convert.ToDecimal(e.Volume), 0)));
+
+            var bestAsk = book.Asks
+                .OrderBy(e => e.Price)
+                .FirstOrDefault();
+
+            var bestBid = book.Bids
+                .OrderByDescending(e => e.Price)
+                .FirstOrDefault();
+
+            if (bestAsk != null)
+            {
+                list.Add(new Level(Convert.ToDecimal(bestAsk.Price), 0, Convert.ToDecimal(bestAsk.Volume))
+                {
+                    IsLocal = false
+                });
+            }
+
+            if (bestBid != null)
+            {
+                list.Add(new Level(Convert.ToDecimal(bestBid.Price), Convert.ToDecimal(bestBid.Volume), 0)
+                {
+                    IsLocal = false
+                });
+            }
+        }
+
+        InternalBook = list.OrderByDescending(e => e.Price).ToList();
+    }
+
+    private class Level
+    {
+        public Level(decimal price, decimal buyVolume, decimal sellVolume)
+        {
+            Price = price;
+            BuyVolume = buyVolume;
+            SellVolume = sellVolume;
+        }
+
+        public decimal Price { get; set; }
+
+        public decimal BuyVolume { get; set; }
+
+        public decimal SellVolume { get; set; }
+
+        public bool IsLocal { get; set; } = true;
+    }
+
+}
