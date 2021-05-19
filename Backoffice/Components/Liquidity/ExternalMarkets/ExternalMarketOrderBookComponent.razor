@@ -45,7 +45,7 @@
 </div>
 
 @code {
-    
+
     [Parameter]
     public string Symbol { get; set; }
 
@@ -59,7 +59,7 @@
     {
         await UpdateData();
     }
-    
+
     private async Task UpdateData()
     {
         var limit = MaxLevelCount > 0 ? MaxLevelCount : 1000;
@@ -82,30 +82,6 @@
             list.AddRange(book.Bids.OrderByDescending(e => e.Price)
                 .Take(limit)
                 .Select(e => new Level(Convert.ToDecimal(e.Price), Convert.ToDecimal(e.Volume), 0)));
-
-            var bestAsk = book.Asks
-                .OrderBy(e => e.Price)
-                .FirstOrDefault();
-
-            var bestBid = book.Bids
-                .OrderByDescending(e => e.Price)
-                .FirstOrDefault();
-
-            if (bestAsk != null)
-            {
-                list.Add(new Level(Convert.ToDecimal(bestAsk.Price), 0, Convert.ToDecimal(bestAsk.Volume))
-                {
-                    IsLocal = false
-                });
-            }
-
-            if (bestBid != null)
-            {
-                list.Add(new Level(Convert.ToDecimal(bestBid.Price), Convert.ToDecimal(bestBid.Volume), 0)
-                {
-                    IsLocal = false
-                });
-            }
         }
 
         InternalBook = list.OrderByDescending(e => e.Price).ToList();
