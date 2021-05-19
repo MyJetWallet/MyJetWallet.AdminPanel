@@ -5,6 +5,7 @@ using Backoffice.Mocks;
 using Backoffice.Services;
 using Backoffice.Services.Assets;
 using Backoffice.Services.Backoffice;
+using Backoffice.Services.BitGoAssets;
 using Backoffice.Services.SpotInstruments;
 using Backoffice.TableStorage;
 using MyCRM.AccountTransactions.Grpc;
@@ -39,6 +40,11 @@ namespace Backoffice.Modules
             builder
                 .RegisterType<SpotInstrumentManager>()
                 .As<ISpotInstrumentManager>()
+                .SingleInstance();
+            
+            builder
+                .RegisterType<BitGoAssetManager>()
+                .As<IBitGoAssetManager>()
                 .SingleInstance();
 
             RegisterGrpcService(builder);

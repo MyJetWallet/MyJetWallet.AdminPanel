@@ -1,6 +1,7 @@
 using Autofac;
 using Backoffice.Services.Simulations;
 using Google.Protobuf;
+using MyJetWallet.BitGo.Settings.Ioc;
 using MyJetWallet.Sdk.Service;
 using MyNoSqlServer.DataReader;
 using Service.ActiveOrders.Client;
@@ -75,6 +76,7 @@ namespace Backoffice.Modules
 
             builder.RegisterKycStatusClientsGrpcOnly(Program.Settings.KycGrpcServiceUrl);
             
+            builder.RegisterBitgoSettingsWriter(Program.ReloadedSettings(e => e.MyNoSqlWriterUrl));
         }
         
         private void RegisterMyNoSqlTcpClient(ContainerBuilder builder)

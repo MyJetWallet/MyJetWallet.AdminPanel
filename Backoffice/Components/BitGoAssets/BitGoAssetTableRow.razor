@@ -1,0 +1,133 @@
+﻿@using Backoffice.Services.BitGoAssets
+@using MyJetWallet.BitGo.Settings.NoSql
+@using Backoffice.Abstractions.Models
+
+@inject IBitGoAssetManager BitGoAssetManager;
+@inject IToaster ToastService;
+
+
+<tr>
+    <td>@Item.AssetSymbol</td>
+    <td>@Item.BitgoWalletId</td>
+    <td>@Item.BitgoCoin</td>
+
+    <td>
+        <ul class="nav">
+            <li><button type="button" class="btn-outline-info btn" @onclick="ShowDetails" >Details</button></li>
+            <li><button type="button" class="btn-outline-warning btn" @onclick="ShowEdit" >Edit</button></li>
+            <li><button type="button" class="btn-outline-danger btn" @onclick="ShowDelete" >Delete</button></li>
+        </ul>
+    </td>
+</tr>
+
+@if (IsShowDetails)
+{
+    <BitGoAssetDetailsDialog Item="@Item" OnCloseCallback="OnCloseAssetDialog" />
+}
+
+@if (IsShowEdit)
+{
+    <div>
+        <BitGoAssetDetailsDialogEdit Item="@Item" IsCreate="false" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="OnUpdateAsset" />
+    </div>
+}
+
+@if (IsShowDelete)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption=@($"Delete BitGo asset {Item.AssetSymbol} [{Item.BrokerId}]")
+            OnClose="OnCloseDeleteDialog"
+            YesButtonCaption="Delete"
+            NoButtonCaption="Cancel"
+            OnSubmit="DeleteItem">
+            
+            <h3 class="alert-warning">Are you sure you want to delete the BitGo asset <b>@Item.AssetSymbol [@Item.BrokerId]?</b></h3>
+            
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+
+
+@code {
+    
+    [Parameter]
+    public BitgoAssetMapEntity Item { get; set; }
+
+    [Parameter]
+    public ILoaderConfiguration LoaderConfig { get; set; }
+    
+    [Parameter]
+    public EventCallback<BitgoAssetMapEntity> OnDeleteCallback { get; set; }
+    
+    private bool IsShowDetails { get; set; }
+    
+    private bool IsShowEdit { get; set; }
+    
+    private bool IsShowDelete { get; set; }
+    
+    private bool IsShowBrand { get; set; }
+    private string ChangeBrandId { get; set; }
+    private bool IsBrandAssigned { get; set; }
+
+    private void OnCloseAssetDialog()
+    {
+        IsShowDetails = false;
+        StateHasChanged();
+    }
+
+    private void ShowDetails()
+    {
+        IsShowDetails = true;
+        StateHasChanged();
+    }
+
+    private void ShowEdit()
+    {
+        IsShowEdit = true;
+        StateHasChanged();
+    }
+
+    private void OnCloseEditDialog()
+    {
+        IsShowEdit = false;
+        StateHasChanged();
+    }
+    
+    private async void OnUpdateAsset(BitgoAssetMapEntity asset)
+    {
+        try
+        {
+            await BitGoAssetManager.UpdateAsset(asset);
+
+            IsShowEdit = false;
+
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Edit BitGo asset");
+        }
+    }
+
+
+    private void OnCloseDeleteDialog()
+    {
+        IsShowDelete = false;
+        StateHasChanged();
+    }
+
+
+    private async Task DeleteItem()
+    {
+        IsShowDelete = false;
+        await OnDeleteCallback.InvokeAsync(Item);
+    }
+
+    private void ShowDelete()
+    {
+        IsShowDelete = true;
+        StateHasChanged();
+    }
+}
