@@ -5,13 +5,12 @@ namespace Backoffice
     public static class Menu
     {
         public const string Assets = "Assets";
-        public const string BitGoAssets = "BitGoAssets";
         public const string SpotInstruments = "SpotInstruments";
         public const string Liquidity = "Liquidity";
         public const string Prices = "Prices";
         public const string Simulations = "Simulations";
         public const string Clients = "Clients";
-
+        public const string BitGo = "BitGo";
     }
     
     public static class Actions
@@ -59,7 +58,7 @@ namespace Backoffice
             NavsItem.Create("Prices", "Prices", "list-rich", Menu.Prices),
             NavsItem.Create("Simulations", "Simulations", "list-rich", Menu.Simulations),
             NavsItem.Create("Clients", "Clients", "list-rich", Menu.Clients),
-            NavsItem.Create("BitGo Assets", "BitGoAssets", "list-rich", Menu.BitGoAssets),
+            NavsItem.Create("BitGo", "BitGo", "list-rich", Menu.BitGo),
         };
         
         public static IEnumerable<NavsItem> GenerateMenuItems()
