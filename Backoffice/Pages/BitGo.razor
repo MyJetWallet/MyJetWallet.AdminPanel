@@ -1,0 +1,61 @@
+﻿@page "/BitGo"
+
+<ul class="nav nav-tabs nav-pills">
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.Coins)" aria-current="page" @onclick="SetCoins">Coins</button>
+    </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.Assets)" aria-current="page" @onclick="SetAssets">Assets</button>
+    </li>
+</ul>
+
+<div style="margin: 10px">
+    @if (ActivePage == Menus.Coins)
+    {
+        <BitGoCoinListComponent/>
+    }
+
+    @if (ActivePage == Menus.Assets)
+    {
+        <BitGoAssetListComponent/>
+    }
+</div>
+
+@code {
+    private Menus ActivePage { get; set; } = Menus.Coins;
+
+    private string CheckActive(Menus target)
+    {
+        if (ActivePage == target)
+            return "active";
+
+        return "";
+    }
+
+    private void SetActive(Menus page)
+    {
+        ActivePage = page;
+        StateHasChanged();
+    }
+
+    public enum Menus
+    {
+        None,
+        Coins,
+        Assets
+    }
+
+
+    private void SetCoins()
+    {
+        ActivePage = Menus.Coins;
+        StateHasChanged();
+    }
+
+    private void SetAssets()
+    {
+        SetActive(Menus.Assets);
+        StateHasChanged();
+    }
+
+}

@@ -1,0 +1,38 @@
+﻿@using MyJetWallet.BitGo.Settings.NoSql
+
+<BaseOneButtonsDialog Caption=@($"{Item.Coin}") OnClose="OnClose" ButtonCaption="Close">
+    <table>
+        <tr>
+            <td>
+                <table>
+                    <tr>
+                        <td>BitGo coin</td><td class="float-left">@Item.Coin</td>
+                    </tr>
+                    <tr>
+                        <td>Accuracy</td><td class="float-left">@Item.Accuracy</td>
+                    </tr>
+                    <tr></tr>
+                    <tr>
+                        <td>Required confirmations</td><td class="float-left">@Item.RequiredConfirmations</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+
+    </table>
+</BaseOneButtonsDialog>
+
+@code {
+
+    [Parameter]
+    public BitgoCoinEntity Item { get; set; }
+
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+
+    private void OnClose()
+    {
+        OnCloseCallback.InvokeAsync();
+    }
+
+}

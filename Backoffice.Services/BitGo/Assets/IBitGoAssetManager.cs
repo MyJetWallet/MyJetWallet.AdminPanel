@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using MyJetWallet.BitGo.Settings.NoSql;
 
-namespace Backoffice.Services.BitGoAssets
+namespace Backoffice.Services.BitGo.Assets
 {
     public interface IBitGoAssetManager
     {

@@ -17,7 +17,7 @@ namespace Backoffice.Shared
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            var userId = "krasdmi";
+            var userId = await _httpContextAccessor.HttpContext.GetBoUserId();
             var identity = new ClaimsIdentity(new[]
             {
                 new Claim(ClaimTypes.Name, userId),

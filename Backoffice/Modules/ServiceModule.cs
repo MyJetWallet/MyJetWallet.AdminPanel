@@ -5,7 +5,8 @@ using Backoffice.Mocks;
 using Backoffice.Services;
 using Backoffice.Services.Assets;
 using Backoffice.Services.Backoffice;
-using Backoffice.Services.BitGoAssets;
+using Backoffice.Services.BitGo.Assets;
+using Backoffice.Services.BitGo.Coins;
 using Backoffice.Services.SpotInstruments;
 using Backoffice.TableStorage;
 using MyCRM.AccountTransactions.Grpc;
@@ -24,6 +25,7 @@ using MyCrm.PersonalData.Grpc;
 using MyCrm.TraderMarketingSalesData.Grpc.Backoffice;
 using MyCrm.TraderOnlineData.Grpc;
 using MyCrm.TradersDocuments.Grpc;
+using MyJetWallet.BitGo.Settings.Ioc;
 using SimpleTrading.Deposit.Grpc;
 
 namespace Backoffice.Modules
@@ -45,6 +47,11 @@ namespace Backoffice.Modules
             builder
                 .RegisterType<BitGoAssetManager>()
                 .As<IBitGoAssetManager>()
+                .SingleInstance();
+            
+            builder
+                .RegisterType<BitGoCoinManager>()
+                .As<IBitGoCoinManager>()
                 .SingleInstance();
 
             RegisterGrpcService(builder);

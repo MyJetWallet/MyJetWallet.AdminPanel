@@ -28,7 +28,7 @@
       <PackageReference Include="MyCrm.AutoOwnerProfiles.Grpc" Version="1.0.1" />
       <PackageReference Include="MyCrm.MyCrmTradersUtmParametersGrpcContracts" Version="1.0.3" />
       <PackageReference Include="MyCrm.TradersDocuments.Grpc" Version="1.0.4" />
-      <PackageReference Include="MyJetWallet.BitGo.Settings" Version="1.0.0" />
+      <PackageReference Include="MyJetWallet.BitGo.Settings" Version="1.0.5" />
       <PackageReference Include="MyJetWallet.Service.ActiveOrders.Client" Version="1.0.3" />
       <PackageReference Include="MyJetWallet.Service.AssetsDictionary.Client" Version="1.5.4" />
       <PackageReference Include="MyJetWallet.Service.BalanceHistory.Client" Version="1.6.1" />

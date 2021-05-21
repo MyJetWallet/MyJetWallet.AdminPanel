@@ -1,6 +1,6 @@
-﻿@using Backoffice.Services.BitGoAssets
-@using MyJetWallet.BitGo.Settings.NoSql
+﻿@using MyJetWallet.BitGo.Settings.NoSql
 @using Backoffice.Abstractions.Models
+@using Backoffice.Services.BitGo.Assets
 
 @inject IBitGoAssetManager BitGoAssetManager;
 @inject IToaster ToastService;
@@ -9,6 +9,7 @@
 <tr>
     <td>@Item.AssetSymbol</td>
     <td>@Item.BitgoWalletId</td>
+    <td>@Item.EnabledBitgoWalletIds</td>
     <td>@Item.BitgoCoin</td>
 
     <td>

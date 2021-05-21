@@ -1,0 +1,113 @@
+﻿@using MyJetWallet.BitGo.Settings.NoSql
+@using Backoffice.Abstractions.Models
+@using Backoffice.Services.BitGo.Assets
+
+@inject IBitGoAssetManager BitGoAssetManager;
+@inject IToaster ToastService
+
+<Loader LoaderConfig="@LoaderConfig"/>
+
+<ul class="nav float-left">
+    <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
+    <li><button @onclick="OnAddAsset" type="button" class="btn btn-outline-success" style="margin: 5px; border-radius: 10px">Add</button></li>
+</ul>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Symbol</th>
+            <th>BitGo wallet</th>
+            <th>Enabled BitGo wallet</th>
+            <th>BitGo coin</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var bitGoAsset in BitGoAssetList)
+        {
+            <BitGoAssetTableRow Item="@bitGoAsset" LoaderConfig="@LoaderConfig" OnDeleteCallback="DeleteAsset" />
+        }
+    
+    </tbody>
+</table>
+
+@if (IsShowAdding)
+{
+    <div>
+        <BitGoAssetDetailsDialogEdit IsCreate="true" OnCloseCallback="OnCloseAddingDialog" OnCreateCallback="OnCreateAsset" />
+    </div>
+}
+
+
+@code {
+    private string Message { get; set; } = "-- none --";
+
+    private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+    
+    private bool IsShowAdding { get; set; }
+
+    private List<BitgoAssetMapEntity> BitGoAssetList { get; set; } = new();
+
+    private async void OnRefresh()
+    {
+        LoaderConfig.Enable();
+        
+        BitGoAssetList = await BitGoAssetManager.GetAll();
+        
+        LoaderConfig.Disable();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override void OnInitialized()
+    {
+        OnRefresh();
+        
+        base.OnInitialized();
+    }
+
+    private async Task OnAddAsset()
+    {
+        IsShowAdding = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void OnCloseAddingDialog()
+    {
+        IsShowAdding = false;
+        StateHasChanged();
+    }
+    
+    private async void OnCreateAsset(BitgoAssetMapEntity item)
+    {
+        try
+        {
+            await BitGoAssetManager.CreateBitGoAsset(item);
+            
+            ToastService.Info($"BitGo Asset {item.AssetSymbol} is created", "Create BitGo asset");
+            
+            IsShowAdding = false;
+            
+            OnRefresh();    
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "BitGo Asset creation");
+        }
+    }
+
+    private async void DeleteAsset(BitgoAssetMapEntity item)
+    {
+        try
+        {
+            await BitGoAssetManager.DeleteAsset(item);
+            
+            ToastService.Info($"BitGO Asset {item.AssetSymbol} is deleted", "Delete BitGo asset");
+            
+            OnRefresh();    
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Asset deletion");
+        }
+    }
+}

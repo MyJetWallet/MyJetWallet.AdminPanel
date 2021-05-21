@@ -1,30 +1,29 @@
-﻿@using Backoffice.Services.BitGoAssets
-@using MyJetWallet.BitGo.Settings.NoSql
+﻿@using MyJetWallet.BitGo.Settings.NoSql
 @using Backoffice.Abstractions.Models
-
-@inject IBitGoAssetManager BitGoAssetManager;
+@using Backoffice.Services.BitGo.Coins
+@inject IBitGoCoinManager BitGoCoinManager;
 @inject IToaster ToastService
 
 <Loader LoaderConfig="@LoaderConfig"/>
 
 <ul class="nav float-left">
     <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
-    <li><button @onclick="OnAddAsset" type="button" class="btn btn-outline-success" style="margin: 5px; border-radius: 10px">Add</button></li>
+    <li><button @onclick="OnAddCoin" type="button" class="btn btn-outline-success" style="margin: 5px; border-radius: 10px">Add</button></li>
 </ul>
 
 <table class="table">
     <thead>
         <tr>
-            <th>Symbol</th>
-            <th>BitGo wallet</th>
             <th>BitGo coin</th>
+            <th>Accuracy</th>
+            <th>Required confirmations</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-        @foreach(var bitGoAsset in BitGoAssetList)
+        @foreach(var bitGoCoin in BitGoCoinList)
         {
-            <BitGoAssetTableRow Item="@bitGoAsset" LoaderConfig="@LoaderConfig" OnDeleteCallback="DeleteAsset" />
+            <BitGoCoinTableRow Item="@bitGoCoin" LoaderConfig="@LoaderConfig" OnDeleteCallback="DeleteCoin" />
         }
     
     </tbody>
@@ -33,7 +32,7 @@
 @if (IsShowAdding)
 {
     <div>
-        <BitGoAssetDetailsDialogEdit IsCreate="true" OnCloseCallback="OnCloseAddingDialog" OnCreateCallback="OnCreateAsset" />
+        <BitGoCoinDetailsDialogEdit IsCreate="true" OnCloseCallback="OnCloseAddingDialog" OnCreateCallback="OnCreateCoin" />
     </div>
 }
 
@@ -45,13 +44,13 @@
     
     private bool IsShowAdding { get; set; }
 
-    private List<BitgoAssetMapEntity> BitGoAssetList { get; set; } = new();
+    private List<BitgoCoinEntity> BitGoCoinList { get; set; } = new();
 
     private async void OnRefresh()
     {
         LoaderConfig.Enable();
         
-        BitGoAssetList = await BitGoAssetManager.GetAll();
+        BitGoCoinList = await BitGoCoinManager.GetAll();
         
         LoaderConfig.Disable();
         await InvokeAsync(StateHasChanged);
@@ -64,7 +63,7 @@
         base.OnInitialized();
     }
 
-    private async Task OnAddAsset()
+    private async Task OnAddCoin()
     {
         IsShowAdding = true;
         await InvokeAsync(StateHasChanged);
@@ -76,13 +75,13 @@
         StateHasChanged();
     }
     
-    private async void OnCreateAsset(BitgoAssetMapEntity item)
+    private async void OnCreateCoin(BitgoCoinEntity item)
     {
         try
         {
-            await BitGoAssetManager.CreateBitGoAsset(item);
+            await BitGoCoinManager.CreateBitGoCoin(item);
             
-            ToastService.Info($"BitGo Asset {item.AssetSymbol} is created", "Create BitGo asset");
+            ToastService.Info($"BitGo Coin {item.Coin} is created", "Create BitGo coin");
             
             IsShowAdding = false;
             
@@ -90,23 +89,23 @@
         }
         catch (Exception ex)
         {
-            ToastService.Error(ex.Message, "BitGo Asset creation");
+            ToastService.Error(ex.Message, "BitGo Coin creation");
         }
     }
 
-    private async void DeleteAsset(BitgoAssetMapEntity item)
+    private async void DeleteCoin(BitgoCoinEntity item)
     {
         try
         {
-            await BitGoAssetManager.DeleteAsset(item);
+            await BitGoCoinManager.DeleteCoin(item);
             
-            ToastService.Info($"BitGO Asset {item.AssetSymbol} is deleted", "Delete BitGo asset");
+            ToastService.Info($"BitGo Coin {item.Coin} is deleted", "Delete BitGo coin");
             
             OnRefresh();    
         }
         catch (Exception ex)
         {
-            ToastService.Error(ex.Message, "Asset deletion");
+            ToastService.Error(ex.Message, "BitGo Coin deletion");
         }
     }
 }

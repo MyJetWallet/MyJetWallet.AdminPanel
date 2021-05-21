@@ -1,0 +1,133 @@
+﻿@using MyJetWallet.BitGo.Settings.NoSql
+@using Backoffice.Abstractions.Models
+@using Backoffice.Services.BitGo.Coins
+
+@inject IBitGoCoinManager BitGoCoinManager;
+@inject IToaster ToastService;
+
+
+<tr>
+    <td>@Item.Coin</td>
+    <td>@Item.Accuracy</td>
+    <td>@Item.RequiredConfirmations</td>
+
+    <td>
+        <ul class="nav">
+            <li><button type="button" class="btn-outline-info btn" @onclick="ShowDetails" >Details</button></li>
+            <li><button type="button" class="btn-outline-warning btn" @onclick="ShowEdit" >Edit</button></li>
+            <li><button type="button" class="btn-outline-danger btn" @onclick="ShowDelete" >Delete</button></li>
+        </ul>
+    </td>
+</tr>
+
+@if (IsShowDetails)
+{
+    <BitGoCoinDetailsDialog Item="@Item" OnCloseCallback="OnCloseCoinDialog" />
+}
+
+@if (IsShowEdit)
+{
+    <div>
+        <BitGoCoinDetailsDialogEdit Item="@Item" IsCreate="false" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="OnUpdateCoin" />
+    </div>
+}
+
+@if (IsShowDelete)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption=@($"Delete BitGo coin {Item.Coin}")
+            OnClose="OnCloseDeleteDialog"
+            YesButtonCaption="Delete"
+            NoButtonCaption="Cancel"
+            OnSubmit="DeleteItem">
+            
+            <h3 class="alert-warning">Are you sure you want to delete the BitGo coin <b>@Item.Coin</b> ?</h3>
+            
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+
+
+@code {
+    
+    [Parameter]
+    public BitgoCoinEntity Item { get; set; }
+
+    [Parameter]
+    public ILoaderConfiguration LoaderConfig { get; set; }
+    
+    [Parameter]
+    public EventCallback<BitgoCoinEntity> OnDeleteCallback { get; set; }
+    
+    private bool IsShowDetails { get; set; }
+    
+    private bool IsShowEdit { get; set; }
+    
+    private bool IsShowDelete { get; set; }
+    
+    private bool IsShowBrand { get; set; }
+    private string ChangeBrandId { get; set; }
+    private bool IsBrandAssigned { get; set; }
+
+    private void OnCloseCoinDialog()
+    {
+        IsShowDetails = false;
+        StateHasChanged();
+    }
+
+    private void ShowDetails()
+    {
+        IsShowDetails = true;
+        StateHasChanged();
+    }
+
+    private void ShowEdit()
+    {
+        IsShowEdit = true;
+        StateHasChanged();
+    }
+
+    private void OnCloseEditDialog()
+    {
+        IsShowEdit = false;
+        StateHasChanged();
+    }
+    
+    private async void OnUpdateCoin(BitgoCoinEntity coin)
+    {
+        try
+        {
+            await BitGoCoinManager.UpdateCoin(coin);
+
+            IsShowEdit = false;
+
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Edit BitGo coin");
+        }
+    }
+
+
+    private void OnCloseDeleteDialog()
+    {
+        IsShowDelete = false;
+        StateHasChanged();
+    }
+
+
+    private async Task DeleteItem()
+    {
+        IsShowDelete = false;
+        await OnDeleteCallback.InvokeAsync(Item);
+    }
+
+    private void ShowDelete()
+    {
+        IsShowDelete = true;
+        StateHasChanged();
+    }
+}

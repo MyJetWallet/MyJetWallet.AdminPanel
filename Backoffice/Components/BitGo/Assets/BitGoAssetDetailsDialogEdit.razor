@@ -1,0 +1,108 @@
+﻿@using MyJetWallet.BitGo.Settings.NoSql
+
+<BaseTwoButtonsDialog
+    Caption=@(!IsCreate ? $"{Item.AssetSymbol} [{Item.BrokerId}]" : "Create a new BitGo Asset")
+    OnClose="OnClose"
+    YesButtonCaption="@(IsCreate ? "Create" : "Save")"
+    NoButtonCaption="Close"
+    OnSubmit="OnSubmit">
+
+    <table>
+
+        <tr>
+            <td>
+
+                <table>
+                    <tr>
+                        <td>Broker</td>
+                        <td class="float-left">
+                            @if (!IsCreate)
+                            {
+                                @Item.BrokerId
+                            }
+                            else
+                            {
+                                <input type="text" class="form-control" @bind="Item.BrokerId"/>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Symbol</td>
+                        <td class="float-left">
+                            @if (!IsCreate)
+                            {
+                                @Item.AssetSymbol
+                            }
+                            else
+                            {
+                                <input type="text" class="form-control" @bind="Item.AssetSymbol"/>
+                            }
+                        </td>
+                    </tr>
+                    <tr></tr>
+                    <tr>
+                        <td>BitGo wallet</td>
+                        <td class="float-left">
+                            <input type="text" class="form-control" @bind="Item.BitgoWalletId"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Enabled BitGo wallets</td>
+                        <td class="float-left">
+                            <input type="text" class="form-control" @bind="Item.EnabledBitgoWalletIds"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>BitGo coin</td>
+                        <td class="float-left">
+                            <input type="text" class="form-control" @bind="Item.BitgoCoin"/>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+
+        </tr>
+    </table>
+</BaseTwoButtonsDialog>
+
+@code {
+
+    [Parameter]
+    public BitgoAssetMapEntity Item { get; set; }
+
+    [Parameter]
+    public bool IsCreate { get; set; }
+
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+
+    [Parameter]
+    public EventCallback<BitgoAssetMapEntity> OnCreateCallback { get; set; }
+
+    [Parameter]
+    public EventCallback<BitgoAssetMapEntity> OnUpdateCallback { get; set; }
+
+    private void OnClose()
+    {
+        OnCloseCallback.InvokeAsync();
+    }
+
+    private async Task OnSubmit()
+    {
+        if (IsCreate)
+            await OnCreateCallback.InvokeAsync(Item);
+        else
+            await OnUpdateCallback.InvokeAsync(Item);
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (IsCreate)
+            Item = new BitgoAssetMapEntity()
+            {
+                BrokerId = "jetwallet",
+            };
+    }
+
+}
