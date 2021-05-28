@@ -28,14 +28,7 @@
                     <tr>
                         <td>Accuracy</td>
                         <td class="float-left">
-                            @if (!IsCreate)
-                            {
-                                @Item.Accuracy
-                            }
-                            else
-                            {
-                                <input type="number" class="form-control" @bind="Item.Accuracy"/>
-                            }
+                            <input type="number" class="form-control" @bind="Item.Accuracy"/>
                         </td>
                     </tr>
                     <tr></tr>
