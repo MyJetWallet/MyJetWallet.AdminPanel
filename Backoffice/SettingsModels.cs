@@ -35,12 +35,6 @@ namespace Backoffice
         [YamlProperty("AdminPanel.SmsProviderMockGrpcServiceUrl")]
         public string SmsProviderMockGrpcServiceUrl { get; set; }
 
-        [YamlProperty("AdminPanel.SmsProviderNexmoGrpcServiceUrl")]
-        public string SmsProviderNexmoGrpcServiceUrl { get; set; }
-
-        [YamlProperty("AdminPanel.SmsProviderTwilioGrpcServiceUrl")]
-        public string SmsProviderTwilioGrpcServiceUrl { get; set; }
-
         [YamlProperty("AdminPanel.ZipkinUrl")]
         public string ZipkinUrl { get; set; }
 
