@@ -1,0 +1,106 @@
+﻿@using Service.SmsProviderMock.Grpc
+@using System.Threading
+@using Backoffice.Abstractions.Models
+@using Service.SmsProviderMock.Grpc.Models.Requests
+@using Service.SmsProviderMock.Grpc.Models.Responses
+@using Service.SmsSender.Domain.Models
+
+@inject ISmsSentHistoryService SmsSentHistoryService
+@inject IToaster ToastService
+
+<Loader LoaderConfig="@LoaderConfig" />
+
+<ul class="nav float-left">
+    <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
+</ul>
+<div class="row">
+    <h3 style="margin: 10px">Mock Provider</h3>
+</div>
+<div class="row">
+    <table class="table" style="width: auto">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Phone</th>
+                <th>Lang</th>
+                <th>Date</th>
+                <th>Text</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var sms in SentSmsList)
+            {
+                <tr>
+                    <td>@sms.Id</td>
+                    <td>@sms.Phone</td>
+                    <td>@sms.Lang</td>
+                    <td>@sms.Date.ToString("G")</td>
+                    <td>@sms.Text</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+
+    private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+    private SentSms[] SentSmsList { get; set; } = Array.Empty<SentSms>();
+    private string SelectedProvider { get; set; }
+    private Dictionary<string, List<ProviderRoute>> ProvidersRoutes { get; set; } = new();
+
+    private bool IsShowAdding { get; set; }
+    private const int MAX_ATTEMPTS_COUNT = 3;
+
+    private async void OnRefresh()
+    {
+        LoaderConfig.Enable();
+
+        await LoadSmsSentHistoryAsync();
+
+        LoaderConfig.Disable();
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadSmsSentHistoryAsync()
+    {
+        var attempts = 0;
+        var exceptionMessage = string.Empty;
+
+        while (attempts < MAX_ATTEMPTS_COUNT)
+        {
+            try
+            {
+                var smsSentHistoryRequest = new GetLastSentSmsRequest
+                {
+                    MaxCount = 10
+                };
+
+                var smsSentHistoryResponse = await SmsSentHistoryService.GetLastSentSmsAsync(smsSentHistoryRequest);
+                SentSmsList = smsSentHistoryResponse.SentSmsList;
+                break;
+            }
+            catch (Exception ex)
+            {
+                exceptionMessage = ex.Message;
+                attempts++;
+            }
+
+            Thread.Sleep(1000);
+        }
+
+        if (attempts == MAX_ATTEMPTS_COUNT)
+        {
+            ToastService.Error(exceptionMessage, "Cannot get any sms sent history.");
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        OnRefresh();
+
+        base.OnInitialized();
+    }
+
+}

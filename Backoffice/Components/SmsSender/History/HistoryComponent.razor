@@ -1,0 +1,17 @@
+﻿<h1>History Component</h1>
+
+@code {
+
+    private async void OnRefresh()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override void OnInitialized()
+    {
+        OnRefresh();
+
+        base.OnInitialized();
+    }
+
+}

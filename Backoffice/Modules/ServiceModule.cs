@@ -26,6 +26,7 @@ using MyCrm.TraderMarketingSalesData.Grpc.Backoffice;
 using MyCrm.TraderOnlineData.Grpc;
 using MyCrm.TradersDocuments.Grpc;
 using MyJetWallet.BitGo.Settings.Ioc;
+using Service.SmsSender.Grpc;
 using SimpleTrading.Deposit.Grpc;
 
 namespace Backoffice.Modules

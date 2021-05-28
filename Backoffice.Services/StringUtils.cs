@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Backoffice.Services
 {
@@ -26,11 +27,6 @@ namespace Backoffice.Services
             return SubstringExt(src, fromIndex, toIndex-1);
         }
 
-        private static string SubstringExt(this string src, int from, int to)
-        {
-            return src.Substring(from, to - from + 1);
-        }
-        
         public static string SubstringFromString(this string src, string from, int skipCount = 0)
         {
             var fromIndex = 0;
@@ -60,6 +56,30 @@ namespace Backoffice.Services
 
             return SubstringExt(src, fromIndex, src.Length - 1);
         }
+        
+        public static string JoinIntoString(this IEnumerable<string> values, int maxLength)
+        {
+            var resultCollection = new List<string>();
+            var length = 0;
+            foreach (var value in values)
+            {
+                length += value.Length + 2;
+                if (length < maxLength)
+                {
+                    resultCollection.Add(value);
+                }
+                else
+                {
+                    break;
+                }
+            }
 
+            return string.Join(", ", resultCollection);
+        }
+        
+        private static string SubstringExt(this string src, int from, int to)
+        {
+            return src.Substring(from, to - from + 1);
+        }
     }
 }

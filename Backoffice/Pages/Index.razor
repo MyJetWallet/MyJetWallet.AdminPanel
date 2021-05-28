@@ -2,9 +2,7 @@
 
 @using Blazored.Typeahead
 
-
 <div>
-
     <TagSelector SelectableTags="Tags" @bind-SelectedTags="Selected" Filter="@((item,term) => item.Contains(term))" OnCreateTag="OnCreateTag">
         <TagTemplate>@context</TagTemplate>
     </TagSelector>
@@ -24,21 +22,14 @@
     <p>Selected item: @SelectedItem</p>
 }
 
-
 @code {
 
-    IEnumerable<string> Tags = new[] {"Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6"};
+    IEnumerable<string> Tags = new[] {"Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6", "Item 7"};
     IList<string> Selected = new List<string>();
 
     private string SelectedItem;
     
-    void OnCreateTag(string tag)
-    {
-        Selected.Add(tag);
-    }
+    void OnCreateTag(string tag) => Selected.Add(tag);
 
-    private async Task<IEnumerable<string>> Search(string text)
-    {
-        return Tags.Where(e => e.ToLower().Contains(text.ToLower()));
-    }
+    private async Task<IEnumerable<string>> Search(string text) => Tags.Where(e => e.ToLower().Contains(text.ToLower()));
 }

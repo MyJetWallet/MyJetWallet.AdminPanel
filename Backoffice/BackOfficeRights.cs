@@ -11,6 +11,7 @@ namespace Backoffice
         public const string Simulations = "Simulations";
         public const string Clients = "Clients";
         public const string BitGo = "BitGo";
+        public const string SmsSender = "SmsSender";
     }
     
     public static class Actions
@@ -26,20 +27,18 @@ namespace Backoffice
             BackOfficeRight.Create(Menu.Assets, "Access to the assets menu"),
         };
 
-        public static List<BackOfficeRight> Get()
-        {
-            return Rights;
-        }
+        public static List<BackOfficeRight> Get() => Rights;
     }
 
     public class BackOfficeRight
     {
         public string Id { get; set; }
+
         public string Name { get; set; }
 
         public static BackOfficeRight Create(string id, string name)
         {
-            return new BackOfficeRight
+            return new()
             {
                 Id = id,
                 Name = name
@@ -59,25 +58,25 @@ namespace Backoffice
             NavsItem.Create("Simulations", "Simulations", "list-rich", Menu.Simulations),
             NavsItem.Create("Clients", "Clients", "list-rich", Menu.Clients),
             NavsItem.Create("BitGo", "BitGo", "list-rich", Menu.BitGo),
+            NavsItem.Create("SmsSender", "SmsSender", "list-rich", Menu.SmsSender)
         };
         
-        public static IEnumerable<NavsItem> GenerateMenuItems()
-        {
-            return MenuItems;
-        }
+        public static IEnumerable<NavsItem> GenerateMenuItems() => MenuItems;
     }
-    
-    
+
     public class NavsItem
     {
         public string Name { get; set; }
+
         public string Href { get; set; }
+
         public string Icon { get; set; }
+
         public string Right { get; set; }
 
         public static NavsItem Create(string name, string href, string icon, string right)
         {
-            return new NavsItem
+            return new()
             {
                 Name = name,
                 Href = href,

@@ -16,7 +16,8 @@ using Service.Liquidity.Engine.Client;
 using Service.Liquidity.Reports.Client;
 using Service.MatchingEngine.PriceSource.Client;
 using Service.Service.KYC.Client;
-using Service.Simulation.FTX.Client;
+using Service.SmsProviderMock.Client;
+using Service.SmsSender.Client;
 using Service.TradeHistory.Client;
 
 namespace Backoffice.Modules
@@ -52,8 +53,13 @@ namespace Backoffice.Modules
             builder.RegisterInstance(simulationManager).As<ISimulationsManager>().SingleInstance();
 
             builder.RegisterLiquidityReportClient(Program.Settings.LiquidityReportGrpcServiceUrl);
+            builder.RegisterSmsSenderClient(Program.Settings.SmsSenderGrpcServiceUrl);
+            builder.RegisterSmsSenderAdminClients(Program.Settings.SmsSenderGrpcServiceUrl);
+            builder.RegisterSmsProviderMockClient(Program.Settings.SmsProviderMockGrpcServiceUrl);
+            //builder.RegisterSmsProviderNexmoClient(Program.Settings.SmsProviderNexmoGrpcServiceUrl);
+            //builder.RegisterSmsProviderTwilioClient(Program.Settings.SmsProviderTwilioGrpcServiceUrl);
             
-            
+
             builder.RegisterMatchingEnginePriceSourceClient(_myNoSqlClient);
             builder.RegisterMatchingEngineOrderBookClient(_myNoSqlClient);
             builder.RegisterMatchingEngineDetailOrderBookClient(_myNoSqlClient);
@@ -76,7 +82,6 @@ namespace Backoffice.Modules
 
             builder.RegisterKycStatusClientsGrpcOnly(Program.Settings.KycGrpcServiceUrl);
             
-            builder.RegisterBitgoSettingsWriter(Program.ReloadedSettings(e => e.MyNoSqlWriterUrl));
         }
         
         private void RegisterMyNoSqlTcpClient(ContainerBuilder builder)

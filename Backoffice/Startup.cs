@@ -108,7 +108,6 @@ namespace Backoffice
                 endpoints.MapControllers();
                 endpoints.MapFallbackToPage("/_Host");
                 endpoints.MapMetrics();
-                
             });
         }
 

@@ -3,7 +3,6 @@ using System.Linq;
 
 namespace Backoffice
 {
-
     public class Currency
     {
         public Currency(string id, string symbol, string cultureName,
@@ -26,10 +25,7 @@ namespace Backoffice
         
         public string IsoCode { get; private set; }
 
-        public override string ToString()
-        {
-            return Symbol;
-        }
+        public override string ToString() => Symbol;
     }
 
     public static class Currencies
@@ -63,8 +59,9 @@ namespace Backoffice
         public static string GetCurrenctName(this string iso)
         {
             if (iso == "978")
+            {
                 return "Euro";
-
+            }
 
             foreach (var crnsValue in Crns.Values.Where(crnsValue => crnsValue.IsoCode == iso))
             {
@@ -73,6 +70,5 @@ namespace Backoffice
 
             return iso;
         }
-
     }
 }

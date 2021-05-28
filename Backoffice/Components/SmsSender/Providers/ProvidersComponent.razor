@@ -1,0 +1,212 @@
+﻿@using Service.SmsSender.Domain.Models
+@using Service.SmsSender.Grpc
+@using Backoffice.Abstractions.Models
+@using System.Threading
+
+@inject ISmsProviderService SmsProviderService
+@inject IToaster ToastService
+
+<Loader LoaderConfig="@LoaderConfig" />
+
+<ul class="nav nav-tabs nav-pills">
+    @foreach (var provider in ProvidersList)
+    {
+        <li class="nav-item" style="margin: 10px">
+            <button class="nav-link" aria-current="page" @onclick="@(() => SetProvider(provider))">@provider</button>
+        </li>
+    }
+</ul>
+
+@if (!string.IsNullOrEmpty(SelectedProvider))
+{
+    <ul class="nav float-left">
+        <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
+        <li><button @onclick="OnAddRoute" type="button" class="btn btn-outline-success" style="margin: 5px; border-radius: 10px">Add</button></li>
+    </ul>
+    <div class="row">
+        <h3 style="margin: 10px">@SelectedProvider</h3>
+    </div>
+    <div class="row">
+        <table class="table" style="width: auto">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>Order</th>
+                    <th>Pattern</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (ProvidersRoutes.Count(r => r.Key == SelectedProvider) > 0)
+                {
+                    @foreach (var route in ProvidersRoutes.FirstOrDefault(r => r.Key == SelectedProvider).Value)
+                    {
+                        <ProvidersRoutesTableRow Route="@route" LoaderConfig="@LoaderConfig" OnDeleteCallback="OnDeleteRoute" />
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (IsShowAdding)
+{
+    <div>
+        <ProviderRouteDetailsDialogEdit IsCreate="true" ProviderId="@SelectedProvider" OnCloseCallback="OnCloseAddingDialog" OnCreateCallback="OnCreateRoute" />
+    </div>
+}
+
+@code {
+
+    private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+    private string[] ProvidersList { get; set; } = Array.Empty<string>();
+    private string SelectedProvider { get; set; }
+    private Dictionary<string, List<ProviderRoute>> ProvidersRoutes { get; set; } = new();
+
+    private bool IsShowAdding { get; set; }
+    private const int MAX_ATTEMPTS_COUNT = 3;
+
+    private async void OnRefresh()
+    {
+        LoaderConfig.Enable();
+
+        await LoadProvidersRoutes();
+
+        LoaderConfig.Disable();
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadProvidersAsync()
+    {
+        var attempts = 0;
+        var exceptionMessage = string.Empty;
+
+        while (attempts < MAX_ATTEMPTS_COUNT)
+        {
+            try
+            {
+                var providersResponse = await SmsProviderService.GetAllProvidersAsync();
+                ProvidersList = providersResponse?.Providers;
+                break;
+            }
+            catch (Exception ex)
+            {
+                exceptionMessage = ex.Message;
+                attempts++;
+            }
+
+            Thread.Sleep(1000);
+        }
+
+        if (attempts == MAX_ATTEMPTS_COUNT)
+        {
+            ToastService.Error(exceptionMessage, "Cannot get any providers.");
+        }
+    }
+
+    private async Task LoadProvidersRoutes()
+    {
+        var attempts = 0;
+        var exceptionMessage = string.Empty;
+
+        while (attempts < MAX_ATTEMPTS_COUNT)
+        {
+            try
+            {
+                var providersRoutesResponse = await SmsProviderService.GetAllRoutesAsync();
+                var providersRoutes = providersRoutesResponse.Routes.Where(r => r.ProviderId != null).ToList();
+                
+                foreach (var providersRoute in providersRoutes)
+                {
+                    if (!ProvidersRoutes.ContainsKey(providersRoute.ProviderId))
+                    {
+                        ProvidersRoutes.Add(providersRoute.ProviderId, new List<ProviderRoute>());
+                    }
+
+                    ProvidersRoutes[providersRoute.ProviderId].Add(providersRoute);
+                }
+
+                break;
+            }
+            catch (Exception ex)
+            {
+                exceptionMessage = ex.Message;
+                attempts++;
+            }
+
+            Thread.Sleep(1000);
+        }
+
+        if (attempts == MAX_ATTEMPTS_COUNT)
+        {
+            ToastService.Error(exceptionMessage, "Cannot get any providers routes.");
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        LoaderConfig.Enable();
+
+        await LoadProvidersAsync();
+        await LoadProvidersRoutes();
+
+        LoaderConfig.Disable();
+
+        await base.OnInitializedAsync();
+    }
+
+    private void SetProvider(string provider)
+    {
+        SelectedProvider = provider;
+        StateHasChanged();
+    }
+
+    private async Task OnAddRoute()
+    {
+        IsShowAdding = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void OnCloseAddingDialog()
+    {
+        IsShowAdding = false;
+        StateHasChanged();
+    }
+
+    private async void OnCreateRoute(ProviderRoute route)
+    {
+        try
+        {
+            await SmsProviderService.AddOrUpdateRouteAsync(route);
+
+            ToastService.Info($"Route {route.Name} is created", "Create route");
+
+            IsShowAdding = false;
+
+            OnRefresh();
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Route creation failed");
+        }
+    }
+
+    private async void OnDeleteRoute(ProviderRoute route)
+    {
+        try
+        {
+            await SmsProviderService.DeleteRouteAsync(route);
+
+            ToastService.Info($"Route {route.Name} is deleted", "Delete route");
+
+            OnRefresh();
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Route deletion failed");
+        }
+    }
+
+}

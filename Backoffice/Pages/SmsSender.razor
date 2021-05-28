@@ -1,0 +1,75 @@
+﻿@page "/SmsSender"
+
+<ul class="nav nav-tabs nav-pills">
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.Providers)" aria-current="page" @onclick="SetProviders">Providers</button>
+    </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.Templates)" aria-current="page" @onclick="SetTemplate">Template</button>
+    </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.History)" @onclick="SetHistory">History</button>
+    </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.Mock)" @onclick="SetMock">Mock</button>
+    </li>
+</ul>
+
+<div style="margin: 10px">
+
+    @if (ActivePage == Menus.Providers)
+    {
+        <ProvidersComponent />
+    }
+    
+    @if (ActivePage == Menus.Templates)
+    {
+        <TemplatesComponent />
+    }
+
+    @if (ActivePage == Menus.History)
+    {
+        <HistoryComponent />
+    }
+
+    @if (ActivePage == Menus.Mock)
+    {
+        <MockComponent />
+    }
+
+</div>
+
+@code {
+
+    private Menus ActivePage { get; set; } = Menus.Providers;
+
+    private string CheckActive(Menus target) => ActivePage == target ? "active" : "";
+
+    private void SetProviders() => SetActive(Menus.Providers);
+
+    private void SetTemplate()
+    {
+        ActivePage = Menus.Templates;
+        StateHasChanged();
+    }
+
+    private void SetHistory() => SetActive(Menus.History);
+
+    private void SetMock() => SetActive(Menus.Mock);
+
+    private void SetActive(Menus page)
+    {
+        ActivePage = page;
+        StateHasChanged();
+    }
+
+    public enum Menus
+    {
+        None,
+        Providers,
+        Templates,
+        History,
+        Mock
+    }
+
+}

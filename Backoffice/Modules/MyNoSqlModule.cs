@@ -12,12 +12,9 @@ namespace Backoffice.Modules
             RegisterMyNoSqlWriter<BitgoAssetMapEntity>(builder, BitgoAssetMapEntity.TableName);
             RegisterMyNoSqlWriter<BitgoCoinEntity>(builder, BitgoAssetMapEntity.TableName);
             RegisterMyNoSqlWriter<AssetPaymentSettingsNoSqlEntity>(builder, AssetPaymentSettingsNoSqlEntity.TableName);
-            
-            
-            
         }
 
-        private void RegisterMyNoSqlWriter<TEntity>(ContainerBuilder builder, string table)
+        private static void RegisterMyNoSqlWriter<TEntity>(ContainerBuilder builder, string table)
             where TEntity : IMyNoSqlDbEntity, new()
         {
             builder.Register(ctx => new MyNoSqlServer.DataWriter.MyNoSqlServerDataWriter<TEntity>(

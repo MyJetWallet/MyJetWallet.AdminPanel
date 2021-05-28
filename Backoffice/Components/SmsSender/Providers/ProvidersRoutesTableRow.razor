@@ -1,0 +1,104 @@
+﻿@using Service.SmsSender.Domain.Models
+@using Backoffice.Abstractions.Models
+@using Service.SmsSender.Grpc
+
+@inject ISmsProviderService SmsProviderService
+@inject IToaster ToastService
+
+<tr>
+    <td>@Route.Id</td>
+    <td>@Route.Name</td>
+    <td>@Route.Order</td>
+    <td>@Route.Pattern</td>
+    <td>
+        <ul class="nav">
+            <li><button type="button" class="btn-outline-warning btn" @onclick="ShowEdit">Edit</button></li>
+            <li><button type="button" class="btn-outline-danger btn" @onclick="ShowDelete">Delete</button></li>
+        </ul>
+    </td>
+</tr>
+
+@if (IsShowEdit)
+{
+    <div>
+        <ProviderRouteDetailsDialogEdit Route="@Route" IsCreate="false" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="OnUpdateRoute" />
+    </div>
+}
+
+@if (IsShowDelete)
+{
+    <div>
+        <BaseTwoButtonsDialog Caption=@($"Delete route {Route.Name}")
+                              OnClose="OnCloseDeleteDialog"
+                              YesButtonCaption="Delete"
+                              NoButtonCaption="Cancel"
+                              OnSubmit="DeleteRoute">
+
+            <h3 class="alert-warning">Are you sure you want to delete the route <b>@Route.Name</b>?</h3>
+
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public ProviderRoute Route { get; set; }
+
+    [Parameter]
+    public ILoaderConfiguration LoaderConfig { get; set; }
+
+    [Parameter]
+    public EventCallback<ProviderRoute> OnDeleteCallback { get; set; }
+
+    private bool IsShowEdit { get; set; }
+
+    private bool IsShowDelete { get; set; }
+
+    private void ShowEdit()
+    {
+        IsShowEdit = true;
+        StateHasChanged();
+    }
+
+    private void OnCloseEditDialog()
+    {
+        IsShowEdit = false;
+        StateHasChanged();
+    }
+
+    private async void OnUpdateRoute(ProviderRoute route)
+    {
+        try
+        {
+            await SmsProviderService.AddOrUpdateRouteAsync(route);
+
+            IsShowEdit = false;
+
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Route edition failed");
+        }
+    }
+
+    private void OnCloseDeleteDialog()
+    {
+        IsShowDelete = false;
+        StateHasChanged();
+    }
+
+    private async Task DeleteRoute()
+    {
+        IsShowDelete = false;
+        await OnDeleteCallback.InvokeAsync(Route);
+    }
+
+    private void ShowDelete()
+    {
+        IsShowDelete = true;
+        StateHasChanged();
+    }
+
+}

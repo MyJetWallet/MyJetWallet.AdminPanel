@@ -1,0 +1,112 @@
+﻿@using Service.SmsSender.Domain.Models
+@using Service.SmsSender.Grpc
+@using Backoffice.Abstractions.Models
+@using System.Threading
+
+@inject ISmsTemplateService SmsTemplateService
+@inject IToaster ToastService
+
+<Loader LoaderConfig="@LoaderConfig" />
+
+<ul class="nav nav-tabs nav-pills">
+    @foreach (var template in TemplatesList)
+    {
+        <li class="nav-item" style="margin: 10px">
+            <button class="nav-link" aria-current="page" @onclick="@(() => SetTemplate(template))">@template.Id</button>
+        </li>
+    }
+</ul>
+
+@if (SelectedTemplate != null)
+{
+    <ul class="nav float-left">
+        <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
+    </ul>
+    <div class="row">
+        <h3 style="margin: 10px">@SelectedTemplate.Id.ToString()</h3>
+    </div>
+    <div class="row">
+        <table class="table" style="width: auto">
+            <thead>
+                <tr>
+                    <th>Lang</th>
+                    <th>Body</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var template in TemplatesList)
+                {
+                    <TemplatesTableRow Template="@template" LoaderConfig="@LoaderConfig" />
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+
+    private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+    private SmsTemplate[] TemplatesList { get; set; } = Array.Empty<SmsTemplate>();
+    private SmsTemplate SelectedTemplate { get; set; }
+
+    private bool IsShowAdding { get; set; }
+    private const int MAX_ATTEMPTS_COUNT = 3;
+
+    private async void OnRefresh()
+    {
+        LoaderConfig.Enable();
+
+        await LoadTemplatesAsync();
+
+        LoaderConfig.Disable();
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadTemplatesAsync()
+    {
+        var attempts = 0;
+        var exceptionMessage = string.Empty;
+
+        while (attempts < MAX_ATTEMPTS_COUNT)
+        {
+            try
+            {
+                var templatesResponse = await SmsTemplateService.GetAllTemplatesAsync();
+                TemplatesList = templatesResponse?.Templates;
+                break;
+            }
+            catch (Exception ex)
+            {
+                exceptionMessage = ex.Message;
+                attempts++;
+            }
+
+            Thread.Sleep(1000);
+        }
+
+        if (attempts == MAX_ATTEMPTS_COUNT)
+        {
+            ToastService.Error(exceptionMessage, "Cannot get any templates.");
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        LoaderConfig.Enable();
+
+        await LoadTemplatesAsync();
+
+        LoaderConfig.Disable();
+
+        await base.OnInitializedAsync();
+    }
+
+    private void SetTemplate(SmsTemplate template)
+    {
+        SelectedTemplate = template;
+        StateHasChanged();
+    }
+
+}

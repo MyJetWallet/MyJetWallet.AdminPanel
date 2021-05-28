@@ -1,0 +1,88 @@
+﻿@using Service.SmsSender.Domain.Models
+
+<BaseTwoButtonsDialog Caption=@(!IsCreate ? Route.Name : "Create a new route")
+                      OnClose="OnClose"
+                      YesButtonCaption="@(IsCreate ? "Create" : "Save")"
+                      NoButtonCaption="Close"
+                      OnSubmit="OnSubmit">
+    <table>
+        <tr>
+            <td>
+                <table>
+                    @if (!IsCreate)
+                    {
+                        <tr>
+                            <td>Id</td>
+                            <td class="float-left">
+                                @Route.Id
+                            </td>
+                        </tr>
+                    }
+                    <tr>
+                        <td>Name</td>
+                        <td class="float-left">
+                            <input type="text" class="form-control" @bind="Route.Name" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Order</td>
+                        <td class="float-left">
+                            <input type="text" class="form-control" @bind="Route.Order" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Pattern</td>
+                        <td class="float-left">
+                            <input type="text" class="form-control" @bind="Route.Pattern" />
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</BaseTwoButtonsDialog>
+
+@code {
+
+    [Parameter]
+    public string ProviderId { get; set; }
+
+    [Parameter]
+    public ProviderRoute Route { get; set; } = new();
+
+    [Parameter]
+    public bool IsCreate { get; set; }
+
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+
+    [Parameter]
+    public EventCallback<ProviderRoute> OnCreateCallback { get; set; }
+
+    [Parameter]
+    public EventCallback<ProviderRoute> OnUpdateCallback { get; set; }
+
+    private void OnClose()
+    {
+        OnCloseCallback.InvokeAsync();
+    }
+
+    private async Task OnSubmit()
+    {
+        if (IsCreate)
+        {
+            await OnCreateCallback.InvokeAsync(Route);
+        }
+        else
+        {
+            await OnUpdateCallback.InvokeAsync(Route);
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        Route.ProviderId ??= ProviderId;
+
+        base.OnInitialized();
+    }
+}

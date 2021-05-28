@@ -1,0 +1,80 @@
+﻿@using Service.SmsSender.Domain.Models
+@using Backoffice.Abstractions.Models
+@using Backoffice.Services
+@using Service.SmsSender.Domain.Models.Enums
+@using Service.SmsSender.Grpc
+@using Service.SmsSender.Grpc.Models.Requests
+
+@inject ISmsTemplateService SmsTemplateService
+@inject IToaster ToastService
+
+<tr>
+    <td>@Template.Id</td>
+    <td>@Template.DefaultLang</td>
+    <td>@Template.LangBodies.Keys.JoinIntoString(16)</td>
+    <td>@Template.Params.JoinIntoString(16)</td>
+    <td>
+        <ul class="nav">
+            <li><button type="button" class="btn-outline-warning btn" @onclick="ShowEdit">Edit</button></li>
+        </ul>
+    </td>
+</tr>
+
+@if (IsShowEdit)
+{
+    <div>
+        <TemplateDetailsDialogEdit Template="@Template" IsCreate="false" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="OnUpdateTemplate" />
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public SmsTemplate Template { get; set; }
+
+    [Parameter]
+    public ILoaderConfiguration LoaderConfig { get; set; }
+
+    private bool IsShowEdit { get; set; }
+
+    private void ShowEdit()
+    {
+        IsShowEdit = true;
+        StateHasChanged();
+    }
+
+    private void OnCloseEditDialog()
+    {
+        IsShowEdit = false;
+        StateHasChanged();
+    }
+
+    private async void OnUpdateTemplate(SmsTemplate template)
+    {
+        try
+        {
+            foreach (var (editedBodiesLang, editedBody) in template.LangBodies)
+            {
+                var editRequest = new EditTemplateRequest
+                {
+                    TemplateId = Template.Id,
+                    Lang = editedBodiesLang.ToEnum<LangEnum>(),
+                    TemplateBody = editedBody
+                };
+
+                await SmsTemplateService.EditTemplateAsync(editRequest);
+            }
+
+            ToastService.Info($"Template {template.Id} has been modified", "Edit template");
+
+            IsShowEdit = false;
+
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Template edition failed");
+        }
+    }
+
+}

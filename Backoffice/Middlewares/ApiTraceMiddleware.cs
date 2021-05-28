@@ -7,7 +7,7 @@ namespace Backoffice.Middlewares
 {
     public class ApiTraceMiddleware
     {
-        private RequestDelegate _next;
+        private readonly RequestDelegate _next;
         private ILogger<ApiTraceMiddleware> _logger;
 
         public ApiTraceMiddleware(RequestDelegate next, ILogger<ApiTraceMiddleware> logger)

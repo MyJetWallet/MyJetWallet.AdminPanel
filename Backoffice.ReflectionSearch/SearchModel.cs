@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 namespace Backoffice.ReflectionSearch
 {
@@ -16,7 +15,7 @@ namespace Backoffice.ReflectionSearch
         In,
         NotEmpty,
         IsTrue,
-        IsFalse,
+        IsFalse
     }
     
     public enum SearchFieldTypes
@@ -81,7 +80,7 @@ namespace Backoffice.ReflectionSearch
 
         public static SearchFilterModel Create(IEnumerable<SearchFilterItem> models)
         {
-            return new SearchFilterModel
+            return new()
             {
                 FilterModels = models
             };
@@ -99,7 +98,7 @@ namespace Backoffice.ReflectionSearch
         public static SearchModelItem Create(SearchFieldTypes type, Type sourceType, IEnumerable<string> possibleValues,
             string propertyName)
         {
-            return new SearchModelItem
+            return new()
             {
                 Type = type,
                 SourceType = sourceType,
@@ -115,7 +114,7 @@ namespace Backoffice.ReflectionSearch
 
         public static SearchModel Create(IEnumerable<SearchModelItem> searchItems)
         {
-            return new SearchModel
+            return new()
             {
                 SearchModelItems = searchItems
             };
