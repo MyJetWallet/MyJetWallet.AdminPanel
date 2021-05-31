@@ -21,7 +21,7 @@
       <PackageReference Include="Finance.PciDssPublic.HttpContracts" Version="1.0.0" />
       <PackageReference Include="Flurl.Http" Version="3.2.0" />
       <PackageReference Include="Grpc.Net.Client" Version="2.37.0" />
-      <PackageReference Include="Highsoft.Highcharts" Version="9.0.1.1" />
+      <PackageReference Include="Highsoft.Highcharts" Version="9.1.0" />
       <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.17.0" />
       <PackageReference Include="MW.Blazor.TagSelector" Version="1.2.3" />
       <PackageReference Include="MyCrm.Accounts.Grpc" Version="1.0.24" />
@@ -39,7 +39,7 @@
       <PackageReference Include="MyJetWallet.Service.Liquidity.Reports.Client" Version="1.0.9" />
       <PackageReference Include="MyJetWallet.Service.MatchingEngine.PriceSource.Client" Version="1.2.1" />
       <PackageReference Include="MyJetWallet.Service.Service.KYC.Client" Version="1.0.6" />
-      <PackageReference Include="MyJetWallet.Service.SmsProviderMock.Client" Version="1.0.4" />
+      <PackageReference Include="MyJetWallet.Service.SmsProviderMock.Client" Version="1.0.5" />
       <PackageReference Include="MyJetWallet.Service.SmsSender.Client" Version="1.1.0" />
       <PackageReference Include="MyJetWallet.Service.Simulation.FTX.Client" Version="1.2.2" />
       <PackageReference Include="MyJetWallet.Service.TradeHistory.Client" Version="1.1.1" />
