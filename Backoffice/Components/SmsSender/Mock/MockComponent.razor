@@ -1,6 +1,7 @@
 ﻿@using Service.SmsProviderMock.Grpc
 @using System.Threading
 @using Backoffice.Abstractions.Models
+@using DotNetCoreDecorators
 @using Service.SmsProviderMock.Grpc.Models.Requests
 @using Service.SmsProviderMock.Grpc.Models.Responses
 @using Service.SmsSender.Domain.Models
@@ -31,10 +32,8 @@
             @foreach (var sms in SentSmsList)
             {
                 <tr>
-                    <td>@sms.Id</td>
                     <td>@sms.Phone</td>
-                    <td>@sms.Lang</td>
-                    <td>@sms.Date.ToString("G")</td>
+                    <td>@sms.Date.UnixTimeToDateTime().ToString("G")</td>
                     <td>@sms.Text</td>
                 </tr>
             }
@@ -56,14 +55,14 @@
     {
         LoaderConfig.Enable();
 
-        await LoadSmsSentHistoryAsync();
+        LoadSmsSentHistory();
 
         LoaderConfig.Disable();
 
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task LoadSmsSentHistoryAsync()
+    private void LoadSmsSentHistory()
     {
         var attempts = 0;
         var exceptionMessage = string.Empty;
@@ -77,7 +76,7 @@
                     MaxCount = 10
                 };
 
-                var smsSentHistoryResponse = await SmsSentHistoryService.GetLastSentSmsAsync(smsSentHistoryRequest);
+                var smsSentHistoryResponse = SmsSentHistoryService.GetLastSentSms(smsSentHistoryRequest);
                 SentSmsList = smsSentHistoryResponse.SentSmsList;
                 break;
             }
