@@ -15,7 +15,7 @@
       <PackageReference Include="MyCrm.Accounts.Grpc" Version="1.0.24" />
       <PackageReference Include="MyCRM.AccountTransactions.Grpc" Version="1.0.12" />
       <PackageReference Include="MyCrm.AuditLog.Grpc" Version="1.0.4" />
-      <PackageReference Include="MyCrm.Auth.GrpcContracts" Version="1.0.7" />
+      <PackageReference Include="MyCrm.Auth.GrpcContracts" Version="1.0.8" />
       <PackageReference Include="MyCrm.AutoOwnerProfiles.Grpc" Version="1.0.1" />
       <PackageReference Include="MyCrm.BusinessCategories.Grpc" Version="1.0.2" />
       <PackageReference Include="MyCrm.Calls.Grpc" Version="1.0.12" />
