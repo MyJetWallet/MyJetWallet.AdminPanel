@@ -1,0 +1,258 @@
+@using Service.Liquidity.Converter.Grpc
+@using Microsoft.AspNetCore.Components
+@using Service.Liquidity.Converter.Domain.Models.Settings
+@using Service.Liquidity.Converter.Grpc.Models
+
+@inject ILiquidityConverterSettingsManager SettingsManager
+
+<table>
+    <tr>
+        <div style="margin: 30px">
+            <h3>Liquidity Converter Settings</h3>
+        </div>
+    </tr>
+    <tr>
+        <td>
+            <span>Set Broker Id for search</span>
+        </td>
+        <td>
+            <input type="text" @bind="@SearchId"/>
+        </td>
+        <td>
+            <button type="button" @onclick="Search">Search</button>
+        </td>
+        <td>
+            <button type="button" @onclick="CreateNew">Create new</button>
+        </td>
+    </tr>
+    @if (ShowError)
+    {
+        <tr>
+            @ErrorText
+        </tr>
+    }
+    @if (GeneralSettings != null)
+    {
+        <tr>
+            <td class="align-middle">Broker Id</td>
+            <td class="align-middle">
+                <input type="text" class="form-control" @bind="GeneralSettings.BrokerId"/>
+            </td>
+        </tr>
+        <tr>
+            <td class="align-middle">Broker Account Id</td>
+            <td class="align-middle">
+                <input type="text" class="form-control" @bind="GeneralSettings.BrokerAccountId"/>
+            </td>
+        </tr>
+        <tr>
+            <td class="align-middle">Broker Wallet Id</td>
+            <td class="align-middle">
+                <input type="text" class="form-control" @bind="GeneralSettings.BrokerWalletId"/>
+            </td>
+        </tr>
+        <tr>
+            <td class="align-middle">Mark Up (Coefficient)</td>
+            <td class="align-middle">
+                <input type="number" class="form-control" @bind="GeneralSettings.MarkUp"/>
+            </td>
+        </tr>
+        <tr>
+            <td class="align-middle">Expiration In Seconds</td>
+            <td class="align-middle">
+                <input type="number" class="form-control" @bind="GeneralSettings.ExpirationInSeconds"/>
+            </td>
+        </tr>
+        <tr>
+            <td class="align-middle">Client Expiration In Seconds</td>
+            <td class="align-middle">
+                <input type="number" class="form-control" @bind="GeneralSettings.ClientExpirationInSeconds"/>
+            </td>
+        </tr>
+        <tr>
+            <td class="align-middle">Cross assets (with ",")</td>
+            <td class="align-middle">
+                <input type="text" class="form-control" @bind="CrossAssets"/>
+            </td>
+        </tr>
+
+        //<tr>
+        //    <th>Cross assets</th>
+        //    @for(var i = 0; i < GeneralSettings.CrossAssetSymbols.Count; i++)
+        //    {
+        //        <td>
+        //            <td class="align-middle">
+        //                <input type="text" class="form-control" @bind="GeneralSettings.CrossAssetSymbols[i]"/>
+        //            </td>
+        //        </td>
+        //    }
+        //    <td>
+        //        <button type="button" @onclick="AddCrossAsset">Add asset</button>
+        //    </td>
+        //</tr>
+        <tr>
+            <ul class="nav align-middle">
+                <li><button style="margin-left: 10px" type="button" class="btn-outline-danger btn" @onclick="ApplySettings">Apply</button></li>
+                <li><button style="margin-left: 10px" type="button" class="btn-outline-info btn" @onclick="ResetSettings">Reset</button></li>
+                <li><button style="margin-left: 10px" type="button" class="btn-outline-info btn" @onclick="ClearSettings">Clear</button></li>
+            </ul>
+        </tr>
+    }
+</table>
+
+@if (IsShowQuestion)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption="@QuestionTitle"
+            OnClose="OnCloseQuestionDialog"
+            YesButtonCaption="Yes"
+            NoButtonCaption="No"
+            OnSubmit="ConfirmQuestion">
+            
+            <h3 class="alert-warning">@QuestionText</h3>
+            
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+@code {
+
+    private LiquidityConverterSettings GeneralSettings { get; set; } = null;
+    private string CrossAssets { get; set; }
+    
+    private string SearchId { get; set; }
+    private string ErrorText { get; set; }
+    private bool ShowError { get; set; } = false;
+    
+    private bool IsShowQuestion { get; set; }
+    private string QuestionTitle { get; set; }
+    private string QuestionText { get; set; }
+    private Func<Task> QuestionConfirmCallback { get; set; }
+
+    private async Task CreateNew()
+    {
+        GeneralSettings = new LiquidityConverterSettings();
+        CrossAssets = string.Empty;
+        ShowError = false;
+        StateHasChanged();
+    }
+    
+    private async Task Search()
+    {
+        if (!string.IsNullOrWhiteSpace(SearchId))
+        {
+            try
+            {
+                var response = await SettingsManager
+                    .GetLiquidityConverterSettingsAsync(new GetLiquidityConverterSettingsRequest()
+                    {
+                        BrokerId = SearchId
+                    });
+                if (!response.Success)
+                {
+                    ShowErrorText(response.ErrorMessage);
+                }
+                else
+                {
+                    GeneralSettings = response.Settings;
+                    SetCrossAssets(GeneralSettings.CrossAssetSymbols);
+                    ShowError = false;
+                }
+            }
+            catch (Exception exception)
+            {
+                ShowErrorText(exception.Message);
+            }
+        }
+        else
+        {
+            ShowErrorText("Please set Broker Id");
+        }
+    }
+
+    private void SetCrossAssets(List<string> crossAssets)
+    {
+        CrossAssets = string.Empty;
+        if (crossAssets == null || crossAssets.Count == 0)
+        {
+            return;
+        }
+        crossAssets.ForEach(elem =>
+        {
+            if (!string.IsNullOrWhiteSpace(CrossAssets))
+            {
+                CrossAssets += ", ";
+            }
+            CrossAssets += elem;
+        });
+    }
+
+    private void ShowErrorText(string message)
+    {
+        ErrorText = message;
+        ShowError = true;
+        GeneralSettings = null;
+        CrossAssets = string.Empty;;
+        
+        StateHasChanged();
+    }
+    private void ApplySettings()
+    {
+        AskQuestion("Change Settings", "Apply a new Global settings. Are you sure?",
+            async () =>
+            {
+                GeneralSettings.CrossAssetSymbols = Array.ConvertAll(CrossAssets.Split(','), p => p.Trim()).ToList();
+                await SettingsManager.UpdateLiquidityConverterSettingsAsync(GeneralSettings);
+                
+                StateHasChanged();
+            });
+    }
+    private async Task ResetSettings()
+    {
+        await Search();
+        StateHasChanged();
+    }
+
+    private async Task ClearSettings()
+    {
+        GeneralSettings = null;
+        CrossAssets = string.Empty;
+        SearchId = string.Empty;
+        ErrorText = string.Empty;
+        ShowError = false;
+    }
+    private void AskQuestion(string title, string content, Func<Task> confirmAction)
+    {
+        QuestionTitle = title;
+        QuestionText = content;
+        QuestionConfirmCallback = confirmAction;
+        IsShowQuestion = true;
+        
+        StateHasChanged();
+    }
+    private async Task ConfirmQuestion()
+    {
+        await InvokeAsync(StateHasChanged);
+        
+        var action = QuestionConfirmCallback;
+        if (action != null)
+        {
+            await action.Invoke();
+        }
+
+        IsShowQuestion = false;
+        await InvokeAsync(StateHasChanged);
+    }
+    private void OnCloseQuestionDialog()
+    {
+        IsShowQuestion = false;
+        StateHasChanged();
+    }
+
+    private Task AddCrossAsset()
+    {
+        throw new NotImplementedException();
+    }
+
+}

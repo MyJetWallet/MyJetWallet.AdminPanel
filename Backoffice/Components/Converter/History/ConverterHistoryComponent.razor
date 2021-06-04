@@ -1,0 +1,184 @@
+@using Service.Liquidity.Converter.Grpc
+@using Service.Liquidity.Converter.Domain.Models
+@using Service.Liquidity.Converter.Grpc.Models
+@inject IHistoryService _historyService
+
+
+<h3>ConverterHistoryComponent</h3>
+
+<ul class="nav">
+    @if (_histories?.Any() == true)
+    {
+        <li><button type="button" class="btn-outline-info btn" @onclick="NextPage">>>> Next >>></button></li>
+    }
+    <li><button type="button" class="btn-outline-secondary btn" @onclick="RefreshHistory">Refresh</button></li>
+    <li><span style="margin-left: 10px; vertical-align: center">Count in page: </span><input type="number" style="width: 40px" @bind="CountInPage"/></li>
+</ul>
+
+<table class="table" style="width: auto">
+    <thead>
+    <tr>
+        <th>Trades</th>
+        <th>#</th>
+        <th>FromAsset</th>
+        <th>ToAsset</th>
+        <th>FromAssetVolume</th>
+        <th>ToAssetVolume</th>
+        <th>IsFromFixed</th>
+        <th>BrokerId</th>
+        <th>AccountId</th>
+        <th>WalletId</th>
+        <th>OperationId</th>
+        <th>Price</th>
+        <th>ExpireDate</th>
+        <th>State</th>
+        <th>OpenDate</th>
+        <th>ClosedDate</th>
+        <th>PreviousOperationId</th>
+        <th>ClientReserveOperationId</th>
+        <th>MarketOrderId</th>
+        <th>BrokerReserveOperationId</th>
+        <th>SwapOperationId</th>
+    </tr>
+    </thead>
+    <tbody>
+    
+    @{
+        var rowNumber = _index;
+    }
+    
+    @foreach (var history in _histories)
+    {
+        rowNumber++;
+        
+        <tr>
+            <td>
+                <ul class="nav">
+                    <li><button type="button" class="btn-outline-info btn" @onclick="@(() => { ShowTrades(history, history.Quote.OperationId); })">Trades</button></li>
+                </ul>
+            </td>
+            <td>@rowNumber</td>
+            <td>@history.Quote.FromAsset</td>
+            <td>@history.Quote.ToAsset</td>
+            <td>@history.Quote.FromAssetVolume</td>
+            <td>@history.Quote.ToAssetVolume</td>
+            <td>@history.Quote.IsFromFixed</td>
+            <td>@history.Quote.BrokerId</td>
+            <td>@history.Quote.AccountId</td>
+            <td>@history.Quote.WalletId</td>
+            <td>@history.Quote.OperationId</td>
+            <td>@history.Quote.Price</td>
+            <td>@history.Quote.ExpireDate</td>
+            <td>@history.Quote.State</td>
+            <td>@history.Quote.OpenDate</td>
+            <td>@history.Quote.ClosedDate</td>
+            <td>@history.Quote.PreviousOperationId</td>
+            <td>@history.Quote.ClientReserveOperationId</td>
+            <td>@history.Quote.MarketOrderId</td>
+            <td>@history.Quote.BrokerReserveOperationId</td>
+            <td>@history.Quote.SwapOperationId</td>
+        </tr>
+        @if (SelectedPosition == history.Quote.OperationId)
+        {
+            <tr>
+                <td colspan="9">
+                    <div class="border" style="margin-left: 20px; width: auto">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>InstrumentSymbol</th>
+                                <th>InstrumentPrice</th>
+                                <th>Fee</th>
+                                <th>MarkUp</th>
+                                <th>OperationId</th>
+                                <th>TradeId</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var trade in _trades)
+                            {
+                                <tr>
+                                    <td>@trade.InstrumentSymbol</td>
+                                    <td>@trade.InstrumentPrice</td>
+                                    <td>@trade.Fee</td>
+                                    <td>@trade.MarkUp</td>
+                                    <td>@trade.OperationId</td>
+                                    <td>@trade.TradeId</td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+        }
+    }
+    </tbody>
+</table>
+
+@code {
+    private List<History> _histories = new();
+    private List<Trade> _trades = new();
+    private int CountInPage { get; set; } = 20;
+    private DateTime? _lastSeen = null;
+    private long _index = 0;
+    private int _currentPageSize = 0;
+    
+    private string SelectedPosition { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshHistory();
+    }
+
+    private async Task RefreshHistory()
+    {
+        _index = 0;
+
+        var historyResponse = await _historyService.GetHistoryAsync(new GetHistoryRequest() {BatchSize = CountInPage});
+
+        _histories = historyResponse.HistoryCollection;
+        _lastSeen = historyResponse.DateForNextQuery;
+        
+        _currentPageSize = CountInPage;
+        
+        StateHasChanged();
+    }
+    private async void ShowTrades(History history, string positionId)
+    {
+        if (SelectedPosition == positionId)
+        {
+            _trades = new List<Trade>();
+            SelectedPosition = null;
+        }
+        else
+        {
+            _trades = history.TradeCollection;
+            SelectedPosition = positionId;
+        }
+        
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task NextPage()
+    {
+        if (_histories?.Any() != true)
+            return;
+
+        var request = _lastSeen == null
+            ? new GetHistoryRequest() {BatchSize = CountInPage}
+            : new GetHistoryRequest() {BatchSize = CountInPage, LastDate = (DateTime)_lastSeen};
+        
+        var historyResponse = await _historyService.GetHistoryAsync(request);
+        
+        if (!historyResponse.Success || historyResponse.HistoryCollection == null || historyResponse.HistoryCollection.Count == 0)
+            return;
+        
+        _index += _currentPageSize;
+        _histories = historyResponse.HistoryCollection;
+        _lastSeen = historyResponse.DateForNextQuery;
+        _currentPageSize = CountInPage;
+        
+        StateHasChanged();
+    }
+}

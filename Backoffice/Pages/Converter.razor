@@ -1,0 +1,67 @@
+﻿@page "/Converter"
+
+@using Backoffice.Components.Converter.History;
+@using Backoffice.Components.Converter.Settings;
+
+
+<ul class="nav nav-tabs nav-pills">
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.History)" aria-current="page" @onclick="SetHistory" >History</button>
+    </li>
+
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.Settings)" @onclick="SetSettings" >Settings</button>
+    </li>
+
+</ul>
+
+<div style="margin: 10px">
+    
+    @if (ActivePage == Menus.History)
+    {
+        <ConverterHistoryComponent />
+    }
+
+    @if (ActivePage == Menus.Settings)
+    {
+        <ConverterSettingsComponent />
+    }
+</div>
+
+
+
+@code {
+
+    private Menus ActivePage { get; set; } = Menus.History;
+
+    private string CheckActive(Menus target)
+    {
+        if (ActivePage == target)
+            return "active";
+
+        return "";
+    }
+
+    private void SetHistory()
+    {
+        SetActive(Menus.History);
+    }
+
+    private void SetSettings()
+    {
+        SetActive(Menus.Settings);
+    }
+
+    private void SetActive(Menus page)
+    {
+        ActivePage = page;
+        StateHasChanged();
+    }
+    
+    public enum Menus
+    {
+        History,
+        Settings
+    }
+ 
+}

@@ -12,6 +12,7 @@ using Service.BalanceHistory.Client;
 using Service.Balances.Client;
 using Service.ChangeBalanceGateway.Client;
 using Service.ClientWallets.Client;
+using Service.Liquidity.Converter.Client;
 using Service.Liquidity.Engine.Client;
 using Service.Liquidity.Reports.Client;
 using Service.MatchingEngine.PriceSource.Client;
@@ -58,7 +59,8 @@ namespace Backoffice.Modules
             builder.RegisterSmsProviderMockClient(Program.Settings.SmsProviderMockGrpcServiceUrl);
             //builder.RegisterSmsProviderNexmoClient(Program.Settings.SmsProviderNexmoGrpcServiceUrl);
             //builder.RegisterSmsProviderTwilioClient(Program.Settings.SmsProviderTwilioGrpcServiceUrl);
-            
+
+            builder.RegisterLiquidityConverterManagerClient(Program.Settings.LiquidityConverterGrpcServiceUrl);
 
             builder.RegisterMatchingEnginePriceSourceClient(_myNoSqlClient);
             builder.RegisterMatchingEngineOrderBookClient(_myNoSqlClient);
