@@ -2,7 +2,7 @@ using Backoffice.Abstractions.Models;
 using System;
 using System.Threading.Tasks;
 
-namespace Backoffice
+namespace Backoffice.Extensions
 {
     public static class LoaderExtensions
     {

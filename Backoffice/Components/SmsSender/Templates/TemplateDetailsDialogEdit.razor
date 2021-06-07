@@ -10,12 +10,12 @@
         <tr>
             <td>
                 <table>
-                    <tr>
+                    @*<tr>
                         <td>Id</td>
                         <td class="float-left">
                             @Template.Id
                         </td>
-                    </tr>
+                    </tr>*@
                     <tr>
                         <td>Default Lang</td>
                         <td class="float-left">
@@ -24,14 +24,21 @@
                     </tr>
                     @foreach (var (lang, _) in Template.LangBodies)
                     {
-                        <tr>
+                        @*<tr>
                             <td>Lang</td>
                             <td class="float-left">
                                 @lang
                             </td>
-                        </tr>
+                        </tr>*@
                         <tr>
-                            <td>Body</td>
+                            @if (lang == Template.DefaultLang.ToString())
+                            {
+                                <td>Default (@lang) Body</td>
+                            }
+                            else
+                            {
+                                <td>@lang Body</td>
+                            }
                             <td class="float-left">
                                 <input type="text" class="form-control" @bind="Template.LangBodies[lang]" />
                             </td>

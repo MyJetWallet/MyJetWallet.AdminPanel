@@ -11,8 +11,22 @@
 <tr>
     <td>@Template.Id</td>
     <td>@Template.DefaultLang</td>
-    <td>@Template.LangBodies.Keys.JoinIntoString(16)</td>
-    <td>@Template.Params.JoinIntoString(16)</td>
+    @if (Template.LangBodies.Any())
+    {
+        <td>@Template.LangBodies.Keys.JoinIntoString(16)</td>
+    }
+    else
+    {
+        <td></td>
+    }
+    @*@if (Template.Params.Any())
+    {
+        <td>@Template.Params.JoinIntoString(16)</td>
+    }
+    else
+    {
+        <td></td>
+    }*@
     <td>
         <ul class="nav">
             <li><button type="button" class="btn-outline-warning btn" @onclick="ShowEdit">Edit</button></li>

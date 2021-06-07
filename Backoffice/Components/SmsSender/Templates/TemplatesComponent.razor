@@ -2,47 +2,35 @@
 @using Service.SmsSender.Grpc
 @using Backoffice.Abstractions.Models
 @using System.Threading
+@using Backoffice.Extensions
 
 @inject ISmsTemplateService SmsTemplateService
 @inject IToaster ToastService
 
 <Loader LoaderConfig="@LoaderConfig" />
 
-<ul class="nav nav-tabs nav-pills">
-    @foreach (var template in TemplatesList)
-    {
-        <li class="nav-item" style="margin: 10px">
-            <button class="nav-link" aria-current="page" @onclick="@(() => SetTemplate(template))">@template.Id</button>
-        </li>
-    }
+<ul class="nav float-left">
+    <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
 </ul>
-
-@if (SelectedTemplate != null)
-{
-    <ul class="nav float-left">
-        <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
-    </ul>
-    <div class="row">
-        <h3 style="margin: 10px">@SelectedTemplate.Id.ToString()</h3>
-    </div>
-    <div class="row">
-        <table class="table" style="width: auto">
-            <thead>
-                <tr>
-                    <th>Lang</th>
-                    <th>Body</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var template in TemplatesList)
-                {
-                    <TemplatesTableRow Template="@template" LoaderConfig="@LoaderConfig" />
-                }
-            </tbody>
-        </table>
-    </div>
-}
+<div class="row">
+    <table class="table" style="width: auto">
+        <thead>
+            <tr>
+                <th>Template</th>
+                <th>Default lang</th>
+                <th>Body</th>
+                @*<th>Params</th>*@
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var template in TemplatesList)
+        {
+            <TemplatesTableRow Template="@template" LoaderConfig="@LoaderConfig" />
+        }
+        </tbody>
+    </table>
+</div>
 
 @code {
 
@@ -75,6 +63,19 @@
             {
                 var templatesResponse = await SmsTemplateService.GetAllTemplatesAsync();
                 TemplatesList = templatesResponse?.Templates;
+
+                if (TemplatesList != null)
+                {
+                    var filteredLangBodies = new Dictionary<string, string>();
+                    foreach (var template in TemplatesList)
+                    {
+                        var defaultLangBody = template.LangBodies[template.DefaultLang.ToString()];
+                        filteredLangBodies.Add(template.DefaultLang.ToString(), defaultLangBody);
+                        filteredLangBodies.AddRange(template.LangBodies.Where(b => b.Value != defaultLangBody));
+                        template.LangBodies = filteredLangBodies;
+                    }
+                }
+
                 break;
             }
             catch (Exception ex)
@@ -101,12 +102,6 @@
         LoaderConfig.Disable();
 
         await base.OnInitializedAsync();
-    }
-
-    private void SetTemplate(SmsTemplate template)
-    {
-        SelectedTemplate = template;
-        StateHasChanged();
     }
 
 }
