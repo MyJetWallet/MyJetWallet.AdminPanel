@@ -1,7 +1,5 @@
 using Autofac;
 using Backoffice.Services.Simulations;
-using Google.Protobuf;
-using MyJetWallet.BitGo.Settings.Ioc;
 using MyJetWallet.Sdk.Service;
 using MyNoSqlServer.DataReader;
 using Service.ActiveOrders.Client;
@@ -19,7 +17,6 @@ using Service.MatchingEngine.PriceSource.Client;
 using Service.Service.KYC.Client;
 using Service.SmsProviderMock.Client;
 using Service.SmsSender.Client;
-using Service.TradeHistory.Client;
 
 namespace Backoffice.Modules
 {
@@ -80,7 +77,7 @@ namespace Backoffice.Modules
                 .As<IActiveOrderService>()
                 .SingleInstance();
 
-            builder.RegisterTradeHistoryClient(Program.Settings.TradeHistoryGrpcServiceUrl);
+            builder.RegisterTradeHistoryClient(Program.Settings.BalanceHistoryGrpcServiceUrl);
 
             builder.RegisterKycStatusClientsGrpcOnly(Program.Settings.KycGrpcServiceUrl);
             
