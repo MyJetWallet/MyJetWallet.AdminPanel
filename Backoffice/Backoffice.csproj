@@ -31,7 +31,7 @@
       <PackageReference Include="MyJetWallet.BitGo.Settings" Version="1.0.6" />
       <PackageReference Include="MyJetWallet.Service.ActiveOrders.Client" Version="1.0.3" />
       <PackageReference Include="MyJetWallet.Service.AssetsDictionary.Client" Version="1.5.4" />
-      <PackageReference Include="MyJetWallet.Service.BalanceHistory.Client" Version="1.6.3" />
+      <PackageReference Include="MyJetWallet.Service.BalanceHistory.Client" Version="1.6.5" />
       <PackageReference Include="MyJetWallet.Service.Balances.Client" Version="1.0.7" />
       <PackageReference Include="MyJetWallet.Service.ChangeBalanceGateway.Client" Version="1.7.1" />
       <PackageReference Include="MyJetWallet.Service.ClientWallets.Client" Version="1.1.4" />

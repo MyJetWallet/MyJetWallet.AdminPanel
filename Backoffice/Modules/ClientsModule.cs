@@ -70,6 +70,7 @@ namespace Backoffice.Modules
             builder.RegisterSpotChangeBalanceGatewayClient(Program.Settings.ChangeBalanceGatewayGrpcServiceUrl);
 
             builder.RegisterBalanceHistoryClient(Program.Settings.BalanceHistoryGrpcServiceUrl);
+            builder.RegisterSwapHistoryClient(Program.Settings.BalanceHistoryGrpcServiceUrl);
 
             var activeOrderClientFactory = new ActiveOrdersClientFactory(Program.Settings.ActiveOrdersGrpcServiceUrl, null);
             builder

@@ -1,0 +1,111 @@
+@using Backoffice.Components.Clients.Model
+@using Backoffice.Abstractions.Models
+@using Service.BalanceHistory.Grpc.Models
+@using Service.BalanceHistory.Domain.Models
+@using Service.BalanceHistory.Grpc
+
+@inject ISwapHistoryService _swapHistoryService
+
+<Loader LoaderConfig="@LoaderConfig"/>
+
+<h3>Swap History</h3>
+
+<ul class="nav">
+    @if (Swaps?.Any() == true)
+    {
+        <li><button type="button" class="btn-outline-info btn" @onclick="NextPage">>>> Next >>></button></li>
+    }
+    <li><button type="button" class="btn-outline-secondary btn" @onclick="Refresh">Refresh</button></li>
+    <li>Count in page: <input type="number" style="width: 40px" @bind="CountInPage"/></li>
+</ul>
+<table class="table" style="font-size: 12px; width: auto">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>EventDate</th>
+        <th>FromAsset</th>
+        <th>ToAsset</th>
+        <th>FromVolume</th>
+        <th>ToVolume</th>
+        <th>OperationId</th>
+        <th>SequenceNumber</th>
+    </tr>
+    </thead>
+    <tbody>
+    @{
+        var rowNumber = _index;
+    }
+    @foreach (var swap in Swaps)
+    {
+        rowNumber++;
+        <tr>
+            <td>@rowNumber</td>
+            <td>@swap.EventDate</td>
+            <td>@swap.FromAsset</td>
+            <td>@swap.ToAsset</td>
+            <td>@swap.FromVolume</td>
+            <td>@swap.ToVolume</td>
+            <td>@swap.OperationId</td>
+            <td>@swap.SequenceNumber</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@code {
+    [CascadingParameter(Name = "Wallet")]
+    public WalletModel Wallet { get; set; }
+    
+    private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+    
+    private int CountInPage { get; set; } = 20;
+    private DateTime? _lastSeen = null;
+    private long _index = 0;
+    private int _currentPageSize = 0;
+
+    private List<Swap> Swaps { get; set; } = new List<Swap>();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await Refresh();
+    }
+    
+    private async Task Refresh()
+    {
+        _index = 0;
+
+        var historyResponse = await _swapHistoryService.GetSwapsAsync(new GetSwapsRequest()
+        {
+            BatchSize = CountInPage,
+            WalletId = Wallet.WalletId
+        });
+
+        Swaps = historyResponse.SwapCollection;
+        _lastSeen = historyResponse.DateForNextQuery;
+        _currentPageSize = CountInPage;
+        
+        StateHasChanged();
+    }
+
+    private async Task NextPage()
+    {
+        if (Swaps?.Any() != true)
+            return;
+
+        var request = _lastSeen == null
+            ? new GetSwapsRequest() {BatchSize = CountInPage, WalletId = Wallet.WalletId}
+            : new GetSwapsRequest() {BatchSize = CountInPage, LastDate = (DateTime)_lastSeen, WalletId = Wallet.WalletId};
+        
+        var historyResponse = await _swapHistoryService.GetSwapsAsync(request);
+        
+        if (!historyResponse.Success || historyResponse.SwapCollection == null || historyResponse.SwapCollection.Count == 0)
+            return;
+        
+        _index += _currentPageSize;
+        Swaps = historyResponse.SwapCollection;
+        _lastSeen = historyResponse.DateForNextQuery;
+        _currentPageSize = CountInPage;
+        
+        StateHasChanged();
+    }
+}
