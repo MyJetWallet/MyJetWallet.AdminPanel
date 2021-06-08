@@ -1,13 +1,13 @@
-﻿@using Service.TradeHistory.Grpc
-@using Backoffice.Components.Clients.Model
+﻿@using Backoffice.Components.Clients.Model
 @using Backoffice.Abstractions.Models
 @using ME.Contracts.OutgoingMessages
 @using Microsoft.Extensions.Logging
-@using Service.TradeHistory.Domain.Models
-@using Service.TradeHistory.Grpc.Models
+@using Service.BalanceHistory.Domain.Models
+@using Service.BalanceHistory.Grpc
+@using Service.BalanceHistory.Grpc.Models
 
 @inject IWalletTradeService _tradeService
-@inject ILogger<ClientTradeHistoryComponent> Logger
+@inject ILogger<ClientTradeHistoryComponent> _logger
 
 <Loader LoaderConfig="@LoaderConfig"/>
 
@@ -110,7 +110,7 @@
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Cannot execute NextPage");
+            _logger.LogError(ex, "Cannot execute NextPage");
         }
     }
 
