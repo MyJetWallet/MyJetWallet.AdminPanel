@@ -61,5 +61,8 @@ namespace Backoffice
 
         [YamlProperty("AdminPanel.LiquidityConverterGrpcServiceUrl")]
         public string LiquidityConverterGrpcServiceUrl { get; set; }
+        
+        [YamlProperty("AdminPanel.PushNotificationGrpcServiceUrl")]
+        public string PushNotificationGrpcServiceUrl { get; set; }
     }
 }

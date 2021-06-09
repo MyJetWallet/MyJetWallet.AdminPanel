@@ -1,0 +1,47 @@
+@page "/Notifications"
+
+<ul class="nav nav-tabs nav-pills">
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.History)" @onclick="SetHistory">History</button>
+    </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.Templates)" aria-current="page" @onclick="SetTemplates">Template</button>
+    </li>
+</ul>
+
+<div style="margin: 10px">
+    
+    @if (ActivePage == Menus.Templates)
+    {
+        <NotificationTemplatesComponent/>
+    }
+
+    @if (ActivePage == Menus.History)
+    {
+        <NotificationHistoryComponent/>
+    }
+
+</div>
+@code {
+    
+    private Menus ActivePage { get; set; } = Menus.History;
+
+    private string CheckActive(Menus target) => ActivePage == target ? "active" : "";
+
+    private void SetTemplates() => SetActive(Menus.Templates);
+
+    private void SetHistory() => SetActive(Menus.History);
+    
+    private void SetActive(Menus page)
+    {
+        ActivePage = page;
+        StateHasChanged();
+    }
+
+    public enum Menus
+    {
+        None,
+        History,
+        Templates
+    }
+}

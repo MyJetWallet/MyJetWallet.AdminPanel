@@ -1,0 +1,106 @@
+@using Service.PushNotification.Grpc
+@using Service.PushNotification.Grpc.Models.Responses
+@inject IHistoryService _historyService
+
+<h3>Push Notification History</h3>
+<table class="table" style="width: auto">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>NotificationId</th>
+        <th>ClientId</th>
+        <th>Type</th>
+        <th>Params</th>
+        <th>Tokens</th>
+    </tr>
+    </thead>
+    <tbody>
+        @{
+            var rowNumber = _index;
+        }
+        
+        @foreach (var history in _histories)
+        {
+            rowNumber++;
+            <tr>
+                <td>@rowNumber</td>
+                <td>@history.NotificationId.ToString("D")</td>
+                <td>@history.ClientId</td>
+                <td>@history.Type.ToString()</td>
+                <td>@string.Join(" | ", history.Params.ToArray())</td>
+                <td>
+                    <ul class="nav">
+                        <li><button type="button" class="btn-outline-info btn" @onclick="@(() => { ShowStatuses(history, history.NotificationId.ToString()); })">Statuses</button></li>
+                    </ul>
+                </td>
+            </tr>
+            @if (SelectedPosition == history.NotificationId.ToString())
+            {
+                <tr>
+                    <td colspan="9">
+                        <div class="border" style="margin-left: 20px; width: auto">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th>StatusId</th>
+                                    <th>Token</th>
+                                    <th>IsSuccess</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @foreach (var status in _statuses)
+                                {
+                                    <tr>
+                                        <td>@status.StatusId.ToString("D")</td>
+                                        <td>@status.Token</td>
+                                        <td>@status.IsSuccess</td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+
+</table>
+
+
+@code {
+    
+    private List<StatusResponse> _statuses = new();
+    private List<HistoryResponse> _histories = new();
+    private long _index = 0;
+
+    private string SelectedPosition { get; set; }
+
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshHistory();
+    }
+
+    private async Task RefreshHistory()
+    {
+        _histories = (await _historyService.GetAllRecords()).HistoryResponses;
+        StateHasChanged();
+    }
+    
+    private async void ShowStatuses(HistoryResponse history, string positionId)
+    {
+        if (SelectedPosition == positionId)
+        {
+            _statuses = new List<StatusResponse>();
+            SelectedPosition = null;
+        }
+        else
+        {
+            _statuses = history.StatusResponses;
+            SelectedPosition = positionId;
+        }
+        
+        await InvokeAsync(StateHasChanged);
+    }
+}
