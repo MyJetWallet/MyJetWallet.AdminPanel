@@ -1,0 +1,57 @@
+@using Service.PushNotification.Grpc.Models.Requests
+@using Microsoft.AspNetCore.Components
+<BaseTwoButtonsDialog Caption="@(Request.Type.ToString())"
+                      OnClose="OnClose"
+                      YesButtonCaption="Save"
+                      NoButtonCaption="Cancel"
+                      OnSubmit="OnSubmit">
+
+            @if (IsCreate)
+            {
+                <div>
+                    <input type="text" class="form-control" placeholder="Brand" @bind="Request.Brand"/>
+                </div>
+                <div>
+                    <input type="text" class="form-control" placeholder="Language" @bind="Request.Lang"/>
+                </div>
+            }
+            <div>
+                <textarea type="text" class="form-control" placeholder="Topic" @bind="Request.TemplateTopic"></textarea>
+            </div>
+            <div>
+                <textarea type="text" class="form-control" placeholder="Body" @bind="Request.TemplateBody"></textarea>
+            </div>
+            
+</BaseTwoButtonsDialog>
+
+@code {
+
+    [Parameter]
+    public (string brand, string lang) BodyId { get; set; }
+    
+    [Parameter]
+    public TemplateEditRequest Request { get; set; } = new();
+
+    [Parameter]
+    public bool IsCreate { get; set; }
+
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+
+    [Parameter]
+    public EventCallback<TemplateEditRequest> OnCreateCallback { get; set; }
+
+    [Parameter]
+    public EventCallback<TemplateEditRequest> OnUpdateCallback { get; set; }
+
+    private void OnClose()
+    {
+        OnCloseCallback.InvokeAsync();
+    }
+
+    private async Task OnSubmit()
+    {
+        await OnUpdateCallback.InvokeAsync(Request);
+    }
+
+}

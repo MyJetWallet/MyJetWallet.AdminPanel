@@ -1,5 +1,7 @@
 @using Service.PushNotification.Grpc
 @using Service.PushNotification.Domain.Models
+@using Service.PushNotification.Domain.Models.Enums
+@using Service.PushNotification.Grpc.Models.Requests
 @inject ITemplateService _templateService
 <h3>Push Notification Templates</h3>
 
@@ -53,25 +55,30 @@
                                 <tbody>
                                 @foreach (var body in _bodies)
                                 {
+
                                     <tr>
-                                        <td>@body.Key.brand</td>
+                                        <td>@body.Key.brand
+                                                                                    @if (body.Key.brand == template.DefaultBrand && body.Key.lang == template.DefaultLang)
+                                                                                    {
+                                                                                        <h6>Default Template</h6>
+                                                                                    }
+                                                                                    </td>
                                         <td>@body.Key.lang</td>
                                         <td>@body.Value.topic</td>
                                         <td>@body.Value.body</td>
                                         <td>
                                             <ul class="nav">
-                                                <li><button type="button" class="btn-outline-info btn" >Bodies</button></li> 
+                                                <li><button type="button" class="btn-outline-warning btn" @onclick="() => { ShowEdit(body); }">Edit</button></li>
                                             </ul>
                                         </td>
                                     </tr>
                                 }
-                                <tr>
-                                    <td>                                            
-                                        <ul class="nav">
-                                            <li><button type="button" class="btn-outline-info btn">Add body</button></li>
-                                        </ul></td>
-                                </tr>
                                 </tbody>
+                                <div>
+                                        <ul class="nav">
+                                            <li><button type="button" class="btn-outline-info btn" @onclick="ShowCreate">Add body</button></li>
+                                        </ul>
+                                </div>
                             </table>
                         </div>
                     </td>
@@ -83,12 +90,22 @@
 </table>
 
 
+@if (IsShowEdit)
+{
+    <div>
+        <NotificationBodyDialogEdit Request="@EditRequest" IsCreate="@IsCreate" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="async () => { await OnUpdateTemplate(); }" />
+    </div>
+}
+
 @code {
     private Dictionary<(string brand, string lang), (string topic, string body)> _bodies = new();
 
     private List<NotificationTemplate> _templates = new();
     private long _index = 0;
     private string SelectedPosition { get; set; }
+    private bool IsShowEdit { get; set; }
+    private TemplateEditRequest EditRequest { get; set; }
+    private bool IsCreate { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -115,5 +132,47 @@
         }
         
         await InvokeAsync(StateHasChanged);
+    }
+    
+
+    private void ShowEdit(KeyValuePair<(string brand,string lang),(string topic,string body)> body)
+    {
+        IsCreate = false;
+        Enum.TryParse<NotificationTypeEnum>(SelectedPosition, out var type);
+        EditRequest = new TemplateEditRequest()
+        {
+            Type = type,
+            Brand = body.Key.brand,
+            Lang = body.Key.lang,
+            TemplateTopic = body.Value.topic,
+            TemplateBody = body.Value.body
+        };
+        IsShowEdit = true;
+        StateHasChanged();
+    }
+
+    private void ShowCreate()
+    {
+        IsCreate = true;
+        Enum.TryParse<NotificationTypeEnum>(SelectedPosition, out var type);
+        EditRequest = new TemplateEditRequest()
+        {
+            Type = type
+        };
+        IsShowEdit = true;
+        StateHasChanged();
+    }
+
+    private void OnCloseEditDialog()
+    {
+        IsShowEdit = false;
+        StateHasChanged();
+    }
+
+    private async Task OnUpdateTemplate()
+    {
+        IsShowEdit = false;
+        await _templateService.EditTemplate(EditRequest);
+        await RefreshTokens();
     }
 }
