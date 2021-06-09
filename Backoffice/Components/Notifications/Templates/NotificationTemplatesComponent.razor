@@ -131,7 +131,7 @@
         }
         else
         {
-            _bodies = template.Bodies;
+            _bodies = template.Bodies.OrderBy(t => t.Key).ToDictionary(pair=>pair.Key,pair=>pair.Value);
             SelectedPosition = positionId;
         }
         
