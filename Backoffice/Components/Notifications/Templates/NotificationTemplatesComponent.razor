@@ -58,19 +58,14 @@
                                 <tbody>
                                 @foreach (var body in _bodies)
                                 {
-                                    <tr>
-                                        <td>@body.Key.brand
-                                            @if (body.Key.brand == template.DefaultBrand && body.Key.lang == template.DefaultLang)
-                                            {
-                                                <h6>Default Template</h6>
-                                            }
-                                        </td>
+                                    <tr style="background: @(GetTemplateBackground(template.DefaultBrand, body.Key.brand))">
+                                        <td>@body.Key.brand</td>
                                         <td>@body.Key.lang</td>
                                         <td>@body.Value.topic</td>
                                         <td>@body.Value.body</td>
                                         <td>
                                             <ul class="nav">
-                                                <li><button type="button" class="btn-outline-warning btn" @onclick="() => { ShowEdit(body); }">Edit</button></li>
+                                                <li><button type="button" class="btn-outline-info btn" @onclick="() => { ShowEdit(body); }">Edit</button></li>
                                             </ul>
                                         </td>
                                     </tr>
@@ -100,7 +95,7 @@
 }
 
 @code {
-    private Dictionary<(string brand, string lang), (string topic, string body)> _bodies = new();
+    private SortedDictionary<(string brand, string lang), (string topic, string body)> _bodies = new();
 
     private List<NotificationTemplate> _templates = new();
     private long _index = 0;
@@ -131,7 +126,7 @@
         }
         else
         {
-            _bodies = template.Bodies.OrderBy(t => t.Key).ToDictionary(pair=>pair.Key,pair=>pair.Value);
+            _bodies = new SortedDictionary<(string brand, string lang), (string topic, string body)>(template.Bodies);
             SelectedPosition = positionId;
         }
         
@@ -178,5 +173,14 @@
         await _templateService.EditTemplate(EditRequest);
         _bodies[(EditRequest.Brand,EditRequest.Lang)] = (EditRequest.TemplateTopic, EditRequest.TemplateBody);
         StateHasChanged();
+    }
+
+    private string GetTemplateBackground(string defaultBrand, string brand )
+    {
+        if (brand == defaultBrand)
+        {
+            return "lightgray";
+        }
+        return "white";
     }
 }
