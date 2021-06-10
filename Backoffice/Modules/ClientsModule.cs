@@ -1,5 +1,6 @@
 using Autofac;
 using Backoffice.Services.Simulations;
+using MyJetWallet.BitGo.Settings.Ioc;
 using MyJetWallet.Sdk.Service;
 using MyNoSqlServer.DataReader;
 using Service.ActiveOrders.Client;
@@ -82,6 +83,8 @@ namespace Backoffice.Modules
             builder.RegisterTradeHistoryClient(Program.Settings.BalanceHistoryGrpcServiceUrl);
 
             builder.RegisterKycStatusClientsGrpcOnly(Program.Settings.KycGrpcServiceUrl);
+
+            builder.RegisterBitgoSettingsWriter(Program.ReloadedSettings(e => e.MyNoSqlWriterUrl));
             
             builder.RegisterPushNotificationClient(Program.Settings.PushNotificationGrpcServiceUrl);
             
