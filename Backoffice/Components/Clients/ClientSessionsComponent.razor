@@ -39,25 +39,42 @@
         foreach (var session in _sessions ?? new())
         {
             rowNumber++;
-            <tr>
-                    <td>@rowNumber</td>
-                    <td>@session.CreateTime.ToString(CultureInfo.InvariantCulture)</td>
-                    <td>@session.RootSessionId</td>
-                    <td>@session.TraderId</td>
-                    <td>@session.BrandId</td>
-                    <td>@session.UserAgent</td>
-                    <td>@session.IP</td>
-                    <td>@session.Passed2FA</td>
-                    <td>@session.EmailVerified</td>
-                    <td>@session.Description</td>
-                    <td>@string.IsNullOrWhiteSpace(session?.PublicKeyBase64)</td>
-                    <td>@_tokens.Exists(t => t.RootSessionId == session.RootSessionId.ToString("N"))</td>
-                </tr>
+            var tokenExists = _tokens.Exists(t => t.RootSessionId == session.RootSessionId.ToString("N"));
+            string token = "";
+            if (tokenExists)
+            {
+                token = _tokens.FirstOrDefault(t => t.RootSessionId == session.RootSessionId.ToString("N"))?.Token;
             }
+            <tr>
+                <td>@rowNumber</td>
+                <td>@session.CreateTime.ToString(CultureInfo.InvariantCulture)</td>
+                <td>@session.RootSessionId</td>
+                <td>@session.TraderId</td>
+                <td>@session.BrandId</td>
+                <td>@session.UserAgent</td>
+                <td>@session.IP</td>
+                <td>@session.Passed2FA</td>
+                <td>@session.EmailVerified</td>
+                <td>@session.Description</td>
+                <td>@string.IsNullOrWhiteSpace(session?.PublicKeyBase64)</td>
+                <td>@tokenExists
+                    @if (tokenExists)
+                    {
+                        <button type="button" class="btn-outline-info btn" @onclick="() => { ShowToken(token); }">Show token</button>
+                    }</td>
+            </tr>
+        }
     }
     </tbody>
 
 </table>
+
+@if (IsShowToken)
+{
+    <div>
+        <ClientTokenPopUp Token="@ShownToken" OnCloseCallback="OnCloseTokenPopUp"/>
+    </div>
+}
 
 @code {
     [Parameter]
@@ -69,7 +86,9 @@
     private DateTime _timeStamp = DateTime.UtcNow;
     private int _currentPageSize = 0;
     private long _index = 0; 
-    
+    private bool IsShowToken { get; set; }
+    private string ShownToken { get; set; }
+
     
     protected override async Task OnInitializedAsync()
     {
@@ -113,6 +132,19 @@
             .ToList();
         
         _currentPageSize = CountInPage;
+        StateHasChanged();
+    }
+
+    private void ShowToken(string token)
+    {
+        ShownToken = token;
+        IsShowToken = true;
+        StateHasChanged();
+    }
+    
+    private void OnCloseTokenPopUp()
+    {
+        IsShowToken = false;
         StateHasChanged();
     }
 }

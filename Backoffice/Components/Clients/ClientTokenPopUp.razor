@@ -1,0 +1,18 @@
+<h3>ClientTokenPopUp</h3>
+<BaseOneButtonsDialog 
+    Caption="Firebase Notification Token"
+    ButtonCaption="Ok"
+    OnClose="OnClose">
+    <p>@Token</p>
+</BaseOneButtonsDialog>
+
+@code {
+    [Parameter]
+    public string Token { get; set; }
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+    private void OnClose()
+    {
+        OnCloseCallback.InvokeAsync();
+    }
+}
