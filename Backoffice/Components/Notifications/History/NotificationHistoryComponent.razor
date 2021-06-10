@@ -118,9 +118,9 @@
             TimeStamp = _timeStamp
         };
         
-        _histories = ClientId == null
+        _histories = (ClientId == null
             ? (await _historyService.GetAllRecords(request)).HistoryResponses
-            : (await _historyService.GetRecordsByClientId(request)).HistoryResponses;
+            : (await _historyService.GetRecordsByClientId(request)).HistoryResponses) ?? new ();
         
         _currentPageSize = CountInPage;
 
@@ -141,7 +141,11 @@
         };
 
         _index += _currentPageSize;
-        _histories = (await _historyService.GetAllRecords(request)).HistoryResponses ?? new();
+        
+        _histories = (ClientId == null
+            ? (await _historyService.GetAllRecords(request)).HistoryResponses
+            : (await _historyService.GetRecordsByClientId(request)).HistoryResponses) ?? new ();
+        
         _currentPageSize = CountInPage;
         StateHasChanged();
     }

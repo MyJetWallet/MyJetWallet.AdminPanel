@@ -64,5 +64,9 @@ namespace Backoffice
         
         [YamlProperty("AdminPanel.PushNotificationGrpcServiceUrl")]
         public string PushNotificationGrpcServiceUrl { get; set; }
+        
+        [YamlProperty("AdminPanel.AuthMyNoSqlReaderHostPort")]
+        public string AuthMyNoSqlReaderHostPort { get; set; }
+
     }
 }

@@ -1,0 +1,118 @@
+@using MyJetWallet.Sdk.Authorization.NoSql
+@using MyNoSqlServer.Abstractions
+@using System.Globalization
+@using Service.PushNotification.Domain.Models
+@using Service.PushNotification.Grpc
+@using Service.PushNotification.Grpc.Models.Requests
+@inject IMyNoSqlServerDataReader<RootSessionNoSqlEntity> _sessionReader
+@inject ITokenManager _tokenManager
+<h3>ClientSessionsComponent</h3>
+
+<ul class="nav">
+    @if (_sessions?.Any() == true)
+    {
+        <li><button type="button" class="btn-outline-info btn" @onclick="NextPageSessions">>>> Next >>></button></li>
+    }
+    <li><button type="button" class="btn-outline-secondary btn" @onclick="(async () => { await RefreshSessions(); })">Refresh</button></li>
+    <li>Count in page: <input type="number" style="width: 40px" @bind="CountInPage"/></li>
+</ul>
+<table class="table" style="width: auto">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>CreateTime</th>
+        <th>RootSessionId</th>
+        <th>TraderId</th>
+        <th>BrandId</th>
+        <th>UserAgent</th>
+        <th>IP</th>
+        <th>Passed2FA</th>
+        <th>EmailVerified</th>
+        <th>Description</th>
+        <th>Has Public Key</th>
+        <th>Has Firebase Token</th>
+    </tr>
+    </thead>
+    <tbody>
+        @{
+            var rowNumber = _index;
+        }
+        @foreach (var session in _sessions ?? new())
+        {
+            rowNumber++;
+            <tr>
+                <td>@rowNumber</td>
+                <td>@session.CreateTime.ToString(CultureInfo.InvariantCulture)</td>
+                <td>@session.RootSessionId</td>
+                <td>@session.TraderId</td>
+                <td>@session.BrandId</td>
+                <td>@session.UserAgent</td>
+                <td>@session.IP</td>
+                <td>@session.Passed2FA</td>
+                <td>@session.EmailVerified</td>
+                <td>@session.Description</td>
+                <td>@string.IsNullOrWhiteSpace(session.PublicKeyBase64)</td>
+                <td>@_tokens.Exists(t=>t.RootSessionId == session.RootSessionId.ToString("N"))</td>
+            </tr>
+        }
+    </tbody>
+
+</table>
+
+@code {
+    [Parameter]
+    public string ClientId { get; set; }
+    
+    private List<RootSessionNoSqlEntity> _sessions = new ();
+    private List<PushToken> _tokens = new();
+    private int CountInPage { get; set; } = 20;
+    private DateTime _timeStamp = DateTime.UtcNow;
+    private int _currentPageSize = 0;
+    private long _index = 0; 
+    
+    
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(ClientId))
+            return;
+
+        await RefreshSessions();
+    }
+    
+    private async Task RefreshSessions()
+    {        
+        _timeStamp = DateTime.UtcNow;
+        _index = 0;
+        _sessions = _sessionReader.Get(ClientId)?
+            .OrderByDescending(s => s.CreateTime)
+            .Take(CountInPage)
+            .ToList();
+        
+        var tokens = await _tokenManager.GetUserTokens(new GetUserTokensRequest()
+        {
+            ClientId = ClientId
+        });
+        _tokens = tokens.Tokens;
+        
+        _currentPageSize = CountInPage;
+        StateHasChanged();
+    }
+
+    private void NextPageSessions()
+    {
+        if (_sessions?.Any() != true)
+            return;
+
+        _timeStamp = _sessions.Min(e => e.CreateTime);
+        _index += _currentPageSize;
+
+        _sessions = _sessionReader.Get(ClientId)
+            .Where(s => s.CreateTime < _timeStamp)
+            .OrderByDescending(s => s.CreateTime)
+            .Take(CountInPage)
+            .ToList();
+        
+        _currentPageSize = CountInPage;
+        StateHasChanged();
+    }
+}
