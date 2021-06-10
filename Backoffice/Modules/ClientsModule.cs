@@ -14,6 +14,7 @@ using Service.Liquidity.Converter.Client;
 using Service.Liquidity.Engine.Client;
 using Service.Liquidity.Reports.Client;
 using Service.MatchingEngine.PriceSource.Client;
+using Service.PushNotification.Client;
 using Service.Service.KYC.Client;
 using Service.SmsProviderMock.Client;
 using Service.SmsSender.Client;
@@ -81,6 +82,8 @@ namespace Backoffice.Modules
             builder.RegisterTradeHistoryClient(Program.Settings.BalanceHistoryGrpcServiceUrl);
 
             builder.RegisterKycStatusClientsGrpcOnly(Program.Settings.KycGrpcServiceUrl);
+            
+            builder.RegisterPushNotificationClient(Program.Settings.PushNotificationGrpcServiceUrl);
             
         }
         

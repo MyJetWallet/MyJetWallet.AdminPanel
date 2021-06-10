@@ -1,0 +1,186 @@
+@using Service.PushNotification.Grpc
+@using Service.PushNotification.Domain.Models
+@using Service.PushNotification.Domain.Models.Enums
+@using Service.PushNotification.Grpc.Models.Requests
+@inject ITemplateService _templateService
+<h3>Push Notification Templates</h3>
+
+
+<table class="table" style="width: auto">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Type</th>
+        <th>Default Brand</th>
+        <th>Default Language</th>
+        <th>Params</th>
+        <th>Bodies</th>
+    </tr>
+    </thead>
+    <tbody>
+        @{
+            var rowNumber = _index;
+        }
+        
+        @foreach (var template in _templates)
+        {
+            rowNumber++;
+            <tr>
+                <td>@rowNumber</td>
+                <td>@template.Type.ToString()</td>
+                <td>@template.DefaultBrand</td>
+                <td>@template.DefaultLang</td>
+                <td>@string.Join(" ", template.Params.ToArray())</td>
+                <td>
+                    <ul class="nav">
+                        <li><button type="button" class="btn-outline-info btn" @onclick="@(() => { ShowBodies(template, template.Type.ToString()); })">Bodies</button></li>
+                    </ul>
+                </td>
+            </tr>
+            @if (SelectedPosition == template.Type.ToString())
+            {
+                SelectedType = template.Type;
+                SelectedTemplateParams = string.Join(" ", template.Params.ToArray());
+                
+                <tr>
+                    <td colspan="9">
+                        <div class="border" style="margin-left: 20px; width: auto">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th>Brand</th>
+                                    <th>Language</th>
+                                    <th>Topic</th>
+                                    <th>Body</th>
+                                    <th>Edit</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @foreach (var body in _bodies)
+                                {
+                                    <tr style="background: @(GetTemplateBackground(template.DefaultBrand, body.Key.brand))">
+                                        <td>@body.Key.brand</td>
+                                        <td>@body.Key.lang</td>
+                                        <td>@body.Value.topic</td>
+                                        <td>@body.Value.body</td>
+                                        <td>
+                                            <ul class="nav">
+                                                <li><button type="button" class="btn-outline-info btn" @onclick="() => { ShowEdit(body); }">Edit</button></li>
+                                            </ul>
+                                        </td>
+                                    </tr>
+                                }
+                                </tbody>
+                                <div>
+                                        <ul class="nav">
+                                            <li><button type="button" class="btn-outline-info btn" @onclick="ShowCreate">Add body</button></li>
+                                        </ul>
+                                </div>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+
+</table>
+
+
+@if (IsShowEdit)
+{
+    <div>
+        <NotificationBodyDialogEdit Request="@EditRequest" IsCreate="@IsCreate" TemplateParams="@SelectedTemplateParams" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="async () => { await OnUpdateTemplate(); }" />
+    </div>
+}
+
+@code {
+    private SortedDictionary<(string brand, string lang), (string topic, string body)> _bodies = new();
+
+    private List<NotificationTemplate> _templates = new();
+    private long _index = 0;
+    private string SelectedPosition { get; set; }
+    private bool IsShowEdit { get; set; }
+    private TemplateEditRequest EditRequest { get; set; }
+    private bool IsCreate { get; set; }
+    private string SelectedTemplateParams { get; set; }
+    private NotificationTypeEnum SelectedType { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshTokens();
+    }
+
+    private async Task RefreshTokens()
+    {
+        _templates = (await _templateService.GetAllTemplates()).Templates;
+        StateHasChanged();
+    }
+    
+    private async void ShowBodies(NotificationTemplate template, string positionId)
+    {
+        if (SelectedPosition == positionId)
+        {
+            _bodies = new ();
+            SelectedPosition = null;
+        }
+        else
+        {
+            _bodies = new SortedDictionary<(string brand, string lang), (string topic, string body)>(template.Bodies);
+            SelectedPosition = positionId;
+        }
+        
+        await InvokeAsync(StateHasChanged);
+    }
+    
+
+    private void ShowEdit(KeyValuePair<(string brand,string lang),(string topic,string body)> body)
+    {
+        IsCreate = false;
+        Enum.TryParse<NotificationTypeEnum>(SelectedPosition, out var type);
+        EditRequest = new TemplateEditRequest()
+        {
+            Type = type,
+            Brand = body.Key.brand,
+            Lang = body.Key.lang,
+            TemplateTopic = body.Value.topic,
+            TemplateBody = body.Value.body
+        };
+        IsShowEdit = true;
+        StateHasChanged();
+    }
+
+    private void ShowCreate()
+    {
+        IsCreate = true;
+        EditRequest = new TemplateEditRequest()
+        {
+            Type = SelectedType
+        };
+        IsShowEdit = true;
+        StateHasChanged();
+    }
+
+    private void OnCloseEditDialog()
+    {
+        IsShowEdit = false;
+        StateHasChanged();
+    }
+
+    private async Task OnUpdateTemplate()
+    {
+        IsShowEdit = false;
+        await _templateService.EditTemplate(EditRequest);
+        _bodies[(EditRequest.Brand,EditRequest.Lang)] = (EditRequest.TemplateTopic, EditRequest.TemplateBody);
+        StateHasChanged();
+    }
+
+    private string GetTemplateBackground(string defaultBrand, string brand )
+    {
+        if (brand == defaultBrand)
+        {
+            return "lightgray";
+        }
+        return "white";
+    }
+}

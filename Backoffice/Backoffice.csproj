@@ -39,6 +39,7 @@
       <PackageReference Include="MyJetWallet.Service.Liquidity.Engine.Client" Version="1.4.0" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Reports.Client" Version="1.0.9" />
       <PackageReference Include="MyJetWallet.Service.MatchingEngine.PriceSource.Client" Version="1.2.1" />
+      <PackageReference Include="MyJetWallet.Service.PushNotification.Client" Version="1.2.2" />
       <PackageReference Include="MyJetWallet.Service.Service.KYC.Client" Version="1.0.6" />
       <PackageReference Include="MyJetWallet.Service.SmsProviderMock.Client" Version="1.0.15" />
       <PackageReference Include="MyJetWallet.Service.SmsSender.Client" Version="1.1.11" />

@@ -1,0 +1,149 @@
+@using Service.PushNotification.Grpc
+@using Service.PushNotification.Grpc.Models.Requests
+@using Service.PushNotification.Grpc.Models.Responses
+@using System.Globalization
+@inject IHistoryService _historyService
+
+<h3>Push Notification History</h3>
+<ul class="nav">
+    @if (_histories?.Any() == true)
+    {
+        <li><button type="button" class="btn-outline-info btn" @onclick="NextPageHistories">>>> Next >>></button></li>
+    }
+    <li><button type="button" class="btn-outline-secondary btn" @onclick="RefreshHistory">Refresh</button></li>
+    <li>Count in page: <input type="number" style="width: 40px" @bind="CountInPage"/></li>
+</ul>
+<table class="table" style="width: auto">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>TimeStamp</th>
+        <th>ClientId</th>
+        <th>Type</th>
+        <th>Params</th>
+        <th>NotificationId</th>
+        <th>Tokens</th>
+    </tr>
+    </thead>
+    <tbody>
+        @{
+            var rowNumber = _index;
+        }
+        
+        @foreach (var history in _histories)
+        {
+            rowNumber++;
+            <tr>
+                <td>@rowNumber</td>
+                <td>@history.TimeStamp.ToString(CultureInfo.InvariantCulture)</td>
+                <td>@history.ClientId</td>
+                <td>@history.Type.ToString()</td>
+                <td>@string.Join(" | ", history.Params.ToArray())</td>
+                <td>@history.NotificationId.ToString("D")</td>
+                <td>
+                    <ul class="nav">
+                        <li><button type="button" class="btn-outline-info btn" @onclick="@(() => { ShowStatuses(history, history.NotificationId.ToString()); })">Statuses</button></li>
+                    </ul>
+                </td>
+            </tr>
+            @if (SelectedPosition == history.NotificationId.ToString())
+            {
+                <tr>
+                    <td colspan="9">
+                        <div class="border" style="margin-left: 20px; width: auto">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th>StatusId</th>
+                                    <th>UserAgent</th>
+                                    <th>IsSuccess</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @foreach (var status in _statuses)
+                                {
+                                    <tr>
+                                        <td>@status.StatusId.ToString("D")</td>
+                                        <td>@status.UserAgent</td>
+                                        <td>@status.IsSuccess</td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+
+</table>
+
+
+@code {
+    
+    private List<StatusResponse> _statuses = new();
+    private List<HistoryResponse> _histories = new();
+    private int CountInPage { get; set; } = 20;
+    private DateTime _timeStamp = DateTime.UtcNow;
+    private int _currentPageSize = 0;
+    private long _index = 0;
+
+    private string SelectedPosition { get; set; }
+
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshHistory();
+    }
+
+    private async Task RefreshHistory()
+    {
+        _timeStamp = DateTime.UtcNow;
+        _index = 0;
+        var request = new HistoryRequest()
+        {
+            Take = CountInPage,
+            TimeStamp = _timeStamp
+        };
+        _histories = (await _historyService.GetAllRecords(request)).HistoryResponses;
+        _currentPageSize = CountInPage;
+
+        StateHasChanged();
+    }
+    
+    private async Task NextPageHistories()
+    {
+        if (_histories?.Any() != true)
+            return;
+
+        _timeStamp = _histories.Min(e => e.TimeStamp);
+
+        var request = new HistoryRequest()
+        {
+            Take = CountInPage,
+            TimeStamp = _timeStamp
+        };
+
+        _index += _currentPageSize;
+        _histories = (await _historyService.GetAllRecords(request)).HistoryResponses ?? new();
+        _currentPageSize = CountInPage;
+        StateHasChanged();
+    }
+    
+    private async void ShowStatuses(HistoryResponse history, string positionId)
+    {
+        if (SelectedPosition == positionId)
+        {
+            _statuses = new List<StatusResponse>();
+            SelectedPosition = null;
+        }
+        else
+        {
+            _statuses = history.StatusResponses;
+            SelectedPosition = positionId;
+        }
+        
+        await InvokeAsync(StateHasChanged);
+    }
+}
