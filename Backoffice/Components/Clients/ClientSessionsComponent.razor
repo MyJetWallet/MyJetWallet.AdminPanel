@@ -34,27 +34,27 @@
     </tr>
     </thead>
     <tbody>
-        @{
-            var rowNumber = _index;
-        }
-        @foreach (var session in _sessions ?? new())
+    @{
+        var rowNumber = _index;
+        foreach (var session in _sessions ?? new())
         {
             rowNumber++;
             <tr>
-                <td>@rowNumber</td>
-                <td>@session.CreateTime.ToString(CultureInfo.InvariantCulture)</td>
-                <td>@session.RootSessionId</td>
-                <td>@session.TraderId</td>
-                <td>@session.BrandId</td>
-                <td>@session.UserAgent</td>
-                <td>@session.IP</td>
-                <td>@session.Passed2FA</td>
-                <td>@session.EmailVerified</td>
-                <td>@session.Description</td>
-                <td>@string.IsNullOrWhiteSpace(session.PublicKeyBase64)</td>
-                <td>@_tokens.Exists(t=>t.RootSessionId == session.RootSessionId.ToString("N"))</td>
-            </tr>
-        }
+                    <td>@rowNumber</td>
+                    <td>@session.CreateTime.ToString(CultureInfo.InvariantCulture)</td>
+                    <td>@session.RootSessionId</td>
+                    <td>@session.TraderId</td>
+                    <td>@session.BrandId</td>
+                    <td>@session.UserAgent</td>
+                    <td>@session.IP</td>
+                    <td>@session.Passed2FA</td>
+                    <td>@session.EmailVerified</td>
+                    <td>@session.Description</td>
+                    <td>@string.IsNullOrWhiteSpace(session?.PublicKeyBase64)</td>
+                    <td>@_tokens.Exists(t => t.RootSessionId == session.RootSessionId.ToString("N"))</td>
+                </tr>
+            }
+    }
     </tbody>
 
 </table>
@@ -80,19 +80,19 @@
     }
     
     private async Task RefreshSessions()
-    {        
+    {         
         _timeStamp = DateTime.UtcNow;
         _index = 0;
+
+        _tokens = (await _tokenManager.GetUserTokens(new GetUserTokensRequest()
+        {
+            ClientId = ClientId
+        })).Tokens ?? new ();
+
         _sessions = _sessionReader.Get(ClientId)?
             .OrderByDescending(s => s.CreateTime)
             .Take(CountInPage)
             .ToList();
-        
-        var tokens = await _tokenManager.GetUserTokens(new GetUserTokensRequest()
-        {
-            ClientId = ClientId
-        });
-        _tokens = tokens.Tokens;
         
         _currentPageSize = CountInPage;
         StateHasChanged();
