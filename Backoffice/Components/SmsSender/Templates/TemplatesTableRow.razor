@@ -10,23 +10,15 @@
 
 <tr>
     <td>@Template.Id</td>
+    <td>@Template.DefaultBrand</td>
     <td>@Template.DefaultLang</td>
-    @if (Template.BrandLangBodies.FirstOrDefault().LangBodies.Any())
+    @if (Template.BrandLangBodies.Any())
     {
-        <td>@Template.BrandLangBodies.FirstOrDefault().LangBodies.Keys.JoinIntoString(16)</td>
+        @foreach (var brand in Brands)
+        {
+            <td>@Template.BrandLangBodies.FirstOrDefault(b => b.Brand == brand).LangBodies.Keys.JoinIntoString(16)</td>
+        }
     }
-    else
-    {
-        <td></td>
-    }
-    @*@if (Template.Params.Any())
-    {
-        <td>@Template.Params.JoinIntoString(16)</td>
-    }
-    else
-    {
-        <td></td>
-    }*@
     <td>
         <ul class="nav">
             <li><button type="button" class="btn-outline-warning btn" @onclick="ShowEdit">Edit</button></li>
@@ -45,6 +37,9 @@
 
     [Parameter]
     public SmsTemplate Template { get; set; }
+
+    [Parameter]
+    public List<string> Brands { get; set; }
 
     [Parameter]
     public ILoaderConfiguration LoaderConfig { get; set; }
@@ -67,17 +62,23 @@
     {
         try
         {
-            //foreach (var (editedBodiesLang, editedBody) in template.LangBodies)
-            //{
-            //    var editRequest = new EditTemplateRequest
-            //    {
-            //        TemplateId = Template.Id,
-            //        Lang = editedBodiesLang.ToEnum<LangEnum>(),
-            //        TemplateBody = editedBody
-            //    };
-//
-            //    await SmsTemplateService.EditTemplateAsync(editRequest);
-            //}
+            foreach (var brandLangBody in template.BrandLangBodies)
+            {
+                foreach (var (lang, body) in brandLangBody.LangBodies)
+                {
+                    var editRequest = new EditTemplateRequest
+                    {
+                        TemplateId = Template.Id,
+                        Brand = brandLangBody.Brand,
+                        Lang = lang.ToEnum<LangEnum>(),
+                        DefaultBrand = template.DefaultBrand,
+                        DefaultLang = template.DefaultLang,
+                        TemplateBody = body
+                    };
+
+                    await SmsTemplateService.EditTemplateAsync(editRequest);
+                }
+            }
 
             ToastService.Info($"Template {template.Id} has been modified", "Edit template");
 
