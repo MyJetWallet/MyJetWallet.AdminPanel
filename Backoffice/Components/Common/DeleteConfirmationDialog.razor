@@ -1,0 +1,32 @@
+<BaseTwoButtonsDialog
+    Caption="@($"Delete {DeletedThingName}?")"
+                          OnClose="OnClose"
+                          YesButtonCaption="Confirm"
+                          NoButtonCaption="Cancel"
+                          OnSubmit="OnSubmit"
+>
+    <h3>Are you sure you want to delete @DeletedThingName with ID: @DeletedThingId ?</h3>
+</BaseTwoButtonsDialog>
+@code {
+    [Parameter]
+    public string DeletedThingName { get; set; }
+    
+    [Parameter]
+    public string DeletedThingId { get; set; }
+    
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+
+    [Parameter]
+    public EventCallback OnConfirmCallback { get; set; }
+    
+    private void OnClose()
+    {
+        OnCloseCallback.InvokeAsync();
+    }
+
+    private async Task OnSubmit()
+    {
+        await OnConfirmCallback.InvokeAsync();
+    }
+}

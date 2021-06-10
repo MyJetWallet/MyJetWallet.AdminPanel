@@ -4,6 +4,7 @@ using MyJetWallet.BitGo.Settings.Ioc;
 using MyJetWallet.Sdk.Authorization.NoSql;
 using MyJetWallet.Sdk.NoSql;
 using MyJetWallet.Sdk.Service;
+using MyNoSqlServer.Abstractions;
 using MyNoSqlServer.DataReader;
 using Service.ActiveOrders.Client;
 using Service.ActiveOrders.Grpc;
@@ -89,9 +90,6 @@ namespace Backoffice.Modules
             builder.RegisterBitgoSettingsWriter(Program.ReloadedSettings(e => e.MyNoSqlWriterUrl));
             
             builder.RegisterPushNotificationClient(Program.Settings.PushNotificationGrpcServiceUrl);
-            
-            RegisterAuthServices(builder);
-            
         }
         
         private void RegisterMyNoSqlTcpClient(ContainerBuilder builder)
@@ -103,18 +101,6 @@ namespace Backoffice.Modules
                 .RegisterInstance(_myNoSqlClient)
                 .AsSelf()
                 .SingleInstance();
-        }
-        
-        protected void RegisterAuthServices(ContainerBuilder builder)
-        {
-            // he we do not use CreateNoSqlClient beacuse we have a problem with start many mynosql instances 
-            var authNoSql = new MyNoSqlTcpClient(
-                Program.ReloadedSettings(e => e.AuthMyNoSqlReaderHostPort),
-                ApplicationEnvironment.HostName ?? $"{ApplicationEnvironment.AppName}:{ApplicationEnvironment.AppVersion}");
-
-            builder.RegisterMyNoSqlReader<RootSessionNoSqlEntity>(authNoSql, RootSessionNoSqlEntity.TableName);
-
-            authNoSql.Start();
         }
     }
 }

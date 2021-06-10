@@ -4,14 +4,16 @@
 @using Service.PushNotification.Domain.Models
 @using Service.PushNotification.Grpc
 @using Service.PushNotification.Grpc.Models.Requests
-@inject IMyNoSqlServerDataReader<RootSessionNoSqlEntity> _sessionReader
+@inject IMyNoSqlServerDataWriter<RootSessionNoSqlEntity> _rootWriter;
+@inject IMyNoSqlServerDataWriter<ShortRootSessionNoSqlEntity> _shortWriter;
+
 @inject ITokenManager _tokenManager
 <h3>ClientSessionsComponent</h3>
 
 <ul class="nav">
     @if (_sessions?.Any() == true)
     {
-        <li><button type="button" class="btn-outline-info btn" @onclick="NextPageSessions">>>> Next >>></button></li>
+        <li><button type="button" class="btn-outline-info btn" @onclick="(async () => {await NextPageSessions();})">>>> Next >>></button></li>
     }
     <li><button type="button" class="btn-outline-secondary btn" @onclick="(async () => { await RefreshSessions(); })">Refresh</button></li>
     <li>Count in page: <input type="number" style="width: 40px" @bind="CountInPage"/></li>
@@ -31,6 +33,7 @@
         <th>Description</th>
         <th>Has Public Key</th>
         <th>Has Firebase Token</th>
+        <th>Action</th>
     </tr>
     </thead>
     <tbody>
@@ -62,6 +65,9 @@
                     {
                         <button type="button" class="btn-outline-info btn" @onclick="() => { ShowToken(token); }">Show token</button>
                     }</td>
+                <td>
+                     <button type="button" class="btn-outline-danger btn" @onclick=" () => {  ShowDeleteDialog(session.RootSessionId); }">Delete Session</button>
+                </td>
             </tr>
         }
     }
@@ -75,7 +81,12 @@
         <ClientTokenPopUp Token="@ShownToken" OnCloseCallback="OnCloseTokenPopUp"/>
     </div>
 }
-
+@if (IsShowDeleteDialog)
+{
+    <div>
+        <DeleteConfirmationDialog DeletedThingName="@DeletedThingName" DeletedThingId="@DeletedThingId" OnConfirmCallback="async () => { await OnConfirmDelete(); }" OnCloseCallback="OnCancelDelete" ></DeleteConfirmationDialog>
+    </div>
+}
 @code {
     [Parameter]
     public string ClientId { get; set; }
@@ -88,6 +99,10 @@
     private long _index = 0; 
     private bool IsShowToken { get; set; }
     private string ShownToken { get; set; }
+    private bool IsShowDeleteDialog { get; set; }
+    private string DeletedThingName { get; set; }
+    private string DeletedThingId { get; set; }
+    private Guid DeletedSessionId { get; set; }
 
     
     protected override async Task OnInitializedAsync()
@@ -108,7 +123,7 @@
             ClientId = ClientId
         })).Tokens ?? new ();
 
-        _sessions = _sessionReader.Get(ClientId)?
+        _sessions = (await _rootWriter.GetAsync(ClientId))
             .OrderByDescending(s => s.CreateTime)
             .Take(CountInPage)
             .ToList();
@@ -117,19 +132,20 @@
         StateHasChanged();
     }
 
-    private void NextPageSessions()
+    private async Task NextPageSessions()
     {
         if (_sessions?.Any() != true)
             return;
 
         _timeStamp = _sessions.Min(e => e.CreateTime);
         _index += _currentPageSize;
-
-        _sessions = _sessionReader.Get(ClientId)
+        
+        _sessions = (await _rootWriter.GetAsync(ClientId))
             .Where(s => s.CreateTime < _timeStamp)
             .OrderByDescending(s => s.CreateTime)
             .Take(CountInPage)
             .ToList();
+        
         
         _currentPageSize = CountInPage;
         StateHasChanged();
@@ -147,4 +163,40 @@
         IsShowToken = false;
         StateHasChanged();
     }
+
+    private async Task DeleteSession(Guid rootSessionId)
+    {
+        var partKey = RootSessionNoSqlEntity.GeneratePartitionKey(ClientId);
+        var rowKey = RootSessionNoSqlEntity.GenerateRowKey(rootSessionId);
+
+        await _shortWriter.DeleteAsync(partKey, rowKey);
+        await _rootWriter.DeleteAsync(partKey, rowKey);
+        
+        await RefreshSessions();
+    }
+
+
+    private void ShowDeleteDialog(Guid rootSessionId)
+    {
+        DeletedSessionId = rootSessionId;
+        IsShowDeleteDialog = true;
+        DeletedThingId = rootSessionId.ToString("D");
+        DeletedThingName = "Session";
+        StateHasChanged();
+    }
+
+    private async Task OnConfirmDelete()
+    {
+        IsShowDeleteDialog = false;
+        await DeleteSession(DeletedSessionId);
+        await RefreshSessions();
+    }
+
+    private void OnCancelDelete()
+    {
+        IsShowDeleteDialog = false;
+        DeletedSessionId = Guid.Empty;
+        StateHasChanged();
+    }
+
 }

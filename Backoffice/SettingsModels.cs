@@ -67,6 +67,9 @@ namespace Backoffice
         
         [YamlProperty("AdminPanel.AuthMyNoSqlReaderHostPort")]
         public string AuthMyNoSqlReaderHostPort { get; set; }
+        
+        [YamlProperty("AdminPanel.AuthMyNoSqlWriterUrl")]
+        public string AuthMyNoSqlWriterUrl { get; set; }
 
     }
 }
