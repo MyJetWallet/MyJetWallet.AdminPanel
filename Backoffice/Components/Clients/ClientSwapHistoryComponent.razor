@@ -80,7 +80,7 @@
             WalletId = Wallet.WalletId
         });
 
-        Swaps = historyResponse.SwapCollection;
+        Swaps = historyResponse.SwapCollection ?? new();
         _lastSeen = historyResponse.DateForNextQuery;
         _currentPageSize = CountInPage;
         
