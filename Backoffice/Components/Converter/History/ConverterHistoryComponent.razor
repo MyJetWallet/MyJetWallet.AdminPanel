@@ -30,13 +30,13 @@
         <th>WalletId</th>
         <th>OperationId</th>
         <th>Price</th>
+        <th>MarkUp</th>
         <th>ExpireDate</th>
         <th>State</th>
         <th>OpenDate</th>
         <th>ClosedDate</th>
         <th>PreviousOperationId</th>
         <th>ClientReserveOperationId</th>
-        <th>MarketOrderId</th>
         <th>BrokerReserveOperationId</th>
         <th>SwapOperationId</th>
     </tr>
@@ -68,13 +68,13 @@
             <td>@history.Quote.WalletId</td>
             <td>@history.Quote.OperationId</td>
             <td>@history.Quote.Price</td>
+            <td>@history.Quote.MarkUp</td>
             <td>@history.Quote.ExpireDate</td>
             <td>@history.Quote.State</td>
             <td>@history.Quote.OpenDate</td>
             <td>@history.Quote.ClosedDate</td>
             <td>@history.Quote.PreviousOperationId</td>
             <td>@history.Quote.ClientReserveOperationId</td>
-            <td>@history.Quote.MarketOrderId</td>
             <td>@history.Quote.BrokerReserveOperationId</td>
             <td>@history.Quote.SwapOperationId</td>
         </tr>
@@ -86,12 +86,15 @@
                         <table class="table">
                             <thead>
                             <tr>
-                                <th>InstrumentSymbol</th>
-                                <th>InstrumentPrice</th>
-                                <th>Fee</th>
-                                <th>MarkUp</th>
-                                <th>OperationId</th>
-                                <th>TradeId</th>
+                                    <th>InstrumentSymbol</th>
+                                    <th>InstrumentPrice</th>
+                                    <th>OperationId</th>
+                                    <th>TradeId</th>
+                                    <th>Volume</th>
+                                    <th>OppositeVolume</th>                              
+                                    <th>OrderSide</th>
+                                    <th>MarketOrderId</th>
+                                    <th>ErrorText</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -100,10 +103,13 @@
                                 <tr>
                                     <td>@trade.InstrumentSymbol</td>
                                     <td>@trade.InstrumentPrice</td>
-                                    <td>@trade.Fee</td>
-                                    <td>@trade.MarkUp</td>
                                     <td>@trade.OperationId</td>
                                     <td>@trade.TradeId</td>
+                                    <td>@trade.Volume</td>
+                                    <td>@trade.OppositeVolume</td>                              
+                                    <td>@trade.OrderSide</td>
+                                    <td>@trade.MarketOrderId</td>
+                                    <td>@trade.ErrorText</td>
                                 </tr>
                             }
                             </tbody>

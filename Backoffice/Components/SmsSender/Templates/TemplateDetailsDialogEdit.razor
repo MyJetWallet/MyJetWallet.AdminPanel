@@ -1,5 +1,6 @@
 ﻿@using Service.SmsSender.Domain.Models
 @using Service.SmsSender.Domain.Models.Enums
+@using System.Linq
 
 <BaseTwoButtonsDialog Caption=@(Template.Id.ToString())
                       OnClose="OnClose"
@@ -10,39 +11,36 @@
         <tr>
             <td>
                 <table>
-                    @*<tr>
-                        <td>Id</td>
+                    <tr>
+                        <td>Default Brand</td>
                         <td class="float-left">
-                            @Template.Id
+                            <input type="text" class="form-control" @bind="Template.DefaultLang" />
                         </td>
-                    </tr>*@
+                    </tr>
                     <tr>
                         <td>Default Lang</td>
                         <td class="float-left">
                             <input type="text" class="form-control" @bind="Template.DefaultLang" />
                         </td>
                     </tr>
-                    @foreach (var (lang, _) in Template.LangBodies)
+                    @foreach (var brandLangBody in Template.BrandLangBodies)
                     {
-                        @*<tr>
-                            <td>Lang</td>
-                            <td class="float-left">
-                                @lang
-                            </td>
-                        </tr>*@
-                        <tr>
-                            @if (lang == Template.DefaultLang.ToString())
-                            {
-                                <td>Default (@lang) Body</td>
-                            }
-                            else
-                            {
-                                <td>@lang Body</td>
-                            }
-                            <td class="float-left">
-                                <input type="text" class="form-control" @bind="Template.LangBodies[lang]" />
-                            </td>
-                        </tr>
+                        @foreach (var (lang, _) in brandLangBody.LangBodies)
+                        {
+                            <tr>
+                                @if (lang == Template.DefaultLang.ToString())
+                                {
+                                    <td>Default (@lang) Body</td>
+                                }
+                                @if (lang == Template.DefaultLang.ToString())
+                                {
+                                    <td>@lang Body</td>
+                                }
+                                <td class="float-left">
+                                    <input type="text" class="form-control" @bind="@brandLangBody.LangBodies[lang]" />
+                                </td>
+                            </tr>
+                        }
                     }
                 </table>
             </td>
