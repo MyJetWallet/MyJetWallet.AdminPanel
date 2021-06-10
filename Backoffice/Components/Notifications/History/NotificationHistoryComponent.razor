@@ -18,7 +18,10 @@
     <tr>
         <th>#</th>
         <th>TimeStamp</th>
-        <th>ClientId</th>
+        @if (ClientId == null)
+        {
+            <th>ClientId</th>
+        }
         <th>Type</th>
         <th>Params</th>
         <th>NotificationId</th>
@@ -36,7 +39,10 @@
             <tr>
                 <td>@rowNumber</td>
                 <td>@history.TimeStamp.ToString(CultureInfo.InvariantCulture)</td>
-                <td>@history.ClientId</td>
+                @if (ClientId == null)
+                {
+                    <td>@history.ClientId</td>
+                }
                 <td>@history.Type.ToString()</td>
                 <td>@string.Join(" | ", history.Params.ToArray())</td>
                 <td>@history.NotificationId.ToString("D")</td>
@@ -82,6 +88,9 @@
 
 @code {
     
+    [Parameter]
+    public string ClientId { get; set; }
+    
     private List<StatusResponse> _statuses = new();
     private List<HistoryResponse> _histories = new();
     private int CountInPage { get; set; } = 20;
@@ -101,12 +110,18 @@
     {
         _timeStamp = DateTime.UtcNow;
         _index = 0;
+
         var request = new HistoryRequest()
         {
+            ClientId = ClientId,
             Take = CountInPage,
             TimeStamp = _timeStamp
         };
-        _histories = (await _historyService.GetAllRecords(request)).HistoryResponses;
+        
+        _histories = (ClientId == null
+            ? (await _historyService.GetAllRecords(request)).HistoryResponses
+            : (await _historyService.GetRecordsByClientId(request)).HistoryResponses) ?? new ();
+        
         _currentPageSize = CountInPage;
 
         StateHasChanged();
@@ -126,7 +141,11 @@
         };
 
         _index += _currentPageSize;
-        _histories = (await _historyService.GetAllRecords(request)).HistoryResponses ?? new();
+        
+        _histories = (ClientId == null
+            ? (await _historyService.GetAllRecords(request)).HistoryResponses
+            : (await _historyService.GetRecordsByClientId(request)).HistoryResponses) ?? new ();
+        
         _currentPageSize = CountInPage;
         StateHasChanged();
     }

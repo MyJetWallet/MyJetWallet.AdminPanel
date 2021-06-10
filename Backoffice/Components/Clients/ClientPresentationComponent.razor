@@ -64,6 +64,12 @@
                     <li class="nav-item">
                         <button class="page-link" style="@(GetMenuStyle(ClientPage.BlockchainDepositAddress))" @onclick="@(() => SetPage(ClientPage.BlockchainDepositAddress))">Blockchain Addresses</button>
                     </li>
+                    <li class="nav-item">
+                        <button class="page-link" style="@(GetMenuStyle(ClientPage.Sessions))" @onclick="@(() => SetPage(ClientPage.Sessions))">Sessions</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="page-link" style="@(GetMenuStyle(ClientPage.Notifications))" @onclick="@(() => SetPage(ClientPage.Notifications))">Notification History</button>
+                    </li>
                 </ul>
             </tr>
             <tr>
@@ -93,6 +99,14 @@
 
                         case ClientPage.BlockchainDepositAddress:
                             <p>BlockchainDepositAddress</p>
+                            break;
+                            
+                        case ClientPage.Sessions:
+                            <ClientSessionsComponent ClientId="@Client.ClientId"/>
+                            break;
+                            
+                        case ClientPage.Notifications:
+                            <NotificationHistoryComponent ClientId="@ClientId"/>
                             break;
                     }
                     </CascadingValue>
@@ -144,7 +158,9 @@
         ActiveOrders,
         TradeHistory,
         SwapHistory,
-        BlockchainDepositAddress
+        BlockchainDepositAddress,
+        Sessions,
+        Notifications
     }
 
 
