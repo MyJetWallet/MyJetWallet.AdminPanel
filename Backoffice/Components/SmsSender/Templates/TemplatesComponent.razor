@@ -69,10 +69,10 @@
                     var filteredLangBodies = new Dictionary<string, string>();
                     foreach (var template in TemplatesList)
                     {
-                        var defaultLangBody = template.LangBodies[template.DefaultLang.ToString()];
-                        filteredLangBodies.Add(template.DefaultLang.ToString(), defaultLangBody);
-                        filteredLangBodies.AddRange(template.LangBodies.Where(b => b.Value != defaultLangBody));
-                        template.LangBodies = filteredLangBodies;
+                        //var defaultLangBody = template.LangBodies[template.DefaultLang.ToString()];
+                        //filteredLangBodies.Add(template.DefaultLang.ToString(), defaultLangBody);
+                        //filteredLangBodies.AddRange(template.LangBodies.Where(b => b.Value != defaultLangBody));
+                        //template.LangBodies = filteredLangBodies;
                     }
                 }
 

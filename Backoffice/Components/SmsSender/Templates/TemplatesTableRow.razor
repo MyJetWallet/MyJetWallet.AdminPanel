@@ -11,9 +11,9 @@
 <tr>
     <td>@Template.Id</td>
     <td>@Template.DefaultLang</td>
-    @if (Template.LangBodies.Any())
+    @if (Template.BrandLangBodies.FirstOrDefault().LangBodies.Any())
     {
-        <td>@Template.LangBodies.Keys.JoinIntoString(16)</td>
+        <td>@Template.BrandLangBodies.FirstOrDefault().LangBodies.Keys.JoinIntoString(16)</td>
     }
     else
     {
@@ -67,17 +67,17 @@
     {
         try
         {
-            foreach (var (editedBodiesLang, editedBody) in template.LangBodies)
-            {
-                var editRequest = new EditTemplateRequest
-                {
-                    TemplateId = Template.Id,
-                    Lang = editedBodiesLang.ToEnum<LangEnum>(),
-                    TemplateBody = editedBody
-                };
-
-                await SmsTemplateService.EditTemplateAsync(editRequest);
-            }
+            //foreach (var (editedBodiesLang, editedBody) in template.LangBodies)
+            //{
+            //    var editRequest = new EditTemplateRequest
+            //    {
+            //        TemplateId = Template.Id,
+            //        Lang = editedBodiesLang.ToEnum<LangEnum>(),
+            //        TemplateBody = editedBody
+            //    };
+//
+            //    await SmsTemplateService.EditTemplateAsync(editRequest);
+            //}
 
             ToastService.Info($"Template {template.Id} has been modified", "Edit template");
 

@@ -22,7 +22,7 @@
                             <input type="text" class="form-control" @bind="Template.DefaultLang" />
                         </td>
                     </tr>
-                    @foreach (var (lang, _) in Template.LangBodies)
+                    @foreach (var (lang, _) in Template.BrandLangBodies.FirstOrDefault().LangBodies)
                     {
                         @*<tr>
                             <td>Lang</td>
@@ -40,7 +40,7 @@
                                 <td>@lang Body</td>
                             }
                             <td class="float-left">
-                                <input type="text" class="form-control" @bind="Template.LangBodies[lang]" />
+                                <input type="text" class="form-control" @bind="Template.BrandLangBodies.FirstOrDefault().LangBodies[lang]" />
                             </td>
                         </tr>
                     }
