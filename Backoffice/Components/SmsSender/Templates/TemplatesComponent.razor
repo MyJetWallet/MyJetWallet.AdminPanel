@@ -17,16 +17,19 @@
         <thead>
             <tr>
                 <th>Template</th>
+                <th>Default brand</th>
                 <th>Default lang</th>
-                <th>Body</th>
-                @*<th>Params</th>*@
+                @foreach (var brand in Brands)
+                {
+                    <th>@brand</th>
+                }
                 <th></th>
             </tr>
         </thead>
         <tbody>
         @foreach (var template in TemplatesList)
         {
-            <TemplatesTableRow Template="@template" LoaderConfig="@LoaderConfig" />
+            <TemplatesTableRow Template="@template" Brands="@Brands" LoaderConfig="@LoaderConfig" />
         }
         </tbody>
     </table>
@@ -37,6 +40,7 @@
     private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
     private SmsTemplate[] TemplatesList { get; set; } = Array.Empty<SmsTemplate>();
     private SmsTemplate SelectedTemplate { get; set; }
+    private List<string> Brands { get; set; } = new();
 
     private bool IsShowAdding { get; set; }
     private const int MAX_ATTEMPTS_COUNT = 3;
@@ -66,13 +70,20 @@
 
                 if (TemplatesList != null)
                 {
-                    var filteredLangBodies = new Dictionary<string, string>();
                     foreach (var template in TemplatesList)
                     {
-                        //var defaultLangBody = template.LangBodies[template.DefaultLang.ToString()];
-                        //filteredLangBodies.Add(template.DefaultLang.ToString(), defaultLangBody);
-                        //filteredLangBodies.AddRange(template.LangBodies.Where(b => b.Value != defaultLangBody));
-                        //template.LangBodies = filteredLangBodies;
+                        var filteredLangBodies = new Dictionary<string, string>();
+                        foreach (var brandLangBody in template.BrandLangBodies)
+                        {
+                            var defaultLangBody = brandLangBody.LangBodies
+                            .FirstOrDefault(b => b.Key == template.DefaultLang.ToString()).Value;
+
+                            filteredLangBodies.Add(template.DefaultLang.ToString(), defaultLangBody);
+                            filteredLangBodies.AddRange(brandLangBody.LangBodies.Where(b => b.Value != defaultLangBody));
+                            brandLangBody.LangBodies = filteredLangBodies;
+
+                            Brands.Add(brandLangBody.Brand);
+                        }
                     }
                 }
 
