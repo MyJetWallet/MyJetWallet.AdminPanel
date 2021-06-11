@@ -139,6 +139,9 @@
     private long _index = 0;
     private int _currentPageSize = 0;
     
+    [Parameter]
+    public string WalletId { get; set; }
+    
     private string SelectedPosition { get; set; }
     
     protected override async Task OnInitializedAsync()
@@ -150,9 +153,9 @@
     {
         _index = 0;
 
-        var historyResponse = await _historyService.GetHistoryAsync(new GetHistoryRequest() {BatchSize = CountInPage});
+        var historyResponse = await _historyService.GetHistoryAsync(new GetHistoryRequest() {BatchSize = CountInPage, WalletId = WalletId});
 
-        _histories = historyResponse.HistoryCollection;
+        _histories = historyResponse.HistoryCollection ?? new();
         _lastSeen = historyResponse.DateForNextQuery;
         
         _currentPageSize = CountInPage;
