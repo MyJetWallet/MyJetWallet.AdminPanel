@@ -1,10 +1,114 @@
-﻿<h1>History Component</h1>
+﻿@using System.Threading
+@using Backoffice.Abstractions.Models
+@using Service.SmsSender.Domain.Models
+@using Service.SmsSender.Grpc
+@using Service.SmsSender.Grpc.Models.Requests
+
+@inject ISmsService SmsService
+@inject IToaster ToastService
+
+<Loader LoaderConfig="@LoaderConfig" />
+
+<ul class="nav float-left">
+    <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
+</ul>
+<div class="row">
+    <h3 style="margin: 10px">Sent History</h3>
+</div>
+<div class="row">
+    <table class="table" style="width: auto">
+        <thead>
+            <tr>
+                <th>Phone</th>
+                <th>Brand</th>
+                <th>Template</th>
+                <th>Provider</th>
+                <th>Date</th>
+                <th>Client</th>
+                <th>Errors</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var sms in SentHistory)
+            {
+                <tr>
+                    <td>@sms.MaskedPhone</td>
+                    <td>@sms.Brand</td>
+                    <td>@sms.Template</td>
+                    <td>@sms.Provider</td>
+                    <td>@sms.ProcDate.ToString("G")</td>
+                    @if (sms.ClientId != null)
+                    {
+                        <td>@sms.Provider</td>
+                    }
+                    else
+                    {
+                        <td></td>
+                    }
+                    @if (sms.ProcError != null)
+                    {
+                        <td>@sms.ProcError</td>
+                    }
+                    else
+                    {
+                        <td></td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
 
 @code {
 
+    private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+    private SentHistoryRecord[] SentHistory { get; set; } = Array.Empty<SentHistoryRecord>();
+
+    private const int MAX_ATTEMPTS_COUNT = 3;
+
     private async void OnRefresh()
     {
+        LoaderConfig.Enable();
+
+        await LoadSentHistoryAsync();
+
+        LoaderConfig.Disable();
+
         await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadSentHistoryAsync()
+    {
+        var attempts = 0;
+        var exceptionMessage = string.Empty;
+
+        while (attempts < MAX_ATTEMPTS_COUNT)
+        {
+            try
+            {
+                var smsSentHistoryRequest = new GetSentHistoryRequest
+                {
+                    MaxCount = 10,
+                    Since = 0
+                };
+
+                var sentHistoryResponse = await SmsService.GetSentHistoryAsync(smsSentHistoryRequest);
+                SentHistory = sentHistoryResponse.SentHistoryRecords;
+                break;
+            }
+            catch (Exception ex)
+            {
+                exceptionMessage = ex.Message;
+                attempts++;
+            }
+
+            Thread.Sleep(1000);
+        }
+
+        if (attempts == MAX_ATTEMPTS_COUNT)
+        {
+            ToastService.Error(exceptionMessage, "Cannot get sent history.");
+        }
     }
 
     protected override void OnInitialized()

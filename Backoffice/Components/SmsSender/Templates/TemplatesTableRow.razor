@@ -1,5 +1,6 @@
 ﻿@using Service.SmsSender.Domain.Models
 @using Backoffice.Abstractions.Models
+@using Backoffice.Models.SmsSender
 @using Backoffice.Services
 @using Service.SmsSender.Domain.Models.Enums
 @using Service.SmsSender.Grpc
@@ -12,12 +13,9 @@
     <td>@Template.Id</td>
     <td>@Template.DefaultBrand</td>
     <td>@Template.DefaultLang</td>
-    @if (Template.BrandLangBodies.Any())
+    @foreach (var brand in Brands)
     {
-        @foreach (var brand in Brands)
-        {
-            <td>@Template.BrandLangBodies.FirstOrDefault(b => b.Brand == brand).LangBodies.Keys.JoinIntoString(16)</td>
-        }
+        <td>@Template.BrandLangBodies.FirstOrDefault(b => b.Brand == brand)?.LangBodies.Keys.JoinIntoString(16)</td>
     }
     <td>
         <ul class="nav">
@@ -29,7 +27,7 @@
 @if (IsShowEdit)
 {
     <div>
-        <TemplateDetailsDialogEdit Template="@Template" IsCreate="false" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="OnUpdateTemplate" />
+        <TemplateDetailsDialogEdit Template="@Template" IsCreate="false" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="OnUpdateTemplate" OnAddBrandLangBodyCallback="OnAddBrandLangBody" OnDeleteBrandLangBodyCallback="OnDeleteBrandLangBody" />
     </div>
 }
 
@@ -89,6 +87,41 @@
         catch (Exception ex)
         {
             ToastService.Error(ex.Message, "Template edition failed");
+        }
+    }
+
+    private async void OnAddBrandLangBody(AddedBrandLangBody body)
+    {
+        
+    }
+
+    private async void OnDeleteBrandLangBody(DeletedBrandLangBody body)
+    {
+        var affectedBrand = Template.BrandLangBodies.FirstOrDefault(b => b.Brand == body.Brand);
+        if (affectedBrand != null && affectedBrand.LangBodies.All(b => b.Key == body.Lang))
+        {
+            Brands.Remove(body.Brand);
+        }
+
+        try
+        {
+            await SmsTemplateService.EditTemplateAsync(new EditTemplateRequest
+            {
+                TemplateId = Template.Id,
+                Brand = body.Brand,
+                Lang = body.Lang.ToEnum<LangEnum>(),
+                DefaultBrand = Template.DefaultBrand,
+                DefaultLang = Template.DefaultLang,
+                TemplateBody = string.Empty // mark the brand-lang-body item for delete on server side
+            });
+
+            ToastService.Info($"Template body for brand {body.Brand} (lang {body.Lang}) is deleted", "Delete body");
+
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Template body deletion failed");
         }
     }
 
