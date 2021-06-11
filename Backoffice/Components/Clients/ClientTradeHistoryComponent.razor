@@ -33,6 +33,7 @@
         <th>Volume</th>
         <th>TradeUId</th>
         <th>OrderId</th>
+        <th>WalletId</th>
     </tr>
     </thead>
     <tbody>
@@ -49,6 +50,7 @@
             <td>@item.Trade.BaseVolume</td>
             <td>@item.Trade.TradeUId</td>
             <td>@item.Trade.OrderId</td>
+            <td>@item.Trade.WalletId</td>
         </tr>
     }
     </tbody>
@@ -94,7 +96,7 @@
 
             var data = await _tradeService.GetTradesAsync(new GetTradesRequest()
             {
-                WalletId = Wallet.WalletId,
+                WalletId = Wallet?.WalletId,
                 Take = CountInPage,
                 LastSequenceId = _lastSequenceId
             });

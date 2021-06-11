@@ -14,6 +14,7 @@ namespace Backoffice
         public const string SmsSender = "SmsSender";
         public const string Converter = "Converter";
         public const string Notifications = "Notifications";
+        public const string Monitor = "Monitor";
     }
     
     public static class Actions
@@ -62,7 +63,8 @@ namespace Backoffice
             NavsItem.Create("BitGo", "BitGo", "list-rich", Menu.BitGo),
             NavsItem.Create("SmsSender", "SmsSender", "list-rich", Menu.SmsSender),
             NavsItem.Create("Converter", "Converter", "list-rich", Menu.Converter),
-            NavsItem.Create("Notifications", "Notifications","list-rich",Menu.Notifications)
+            NavsItem.Create("Notifications", "Notifications","list-rich",Menu.Notifications),
+            NavsItem.Create("Monitor", "Monitor","list-rich",Menu.Monitor)
         };
         
         public static IEnumerable<NavsItem> GenerateMenuItems() => MenuItems;

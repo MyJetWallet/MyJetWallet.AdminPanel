@@ -1,0 +1,43 @@
+@using Backoffice.Components.Clients
+
+@page "/Monitor"
+
+
+<ul class="nav nav-tabs nav-pills">
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.Trades)" aria-current="page" @onclick="SetTrades" >Trades</button>
+    </li>
+</ul>
+
+<div style="margin: 10px">
+    @if (ActivePage == Menus.Trades)
+    {
+        <ClientTradeHistoryComponent />
+    }
+</div>
+
+
+
+@code {
+    private Menus ActivePage { get; set; } = Menus.Trades;
+    private string CheckActive(Menus target)
+    {
+        if (ActivePage == target)
+            return "active";
+
+        return "";
+    }
+    private void SetTrades()
+    {
+        SetActive(Menus.Trades);
+    }
+    private void SetActive(Menus page)
+    {
+        ActivePage = page;
+        StateHasChanged();
+    }
+    public enum Menus
+    {
+        Trades
+    }
+}
