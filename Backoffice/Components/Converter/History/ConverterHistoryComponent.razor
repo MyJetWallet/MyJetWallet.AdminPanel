@@ -24,6 +24,8 @@
         <th>ToAsset</th>
         <th>FromAssetVolume</th>
         <th>ToAssetVolume</th>
+        <th>FromAssetVolumeDifference (%)</th>
+        <th>ToAssetVolumeDifference (%)</th>
         <th>IsFromFixed</th>
         <th>BrokerId</th>
         <th>AccountId</th>
@@ -45,12 +47,17 @@
     
     @{
         var rowNumber = _index;
+        decimal toDiffPercent = 0;
+        decimal fromDiffPercent = 0;
     }
     
     @foreach (var history in _histories)
     {
         rowNumber++;
-        
+
+        fromDiffPercent = history.Quote.FromAssetVolumeDifference == 0 ? 0 : Math.Round((history.Quote.FromAssetVolumeDifference / (history.Quote.FromAssetVolume - history.Quote.FromAssetVolumeDifference) * 100), 2);
+        toDiffPercent = history.Quote.ToAssetVolumeDifference == 0 ? 0 : Math.Round((history.Quote.ToAssetVolumeDifference / (history.Quote.ToAssetVolume - history.Quote.ToAssetVolumeDifference) * 100), 2);
+
         <tr>
             <td>
                 <ul class="nav">
@@ -62,6 +69,8 @@
             <td>@history.Quote.ToAsset</td>
             <td>@history.Quote.FromAssetVolume</td>
             <td>@history.Quote.ToAssetVolume</td>
+            <td style="@ChangeColor(fromDiffPercent)">@fromDiffPercent</td>
+            <td style="@ChangeColor(toDiffPercent)">@toDiffPercent</td>
             <td>@history.Quote.IsFromFixed</td>
             <td>@history.Quote.BrokerId</td>
             <td>@history.Quote.AccountId</td>
@@ -150,6 +159,17 @@
         
         StateHasChanged();
     }
+    private string ChangeColor(decimal difference)
+    {
+        if (difference > 0)
+            return "background: lightgreen";
+
+        if (difference < 0)
+            return "background: lightpink";
+
+        return "";
+    }
+    
     private async void ShowTrades(History history, string positionId)
     {
         if (SelectedPosition == positionId)
