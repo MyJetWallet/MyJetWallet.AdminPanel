@@ -1,10 +1,9 @@
 using Autofac;
 using Backoffice.Services.Simulations;
+using Highsoft.Web.Mvc.Charts;
 using MyJetWallet.BitGo.Settings.Ioc;
-using MyJetWallet.Sdk.Authorization.NoSql;
-using MyJetWallet.Sdk.NoSql;
+using MyJetWallet.Sdk.Grpc;
 using MyJetWallet.Sdk.Service;
-using MyNoSqlServer.Abstractions;
 using MyNoSqlServer.DataReader;
 using Service.ActiveOrders.Client;
 using Service.ActiveOrders.Grpc;
@@ -22,6 +21,7 @@ using Service.PushNotification.Client;
 using Service.Service.KYC.Client;
 using Service.SmsProviderMock.Client;
 using Service.SmsSender.Client;
+using SimpleTrading.PersonalData.Grpc;
 
 namespace Backoffice.Modules
 {
@@ -90,6 +90,14 @@ namespace Backoffice.Modules
             builder.RegisterBitgoSettingsWriter(Program.ReloadedSettings(e => e.MyNoSqlWriterUrl));
             
             builder.RegisterPushNotificationClient(Program.Settings.PushNotificationGrpcServiceUrl);
+
+            var personalDataFactory = new MyGrpcClientFactory(Program.Settings.PersonalDataServiceUrl);
+            
+            builder
+                .RegisterInstance(personalDataFactory.CreateGrpcService<IPersonalDataServiceGrpc>())
+                .As<IPersonalDataServiceGrpc>()
+                .SingleInstance();
+
         }
         
         private void RegisterMyNoSqlTcpClient(ContainerBuilder builder)

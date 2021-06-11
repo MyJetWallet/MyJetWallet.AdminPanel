@@ -30,6 +30,7 @@
       <PackageReference Include="MyCrm.TradersDocuments.Grpc" Version="1.0.4" />
       <PackageReference Include="MyJetWallet.BitGo.Settings" Version="1.0.6" />
       <PackageReference Include="MyJetWallet.Sdk.Authorization" Version="1.0.24" />
+      <PackageReference Include="MyJetWallet.Sdk.Grpc" Version="1.0.2" />
       <PackageReference Include="MyJetWallet.Sdk.NoSql" Version="1.0.4" />
       <PackageReference Include="MyJetWallet.Service.ActiveOrders.Client" Version="1.0.3" />
       <PackageReference Include="MyJetWallet.Service.AssetsDictionary.Client" Version="1.5.4" />

@@ -2,8 +2,11 @@
 
 @using Service.ClientWallets.Grpc
 @using Service.ClientWallets.Grpc.Models
+@using SimpleTrading.PersonalData.Grpc
+@using System.Net.Mail
 
 @inject IClientWalletService _walletService
+@inject IPersonalDataServiceGrpc _personalDataServiceGrpc 
 
 <table style="width: 100%; height: 100%">
     <tr>
@@ -93,12 +96,27 @@
             StateHasChanged();
             return;
         }
+
+
+        var clients = new SearchWalletsResponse();
         
-        var clients = await _walletService.SearchClientsAsync(new SearchWalletsRequest()
+        if (IsEmail(SearchText))
         {
-            SearchText = SearchText,
-            Take = 10
-        });
+            var personalData = await _personalDataServiceGrpc.GetByEmail(SearchText);
+            clients = await _walletService.SearchClientsAsync(new SearchWalletsRequest()
+            {
+                SearchText = personalData?.PersonalData?.Id ?? SearchText,
+                Take = 10
+            });
+        }
+        else
+        {
+            clients = await _walletService.SearchClientsAsync(new SearchWalletsRequest()
+            {
+                SearchText = SearchText,
+                Take = 10
+            });
+        }
 
         if (clients.Clients?.Any() != true)
         {
@@ -117,6 +135,19 @@
         SearchResult = clients.Clients;
         
         StateHasChanged();
+    }
+    
+    private bool IsEmail(string value)
+    {
+        try
+        {
+            var m = new MailAddress(value);
+            return true;
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
     }
 
 

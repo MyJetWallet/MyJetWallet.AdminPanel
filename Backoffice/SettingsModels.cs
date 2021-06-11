@@ -71,5 +71,7 @@ namespace Backoffice
         [YamlProperty("AdminPanel.AuthMyNoSqlWriterUrl")]
         public string AuthMyNoSqlWriterUrl { get; set; }
 
+        [YamlProperty("AdminPanel.PersonalDataServiceUrl")]
+        public string PersonalDataServiceUrl { get; set; }
     }
 }
