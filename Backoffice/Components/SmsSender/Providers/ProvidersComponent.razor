@@ -48,7 +48,7 @@
 @code {
 
     private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
-    private string[] ProvidersList { get; set; } = Array.Empty<string>();
+    private string[] ProvidersList { get; set; }
     private string SelectedProvider { get; set; }
     private List<ProviderRoute> ProvidersRoutes { get; set; } = new();
 
@@ -66,34 +66,6 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task LoadProvidersAsync()
-    {
-        var attempts = 0;
-        var exceptionMessage = string.Empty;
-
-        while (attempts < MAX_ATTEMPTS_COUNT)
-        {
-            try
-            {
-                var providersResponse = await SmsProviderService.GetAllProvidersAsync();
-                ProvidersList = providersResponse?.Providers;
-                break;
-            }
-            catch (Exception ex)
-            {
-                exceptionMessage = ex.Message;
-                attempts++;
-            }
-
-            Thread.Sleep(1000);
-        }
-
-        if (attempts == MAX_ATTEMPTS_COUNT)
-        {
-            ToastService.Error(exceptionMessage, "Cannot get any providers.");
-        }
-    }
-
     private async Task LoadProvidersRoutes()
     {
         var attempts = 0;
@@ -105,7 +77,6 @@
             {
                 var providersRoutesResponse = await SmsProviderService.GetAllRoutesAsync();
                 ProvidersRoutes = providersRoutesResponse.Routes.OrderBy(r => r.Order).ToList();
-
                 break;
             }
             catch (Exception ex)
@@ -127,7 +98,6 @@
     {
         LoaderConfig.Enable();
 
-        await LoadProvidersAsync();
         await LoadProvidersRoutes();
 
         LoaderConfig.Disable();

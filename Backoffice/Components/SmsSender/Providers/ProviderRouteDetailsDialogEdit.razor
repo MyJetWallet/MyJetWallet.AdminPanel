@@ -1,4 +1,8 @@
 ﻿@using Service.SmsSender.Domain.Models
+@using Service.SmsSender.Grpc
+@using System.Threading
+@inject ISmsProviderService SmsProviderService
+@inject IToaster ToastService
 
 <BaseTwoButtonsDialog Caption=@(!IsCreate ? Route.Name : "Create a new route")
                       OnClose="OnClose"
@@ -36,6 +40,20 @@
                             <input type="text" class="form-control" @bind="Route.Pattern" />
                         </td>
                     </tr>
+                    <tr>
+                        <td>Provider</td>
+                        <td class="float-left">
+                            @if (ProvidersList.Any())
+                            {
+                                <select @bind="Route.ProviderId">
+                                    @foreach (var provider in ProvidersList)
+                                    {
+                                        <option value=@provider>@provider</option>
+                                    }
+                                </select>
+                            }
+                        </td>
+                    </tr>
                 </table>
             </td>
         </tr>
@@ -61,6 +79,9 @@
 
     [Parameter]
     public EventCallback<ProviderRoute> OnUpdateCallback { get; set; }
+    
+    private List<string> ProvidersList { get; set; } = new();
+    private const int MAX_ATTEMPTS_COUNT = 3;
 
     private void OnClose()
     {
@@ -79,10 +100,40 @@
         }
     }
 
-    protected override void OnInitialized()
+    
+    private async Task LoadProvidersAsync()
     {
-        Route.ProviderId ??= ProviderId;
+        var attempts = 0;
+        var exceptionMessage = string.Empty;
 
-        base.OnInitialized();
+        while (attempts < MAX_ATTEMPTS_COUNT)
+        {
+            try
+            {
+                var providersResponse = await SmsProviderService.GetAllProvidersAsync();
+                ProvidersList = providersResponse?.Providers.ToList();
+                StateHasChanged();
+                break;
+            }
+            catch (Exception ex)
+            {
+                exceptionMessage = ex.Message;
+                attempts++;
+            }
+
+            Thread.Sleep(1000);
+        }
+
+        if (attempts == MAX_ATTEMPTS_COUNT)
+        {
+            ToastService.Error(exceptionMessage, "Cannot get any providers.");
+        }
+    }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProvidersAsync();
+        Route.ProviderId ??= ProviderId;
+        await base.OnInitializedAsync();
     }
 }
