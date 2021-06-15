@@ -3,116 +3,269 @@
 @using Backoffice.Abstractions.Models
 @using System.Threading
 @using Backoffice.Extensions
+@using Service.SmsSender.Domain.Models.Enums
+@using Service.SmsSender.Grpc.Models.Requests
+@inject ISmsTemplateService _smsTemplateService
+@inject IToaster _toastService
 
-@inject ISmsTemplateService SmsTemplateService
-@inject IToaster ToastService
+=<h3>Sms Templates</h3>
 
-<Loader LoaderConfig="@LoaderConfig" />
 
-<ul class="nav float-left">
-    <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
-</ul>
-<div class="row">
-    <table class="table" style="width: auto">
-        <thead>
-            <tr>
-                <th>Template</th>
-                <th>Default brand</th>
-                <th>Default lang</th>
-                @foreach (var brand in Brands)
-                {
-                    <th>@brand</th>
-                }
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-        @foreach (var template in TemplatesList)
+<table class="table" style="width: auto">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Type</th>
+        <th>Default Brand</th>
+        <th>Default Language</th>
+        <th>Params</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    @{
+        var rowNumber = _index;
+    }
+
+    @foreach (var template in _templates)
+    {
+        rowNumber++;
+        <tr>
+            <td>@rowNumber</td>
+            <td>@template.Id.ToString()</td>
+            <td>@template.DefaultBrand</td>
+            <td>@template.DefaultLang</td>
+            <td>@string.Join(" ", template.Params.ToArray())</td>
+            <td>
+                <ul class="nav nav-tabs">
+                    <li>
+                        <button type="button" class="btn-outline-info btn" @onclick="@(() => { ShowBodies(template, template.Id.ToString()); })">Show Bodies</button>
+                    </li>
+                    <li>
+                         <button type="button" class="btn-outline-info btn" @onclick="@(() => { ShowDefaultsEdit(template); })">Edit defaults</button>
+                    </li>
+                </ul>
+            </td>
+        </tr>
+        @if (SelectedPosition == template.Id.ToString())
         {
-            <TemplatesTableRow Template="@template" Brands="@Brands" LoaderConfig="@LoaderConfig" />
+            SelectedType = template.Id;
+            SelectedTemplateParams = template.Params;
+
+            <tr>
+                <td colspan="9">
+                    <div class="border" style="margin-left: 20px; width: auto">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Brand</th>
+                                <th>Language</th>
+                                <th>Body</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var body in _bodies)
+                            {
+                                foreach (var langBody in body.LangBodies)
+                                {
+                                    <tr style="background: @(GetTemplateBackground(template.DefaultBrand, body.Brand))">
+                                        <td>@body.Brand</td>
+                                        <td>@langBody.Key</td>
+                                        <td>@langBody.Value</td>
+                                        <td>
+                                            <ul class="nav nav-tabs nav-pills">
+                                                <li class="nav-item">
+                                                    <button type="button" class="btn-outline-info btn" @onclick="() => { ShowBodyEdit(body.Brand, langBody.Key,langBody.Value); }">Edit</button>
+                                                </li>
+                                                @if (body.Brand != template.DefaultBrand || langBody.Key != template.DefaultLang)
+                                                {
+                                                    <li class="nav-item">
+                                                        <button type="button" class="btn-outline-danger btn" @onclick="async () => { await DeleteBody(body.Brand, langBody.Key); }">Delete</button>
+                                                    </li>
+                                                }
+                                            </ul>
+
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            </tbody>
+                            <div>
+                                <ul class="nav">
+                                    <li>
+                                        <button type="button" class="btn-outline-info btn" @onclick="ShowCreate">Add body</button>
+                                    </li>
+                                </ul>
+                            </div>
+                        </table>
+                    </div>
+                </td>
+            </tr>
         }
-        </tbody>
-    </table>
-</div>
+    }
+    </tbody>
+
+</table>
+
+
+@if (IsShowBodyEdit)
+{
+    <div>
+        <TemplateDetailsDialogEdit Request="@EditRequest" IsCreate="@IsCreate" TemplateParams="@SelectedTemplateParams" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="async () => { await OnUpdateTemplateBody(); }"/>
+    </div>
+}
+
+@if (IsShowDefaultsEdit)
+{
+    <div>
+        <TemplateDetailsDialogEdit Request="@EditRequest" IsCreate="@true" TemplateParams="@SelectedTemplateParams" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="async () => { await OnUpdateTemplateDefaults(); }"/>
+    </div>
+}
 
 @code {
+    private List<BrandLangBody> _bodies = new();
+    private List<SmsTemplate> _templates = new();
+    private long _index = 0;
+    private string SelectedPosition { get; set; }
+    private bool IsShowBodyEdit { get; set; }
+    private bool IsShowDefaultsEdit { get; set; }
 
-    private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
-    private SmsTemplate[] TemplatesList { get; set; } = Array.Empty<SmsTemplate>();
-    private SmsTemplate SelectedTemplate { get; set; }
-    private List<string> Brands { get; set; } = new();
+    private EditTemplateRequest EditRequest { get; set; }
+    private bool IsCreate { get; set; }
+    private List<string> SelectedTemplateParams { get; set; }
+    private TemplateEnum SelectedType { get; set; }
 
-    private bool IsShowAdding { get; set; }
-    private const int MAX_ATTEMPTS_COUNT = 3;
-
-    private async void OnRefresh()
+    protected override async Task OnInitializedAsync()
     {
-        LoaderConfig.Enable();
+        await RefreshTemplates();
+    }
 
-        await LoadTemplatesAsync();
+    private async Task RefreshTemplates()
+    {
+        _templates = (await _smsTemplateService.GetAllTemplatesAsync()).Templates.ToList();
+        StateHasChanged();
+    }
 
-        LoaderConfig.Disable();
+    private async void ShowBodies(SmsTemplate template, string positionId)
+    {
+        if (SelectedPosition == positionId)
+        {
+            _bodies = new ();
+            SelectedPosition = null;
+        }
+        else
+        {
+            _bodies = template.BrandLangBodies.ToList();
+            SelectedPosition = positionId;
+        }
 
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task LoadTemplatesAsync()
+    private void ShowDefaultsEdit(SmsTemplate template)
     {
-        var attempts = 0;
-        var exceptionMessage = string.Empty;
-
-        while (attempts < MAX_ATTEMPTS_COUNT)
+        SelectedTemplateParams = template.Params;
+        var  defaultBody = template.BrandLangBodies.First(b=> b.Brand == template.DefaultBrand).LangBodies[template.DefaultLang];
+        EditRequest = new EditTemplateRequest()
         {
-            try
-            {
-                var templatesResponse = await SmsTemplateService.GetAllTemplatesAsync();
-                TemplatesList = templatesResponse?.Templates;
-
-                if (TemplatesList != null)
-                {
-                    foreach (var template in TemplatesList)
-                    {
-                        var filteredLangBodies = new Dictionary<string, string>();
-                        foreach (var brandLangBody in template.BrandLangBodies)
-                        {
-                            var defaultLangBody = brandLangBody.LangBodies
-                            .FirstOrDefault(b => b.Key == template.DefaultLang.ToString()).Value;
-
-                            filteredLangBodies.Add(template.DefaultLang.ToString(), defaultLangBody);
-                            filteredLangBodies.AddRange(brandLangBody.LangBodies.Where(b => b.Value != defaultLangBody));
-                            brandLangBody.LangBodies = filteredLangBodies;
-
-                            Brands.Add(brandLangBody.Brand);
-                        }
-                    }
-                }
-
-                break;
-            }
-            catch (Exception ex)
-            {
-                exceptionMessage = ex.Message;
-                attempts++;
-            }
-
-            Thread.Sleep(1000);
-        }
-
-        if (attempts == MAX_ATTEMPTS_COUNT)
-        {
-            ToastService.Error(exceptionMessage, "Cannot get any templates.");
-        }
+            TemplateId = template.Id,
+            Brand = template.DefaultBrand,
+            Lang = template.DefaultLang,
+            TemplateBody = defaultBody
+        };
+        IsShowDefaultsEdit = true;
+        StateHasChanged();
     }
 
-    protected override async Task OnInitializedAsync()
+    private void ShowBodyEdit(string brand, string lang, string body)
     {
-        LoaderConfig.Enable();
+        IsCreate = false;
+        EditRequest = new EditTemplateRequest()
+        {
+            TemplateId = SelectedType,
+            Brand = brand,
+            Lang = lang,
+            TemplateBody = body
+        };
+        IsShowBodyEdit = true;
+        StateHasChanged();
+    }
 
-        await LoadTemplatesAsync();
+    private void ShowCreate()
+    {
+        IsCreate = true;
+        EditRequest = new EditTemplateRequest()
+        {
+            TemplateId = SelectedType
+        };
+        IsShowBodyEdit = true;
+        StateHasChanged();
+    }
 
-        LoaderConfig.Disable();
+    private void OnCloseEditDialog()
+    {
+        IsShowBodyEdit = false;
+        IsShowDefaultsEdit = false;
+        StateHasChanged();
+    }
 
-        await base.OnInitializedAsync();
+    private async Task OnUpdateTemplateBody()
+    {
+        IsShowBodyEdit = false;
+        EditRequest.DefaultBrand = _templates.First(t => t.Id == SelectedType).DefaultBrand;
+        EditRequest.DefaultLang = _templates.First(t => t.Id == SelectedType).DefaultLang;
+        await _smsTemplateService.EditTemplateAsync(EditRequest);
+        if(!IsCreate)
+        {
+            _bodies.First(b => b.Brand == EditRequest.Brand).LangBodies[EditRequest.Lang] = EditRequest.TemplateBody;
+        }
+        else
+        {
+            _bodies.Add(new BrandLangBody()
+            {
+                Brand = EditRequest.Brand,
+                LangBodies = new Dictionary<string, string>() {{EditRequest.Lang, EditRequest.TemplateBody}}
+            });
+        } 
+        await RefreshTemplates();
+    }
+    
+    private async Task OnUpdateTemplateDefaults()
+    {
+        IsShowDefaultsEdit = false;
+        EditRequest.DefaultBrand = EditRequest.Brand;
+        EditRequest.DefaultLang = EditRequest.Lang;
+        await _smsTemplateService.EditTemplateAsync(EditRequest);
+        if(SelectedPosition == EditRequest.TemplateId.ToString()) 
+            _bodies.First(b => b.Brand == EditRequest.Brand).LangBodies[EditRequest.Lang] = EditRequest.TemplateBody;
+        await RefreshTemplates();
+    }
+
+    private string GetTemplateBackground(string defaultBrand, string brand)
+    {
+        if (brand == defaultBrand)
+        {
+            return "lightgray";
+        }
+        return "white";
+    }
+
+    private async Task DeleteBody(string brand, string lang)
+    {
+        EditRequest = new EditTemplateRequest()
+        {
+            TemplateId = SelectedType,
+            Brand = brand,
+            Lang = lang
+        };
+        await _smsTemplateService.DeleteBodyAsync(EditRequest);
+        _bodies.First(b => b.Brand == brand).LangBodies.Remove(lang);
+        if (!_bodies.First(b => b.Brand == brand).LangBodies.Any())
+        {
+            _bodies = _bodies.Where(b=>b.Brand != brand).ToList();
+        }
+        await RefreshTemplates();
     }
 
 }

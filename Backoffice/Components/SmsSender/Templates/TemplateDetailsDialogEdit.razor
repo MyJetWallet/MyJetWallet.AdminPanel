@@ -1,89 +1,41 @@
 ﻿@using Service.SmsSender.Domain.Models
 @using Service.SmsSender.Domain.Models.Enums
 @using Backoffice.Models.SmsSender
+@using Service.SmsSender.Grpc.Models.Requests
 
-@inject IToaster ToastService
-
-<BaseTwoButtonsDialog Caption=@(Template.Id.ToString())
+<BaseTwoButtonsDialog Caption="@(Request.TemplateId.ToString())"
                       OnClose="OnClose"
                       YesButtonCaption="Save"
-                      NoButtonCaption="Close"
+                      NoButtonCaption="Cancel"
                       OnSubmit="OnSubmit">
-    <table>
-        <tr>
-            <td>
-                <table>
-                    <tr>
-                        <td>Default Brand</td>
-                        <td class="float-left">
-                            <input type="text" class="form-control" @bind="Template.DefaultBrand" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Default Lang</td>
-                        <td class="float-left">
-                            <input type="text" class="form-control" @bind="Template.DefaultLang" />
-                        </td>
-                    </tr>
-                    @foreach (var brandLangBody in Template.BrandLangBodies)
-                    {
-                        @foreach (var (lang, _) in brandLangBody.LangBodies)
-                        {
-                            <tr>
-                                @if (lang == Template.DefaultLang.ToString())
-                                {
-                                    <td>Default (@lang) Body</td>
-                                }
-                                @if (lang == Template.DefaultLang.ToString())
-                                {
-                                    <td>@lang Body</td>
-                                }
-                                <td class="float-left">
-                                    <textarea rows="@BodyTextareaRows" @bind-value="@brandLangBody.LangBodies[lang]" @bind-value:event="oninput"></textarea>
-                                </td>
-                                <td>
-                                    <ul class="nav">
-                                        <li><button type="button" class="btn-outline-danger btn" @onclick="@(() => DeleteBrandLangBody(brandLangBody.Brand, lang))">Delete</button></li>
-                                    </ul>
-                                </td>
-                            </tr>
-                        }
-                    }
-                    <tr>
-                        <td>New brand: <input type="text" class="form-control" @bind="NewBrand" /></td>
-                        <td>New lang: <input type="text" class="form-control" @bind="NewLang" /></td>
-                        <td class="float-left">
-                            <textarea rows="@BodyTextareaRows" @bind-value="NewBrandLangBody" @bind-value:event="oninput"></textarea>
-                        </td>
-                        <td>
-                            <ul class="nav">
-                                <li><button type="button" class="btn-outline-danger btn" @onclick="AddBrandLangBody">Add</button></li>
-                            </ul>
-                        </td>
-                    </tr>
 
-                </table>
-            </td>
-        </tr>
-    </table>
+            @if (IsCreate)
+            {
+                <div>
+                    <input type="text" class="form-control" placeholder="Brand" @bind="Request.Brand"/>
+                </div>
+                <div>
+                    <input type="text" class="form-control" placeholder="Language" @bind="Request.Lang"/>
+                </div>
+            }
+            <div>
+                <textarea type="text" class="form-control" placeholder="Body" @bind="Request.TemplateBody"></textarea>
+            </div>
+            <div>Template params:
+                @foreach(var param in TemplateParams)
+                {
+                    <ul>@param</ul>
+                }</div>
+            
 </BaseTwoButtonsDialog>
 
 @code {
 
     [Parameter]
-    public TemplateEnum TemplateId { get; set; }
-
+    public (string brand, string lang) BodyId { get; set; }
+    
     [Parameter]
-    public SmsTemplate Template { get; set; } = new();
-
-    [Parameter]
-    public string NewBrand { get; set; }
-
-    [Parameter]
-    public string NewLang { get; set; }
-
-    [Parameter]
-    public string NewBrandLangBody { get; set; }
+    public EditTemplateRequest Request { get; set; } = new();
 
     [Parameter]
     public bool IsCreate { get; set; }
@@ -92,18 +44,13 @@
     public EventCallback OnCloseCallback { get; set; }
 
     [Parameter]
-    public EventCallback<AddedBrandLangBody> OnCreateCallback { get; set; }
+    public EventCallback<EditTemplateRequest> OnCreateCallback { get; set; }
 
     [Parameter]
-    public EventCallback<SmsTemplate> OnUpdateCallback { get; set; }
-
+    public EventCallback<EditTemplateRequest> OnUpdateCallback { get; set; }
+    
     [Parameter]
-    public EventCallback<DeletedBrandLangBody> OnDeleteBrandLangBodyCallback { get; set; }
-
-    [Parameter]
-    public EventCallback<AddedBrandLangBody> OnAddBrandLangBodyCallback { get; set; }
-
-    private int BodyTextareaRows { get; set; }
+    public List<string> TemplateParams { get; set; }
 
     private void OnClose()
     {
@@ -112,65 +59,7 @@
 
     private async Task OnSubmit()
     {
-        await OnUpdateCallback.InvokeAsync(Template);
-    }
-
-    protected override void OnInitialized()
-    {
-        Template.Id = TemplateId;
-
-        base.OnInitialized();
-    }
-
-    private async Task AddBrandLangBody()
-    {
-        var existedBrandBody = Template.BrandLangBodies.FirstOrDefault(b => b.Brand == NewBrand);
-        if (existedBrandBody != null)
-        {
-            if (existedBrandBody.LangBodies.Keys.Contains(NewLang))
-            {
-                ToastService.Error("This lang body already exist for specified brand.");
-                return;
-            }
-
-            existedBrandBody.LangBodies.Add(NewLang, NewBrandLangBody);
-        }
-        else
-        {
-            Template.BrandLangBodies = Template.BrandLangBodies.Append(new BrandLangBody
-            {
-                Brand = NewBrand,
-                LangBodies = new Dictionary<string, string> { { NewLang, NewBrandLangBody } }
-            }).ToArray();
-        }
-
-        await OnAddBrandLangBodyCallback.InvokeAsync(new AddedBrandLangBody // on server side brand & lang existence will be double checked
-        {
-            Brand = NewBrand,
-            Lang = NewLang,
-            Body = NewBrandLangBody
-        });
-
-        StateHasChanged();
-    }
-
-
-    private async Task DeleteBrandLangBody(string brand, string lang)
-    {
-        Template.BrandLangBodies.FirstOrDefault(b => b.Brand == brand)?.LangBodies.Remove(lang);
-
-        if (Template.BrandLangBodies.First(b => b.Brand == brand).LangBodies.All(b => b.Key == lang))
-        {
-            Template.BrandLangBodies = Template.BrandLangBodies.Where(b => b.Brand != brand).ToArray();
-        }
-
-        await OnDeleteBrandLangBodyCallback.InvokeAsync(new DeletedBrandLangBody
-        {
-            Brand = brand,
-            Lang = lang
-        });
-
-        StateHasChanged();
+        await OnUpdateCallback.InvokeAsync(Request);
     }
 
 }
