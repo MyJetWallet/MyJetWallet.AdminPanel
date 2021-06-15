@@ -18,20 +18,22 @@
 <div class="row">
     <table class="table" style="width: auto">
         <thead>
-            <tr>
-                <th>Phone</th>
-                <th>Brand</th>
-                <th>Template</th>
-                <th>Provider</th>
-                <th>Date</th>
-                <th>Client</th>
-                <th>Errors</th>
-            </tr>
+        <tr>
+            <th>#</th>
+            <th>Phone</th>
+            <th>Brand</th>
+            <th>Template</th>
+            <th>Provider</th>
+            <th>Date</th>
+            <th>Client</th>
+            <th>Errors</th>
+        </tr>
         </thead>
         <tbody>
             @foreach (var sms in SentHistory)
             {
                 <tr>
+                    <td>@sms.Id</td>
                     <td>@sms.MaskedPhone</td>
                     <td>@sms.Brand</td>
                     <td>@sms.Template</td>
@@ -62,7 +64,7 @@
 @code {
 
     private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
-    private SentHistoryRecord[] SentHistory { get; set; } = Array.Empty<SentHistoryRecord>();
+    private List<SentHistoryRecord> SentHistory { get; set; } = new List<SentHistoryRecord>();
 
     private const int MAX_ATTEMPTS_COUNT = 3;
 

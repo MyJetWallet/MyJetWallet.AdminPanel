@@ -42,7 +42,7 @@
 @code {
 
     private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
-    private SentSms[] SentSmsList { get; set; } = Array.Empty<SentSms>();
+    private List<SentSms> SentSmsList { get; set; } = new List<SentSms>();
     private string SelectedProvider { get; set; }
     private Dictionary<string, List<ProviderRoute>> ProvidersRoutes { get; set; } = new();
 
@@ -75,7 +75,7 @@
                 };
 
                 var smsSentHistoryResponse = SmsSentHistoryService.GetLastSentSms(smsSentHistoryRequest);
-                SentSmsList = smsSentHistoryResponse.SentSmsList;
+                SentSmsList = smsSentHistoryResponse.SentSmsList?.OrderByDescending(e => e.Date).ToList() ?? new List<SentSms>();
                 break;
             }
             catch (Exception ex)
