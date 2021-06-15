@@ -21,11 +21,11 @@
             <div>
                 <textarea type="text" class="form-control" placeholder="Body" @bind="Request.TemplateBody"></textarea>
             </div>
-            <div>Template params:
+            <ul>Template params:
                 @foreach(var param in TemplateParams)
                 {
-                    <ul>@param</ul>
-                }</div>
+                    <li>@param</li>
+                }</ul>
             
 </BaseTwoButtonsDialog>
 

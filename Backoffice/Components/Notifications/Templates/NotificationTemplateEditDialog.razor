@@ -21,7 +21,13 @@
             <div>
                 <textarea type="text" class="form-control" placeholder="Body" @bind="Request.TemplateBody"></textarea>
             </div>
-            <div>Template params: @TemplateParams</div>
+            <ul>
+                Template params:
+                @foreach (var param in TemplateParams)
+                {
+                    <li>@param</li>
+                }
+            </ul>
             
 </BaseTwoButtonsDialog>
 
@@ -46,7 +52,7 @@
     public EventCallback<TemplateEditRequest> OnUpdateCallback { get; set; }
     
     [Parameter]
-    public string TemplateParams { get; set; }
+    public List<string> TemplateParams { get; set; }
 
     private void OnClose()
     {

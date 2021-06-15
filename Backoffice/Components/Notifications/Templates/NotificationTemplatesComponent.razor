@@ -45,7 +45,7 @@
         @if (SelectedPosition == template.Type.ToString())
         {
             SelectedType = template.Type;
-            SelectedTemplateParams = string.Join(" ", template.Params.ToArray());
+            SelectedTemplateParams = template.Params;
 
             <tr>
                 <td colspan="9">
@@ -128,7 +128,7 @@
 
     private TemplateEditRequest EditRequest { get; set; }
     private bool IsCreate { get; set; }
-    private string SelectedTemplateParams { get; set; }
+    private List<string> SelectedTemplateParams { get; set; }
     private NotificationTypeEnum SelectedType { get; set; }
 
     protected override async Task OnInitializedAsync()
@@ -160,7 +160,7 @@
 
     private void ShowDefaultsEdit(NotificationTemplate template)
     {
-        SelectedTemplateParams = string.Join(" ", template.Params.ToArray());
+        SelectedTemplateParams = template.Params;
         var (defaultTopic, defaultBody) = template.Bodies[(template.DefaultBrand, template.DefaultLang)];
         EditRequest = new TemplateEditRequest
         {
