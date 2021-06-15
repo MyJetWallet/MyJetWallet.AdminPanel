@@ -95,7 +95,7 @@
                 };
 
                 var sentHistoryResponse = await SmsService.GetSentHistoryAsync(smsSentHistoryRequest);
-                SentHistory = sentHistoryResponse.SentHistoryRecords;
+                SentHistory = sentHistoryResponse.SentHistoryRecords?.OrderByDescending(e => e.Id).ToList() ?? new List<SentHistoryRecord>();
                 break;
             }
             catch (Exception ex)
