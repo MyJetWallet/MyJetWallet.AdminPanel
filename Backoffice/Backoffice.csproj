@@ -38,7 +38,7 @@
       <PackageReference Include="MyJetWallet.Service.Balances.Client" Version="1.0.7" />
       <PackageReference Include="MyJetWallet.Service.ChangeBalanceGateway.Client" Version="1.7.1" />
       <PackageReference Include="MyJetWallet.Service.ClientWallets.Client" Version="1.1.4" />
-      <PackageReference Include="MyJetWallet.Service.Liquidity.Converter.Client" Version="1.0.30" />
+      <PackageReference Include="MyJetWallet.Service.Liquidity.Converter.Client" Version="1.1.0" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Engine.Client" Version="1.4.0" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Reports.Client" Version="1.0.9" />
       <PackageReference Include="MyJetWallet.Service.MatchingEngine.PriceSource.Client" Version="1.2.1" />
@@ -59,8 +59,8 @@
       <PackageReference Include="Sotsera.Blazor.Toaster" Version="3.0.0" />
       <PackageReference Include="Syncfusion.Blazor" Version="19.1.0.69" />
       <PackageReference Include="MySettingsReader" Version="1.2.0" />
-      <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0-preview.4.21253.7" />
-      <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0-preview.4.21253.7" />
+      <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0-preview.5.21301.5" />
+      <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0-preview.5.21301.5" />
       <PackageReference Include="MyJetWallet.Sdk.Service" Version="1.5.3" />
     </ItemGroup>
 
