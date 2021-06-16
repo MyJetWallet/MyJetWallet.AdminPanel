@@ -9,8 +9,13 @@
 
 <Loader LoaderConfig="@LoaderConfig" />
 
-<ul class="nav float-left">
-    <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
+<ul class="nav">
+    @if (SentHistory?.Any() == true)
+    {
+        <li><button type="button" class="btn-outline-info btn" @onclick="NextPageHistories">>>> Next >>></button></li>
+    }
+    <li><button type="button" class="btn-outline-secondary btn" @onclick="OnRefresh">Refresh</button></li>
+    <li>Count in page: <input type="number" style="width: 40px" @bind="CountInPage"/></li>
 </ul>
 <div class="row">
     <h3 style="margin: 10px">Sent History</h3>
@@ -65,7 +70,10 @@
 
     private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
     private List<SentHistoryRecord> SentHistory { get; set; } = new List<SentHistoryRecord>();
-
+    private int CountInPage { get; set; } = 20;
+    private int _lastPosition = 0;
+    private int _currentPageSize = 0;
+    private long _index = 0;
     private const int MAX_ATTEMPTS_COUNT = 3;
 
     private async void OnRefresh()
@@ -90,7 +98,7 @@
             {
                 var smsSentHistoryRequest = new GetSentHistoryRequest
                 {
-                    MaxCount = 10,
+                    MaxCount = CountInPage,
                     Since = 0
                 };
 
@@ -112,6 +120,29 @@
             ToastService.Error(exceptionMessage, "Cannot get sent history.");
         }
     }
+    
+    private async Task NextPageHistories()
+    {
+        if (SentHistory?.Any() != true)
+            return;
+
+        _lastPosition = (int)SentHistory.Min(e => e.Id);
+
+        var smsSentHistoryRequest = new GetSentHistoryRequest
+        {
+            MaxCount = CountInPage,
+            Since = _lastPosition
+        };
+
+        _index += _currentPageSize;
+        
+        var sentHistoryResponse = await SmsService.GetSentHistoryAsync(smsSentHistoryRequest);
+        SentHistory = sentHistoryResponse.SentHistoryRecords?.OrderByDescending(e => e.Id).ToList() ?? new List<SentHistoryRecord>();
+        
+        _currentPageSize = CountInPage;
+        StateHasChanged();
+    }
+
 
     protected override void OnInitialized()
     {
