@@ -159,7 +159,7 @@
         }
         else
         {
-            _statuses = history.StatusResponses;
+            _statuses = history.StatusResponses ?? new();
             SelectedPosition = positionId;
         }
         
