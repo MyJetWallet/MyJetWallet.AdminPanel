@@ -27,6 +27,10 @@
                     <li>@param</li>
                 }</ul>
             
+            @if (_showError)
+            {
+                <h4>Empty fields are not allowed</h4>
+            }
 </BaseTwoButtonsDialog>
 
 @code {
@@ -52,6 +56,8 @@
     [Parameter]
     public List<string> TemplateParams { get; set; }
 
+    private bool _showError = false;
+
     private void OnClose()
     {
         OnCloseCallback.InvokeAsync();
@@ -59,7 +65,16 @@
 
     private async Task OnSubmit()
     {
-        await OnUpdateCallback.InvokeAsync(Request);
+        if (String.IsNullOrWhiteSpace(Request.Brand) || String.IsNullOrWhiteSpace(Request.Lang) || String.IsNullOrWhiteSpace(Request.TemplateBody))
+        {
+            _showError = true;
+        }
+        else
+        {
+            _showError = false;
+            await OnUpdateCallback.InvokeAsync(Request);
+        }
     }
+
 
 }
