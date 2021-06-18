@@ -71,7 +71,7 @@
             {
                 var smsSentHistoryRequest = new GetLastSentSmsRequest
                 {
-                    MaxCount = 10
+                    MaxCount = 100
                 };
 
                 var smsSentHistoryResponse = SmsSentHistoryService.GetLastSentSms(smsSentHistoryRequest);
