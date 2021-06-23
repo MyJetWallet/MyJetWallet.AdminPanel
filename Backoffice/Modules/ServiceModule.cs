@@ -86,7 +86,6 @@ namespace Backoffice.Modules
 
         private static void RegisterGrpcService(ContainerBuilder builder)
         {
-            builder.RegisterType<MyCrmPersonalDataGrpcServiceMoq>().As<IMyCrmPersonalDataGrpcService>().SingleInstance();
 
             builder.RegisterType<MyCrmAccountTransactionsGrpcServiceMoq>().As<IMyCrmAccountTransactionsGrpcService>()
                 .SingleInstance();
