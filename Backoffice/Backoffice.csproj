@@ -52,7 +52,7 @@
       <PackageReference Include="MyTokenGeneratorUtils" Version="1.0.1" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
       <PackageReference Include="protobuf-net.Grpc" Version="1.0.152" />
-      <PackageReference Include="Radzen.Blazor" Version="3.5.3" />
+      <PackageReference Include="Radzen.Blazor" Version="3.6.0" />
       <PackageReference Include="SimpleTrading.BaseMetrics" Version="1.0.3" />
       <PackageReference Include="SimpleTrading.Deposit.Grpc" Version="1.2.14" />
       <PackageReference Include="SimpleTrading.ServiceStatusReporterConnector" Version="1.0.9" />
@@ -61,7 +61,7 @@
       <PackageReference Include="MySettingsReader" Version="1.2.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0-preview.5.21301.5" />
       <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0-preview.5.21301.5" />
-      <PackageReference Include="MyJetWallet.Sdk.Service" Version="1.5.3" />
+      <PackageReference Include="MyJetWallet.Sdk.Service" Version="1.5.4" />
     </ItemGroup>
 
     <ItemGroup>
