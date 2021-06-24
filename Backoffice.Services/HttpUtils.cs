@@ -13,7 +13,7 @@ namespace Backoffice.Services
 
         public static async Task<string> GetBoUserId(this HttpContext ctx)
         {
-            StringValues sslUser;
+            var sslUser = new StringValues();
             try
             {
                 if (ctx?.Request?.Headers == null)

@@ -1,13 +1,9 @@
-﻿@using Service.Simulation.FTX.Grpc
-@using Service.Simulation.FTX.Grpc.Models
-@using MyJetWallet.Sdk.Service.Tools
+﻿@inject ILoggerFactory LoggerFactory
+
 @using Microsoft.Extensions.Logging
+@using Service.Simulation.Grpc.Models
 @using Backoffice.Services.Simulations
-@using Syncfusion.Blazor.Diagrams
-
-@inject ILoggerFactory LoggerFactory
-
-
+@using Backoffice.GlobalTimers
 @implements IDisposable
 
 @if (Simulation != null)
@@ -85,7 +81,7 @@
     public SimulationService Simulation { get; set; }
     
     private List<GetBalancesResponse.Balance> _balances = new();
-    private List<FtxSimTrade> _trades = new();
+    private List<SimTrade> _trades = new();
 
     private bool _isDispose;
 
@@ -97,7 +93,7 @@
         
         await Refresh();
 
-        GlobalTimers.RefreshTimer.RegisterCallback($"simulation: {Simulation.Name}", DoTimer);
+        RefreshTimer.RegisterCallback($"simulation: {Simulation.Name}", DoTimer);
     }
 
     private async Task DoTimer()
@@ -112,7 +108,7 @@
         _balances = balances.Balances ?? new List<GetBalancesResponse.Balance>();
         
         var history = await Simulation.HistoryService.GetTradesAsync();
-        _trades = history.Trades ?? new List<FtxSimTrade>();
+        _trades = history.Trades ?? new List<SimTrade>();
 
         await InvokeAsync(StateHasChanged);
     }
@@ -120,6 +116,6 @@
     public void Dispose()
     {
         _isDispose = true;
-        GlobalTimers.RefreshTimer.RemoveCallback($"simulation: {Simulation.Name}");
+        RefreshTimer.RemoveCallback($"simulation: {Simulation.Name}");
     }
 }

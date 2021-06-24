@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Service.Simulation.Binance.Client;
 using Service.Simulation.FTX.Client;
-using Service.Simulation.FTX.Grpc;
 
 namespace Backoffice.Services.Simulations
 {
@@ -13,22 +13,33 @@ namespace Backoffice.Services.Simulations
     public class SimulationsManager : ISimulationsManager
     {
         private List<SimulationService> _services { get; set; }
-        
-        public SimulationsManager(Dictionary<string, string> settings)
+
+        public SimulationsManager(Dictionary<string, Dictionary<string, string>> settings)
         {
             _services = new List<SimulationService>();
-            foreach (var setting in settings)
+            foreach (var setting in settings["FTX"])
             {
-                SimulationFTXClientFactory ftxClientFactory = new SimulationFTXClientFactory(setting.Value);
+                SimulationFtxClientFactory ftxClientFactory = new SimulationFtxClientFactory(setting.Value);
                 var service = new SimulationService(
                     setting.Key,
                     ftxClientFactory.GetSimulationFtxTradingService(),
                     ftxClientFactory.GetSimulationFtxTradeHistoryService());
-                
+
+                _services.Add(service);
+            }
+
+            foreach (var setting in settings["Binance"])
+            {
+                SimulationBinanceClientFactory binanceClientFactory = new SimulationBinanceClientFactory(setting.Value);
+                var service = new SimulationService(
+                    setting.Key,
+                    binanceClientFactory.GetSimulationBinanceTradingService(),
+                    binanceClientFactory.GetSimulationBinanceTradeHistoryService());
+
                 _services.Add(service);
             }
         }
-        
+
         public List<SimulationService> GetSimulations()
         {
             return _services.ToList();

@@ -1,18 +1,19 @@
-﻿using Service.Simulation.FTX.Grpc;
+﻿using Service.Simulation.Grpc;
 
 namespace Backoffice.Services.Simulations
 {
     public class SimulationService
     {
-        public SimulationService(string name, ISimulationFtxTradingService tradingService, ISimulationFtxTradeHistoryService historyService)
+        public SimulationService(string name, ISimulationTradingService tradingService,
+            ISimulationTradeHistoryService historyService)
         {
             Name = name;
             TradingService = tradingService;
             HistoryService = historyService;
         }
-        
+
         public string Name { get; set; }
-        public ISimulationFtxTradingService TradingService { get; init; }
-        public ISimulationFtxTradeHistoryService HistoryService { get; init; }
+        public ISimulationTradingService TradingService { get; init; }
+        public ISimulationTradeHistoryService HistoryService { get; init; }
     }
 }

@@ -57,7 +57,7 @@ namespace Backoffice
         public string KycGrpcServiceUrl { get; set; }
         
         [YamlProperty("AdminPanel.Simulations")]
-        public Dictionary<string, string> Simulations { get; set; }
+        public Dictionary<string, Dictionary<string, string>> Simulations { get; set; }
 
         [YamlProperty("AdminPanel.LiquidityConverterGrpcServiceUrl")]
         public string LiquidityConverterGrpcServiceUrl { get; set; }
