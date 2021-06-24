@@ -20,7 +20,7 @@ namespace Backoffice.Shared
             var userId = await _httpContextAccessor.HttpContext.GetBoUserId();
             var identity = new ClaimsIdentity(new[]
             {
-                new Claim(ClaimTypes.Name, "krasdmi"),
+                new Claim(ClaimTypes.Name, userId),
             }, "Fake authentication type");
 
             var user = new ClaimsPrincipal(identity);
