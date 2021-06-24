@@ -52,7 +52,7 @@ namespace Backoffice.Modules
 
             builder.RegisterLiquidityEngineClient(Program.Settings.LiquidityEngineGrpcServiceUrl);
 
-            var simulationManager = new SimulationsManager(Program.Settings.Simulations);
+            var simulationManager = new SimulationsManager(Program.Settings.SimulationsFTX, Program.Settings.SimulationsBinance);
             builder.RegisterInstance(simulationManager).As<ISimulationsManager>().SingleInstance();
 
             builder.RegisterLiquidityReportClient(Program.Settings.LiquidityReportGrpcServiceUrl);
