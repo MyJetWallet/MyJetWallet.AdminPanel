@@ -6,7 +6,7 @@
 
 @inject IKycStatusService _kycStatusClient
 
-<div style="height: 100px">
+<div style="height: 120px">
 
     <table>
         <tr>
@@ -20,6 +20,10 @@
         <tr>
             <td><b>Client Id:</b></td>
             <td>@Client.ClientId</td>
+        </tr>
+        <tr>
+            <td><b>Email Confirmed:</b></td>
+            <td>@Client.EmailConfirmed</td>
         </tr>
         <tr>
             <td><b>KYC Status:</b></td>

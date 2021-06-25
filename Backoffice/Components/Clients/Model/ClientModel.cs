@@ -4,17 +4,19 @@ namespace Backoffice.Components.Clients.Model
 {
     public class ClientModel
     {
-        public ClientModel(string brokerId, string clientId, string brandId)
+        public ClientModel(string brokerId, string clientId, string brandId, bool emailConfirmed)
         {
             BrokerId = brokerId;
             ClientId = clientId;
             BrandId = brandId;
+            EmailConfirmed = emailConfirmed;
             Wallets = new List<WalletModel>();
         }
 
         public string BrokerId { get; set; }
         public string ClientId { get; set; }
         public string BrandId { get; set; }
+        public bool EmailConfirmed { get; set; }
         
         public List<WalletModel> Wallets { get; set; }
     }

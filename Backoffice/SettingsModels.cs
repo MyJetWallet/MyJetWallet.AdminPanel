@@ -76,5 +76,8 @@ namespace Backoffice
 
         [YamlProperty("AdminPanel.PersonalDataServiceUrl")]
         public string PersonalDataServiceUrl { get; set; }
+        
+        [YamlProperty("AdminPanel.CrmPersonalDataServiceUrl")]
+        public string CrmPersonalDataServiceUrl { get; set; }
     }
 }

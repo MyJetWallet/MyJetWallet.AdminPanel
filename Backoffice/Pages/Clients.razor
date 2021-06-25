@@ -2,11 +2,14 @@
 
 @using Service.ClientWallets.Grpc
 @using Service.ClientWallets.Grpc.Models
-@using SimpleTrading.PersonalData.Grpc
 @using System.Net.Mail
+@using AsyncAwaitUtils
+@using Backoffice.Components.Clients.Model
+@using MyCrm.PersonalData.Grpc
+@using MyCrm.PersonalData.Grpc.Contracts
 
 @inject IClientWalletService _walletService
-@inject IPersonalDataServiceGrpc _personalDataServiceGrpc 
+@inject IMyCrmPersonalDataGrpcService _crmPersonalDataService 
 
 <table style="width: 100%; height: 100%">
     <tr>
@@ -33,7 +36,7 @@
             Client do not found.
         </tr>
     }    
-    @if (SearchResult != null)
+    @if (ClientResults != null)
     {
         <table>
             <thead>
@@ -42,10 +45,11 @@
                 <th>BrokerId</th>
                 <th>BrandId</th>
                 <th>Count Wallets</th>
+                <th>Email Confirmed</th>
             </tr>
             </thead>
             <tbody>
-            @foreach (var item in SearchResult)
+            @foreach (var item in ClientResults)
             {
             <tr>
                 <td style="min-width: 80px">
@@ -56,16 +60,17 @@
                 <td>
                     <div style="text-align: center; width: 100%">@item.Count</div>
                 </td>
+                <td>@item.EmailConfirmed</td>
             </tr>
             }
             </tbody>
         </table>
     }
-    @if (Client != null)
+    @if (ClientResult != null)
     {
         <tr>
             <td rowspan="4">
-                <ClientPresentationComponent ClientId="@Client.ClientId" BrandId="@Client.BrandId" BrokerId="@Client.BrokerId"/>
+                <ClientPresentationComponent ClientId="@ClientResult.ClientId" BrandId="@ClientResult.BrandId" BrokerId="@ClientResult.BrokerId" EmailConfirmed="@ClientResult.EmailConfirmed"/>
             </td>
         </tr>
     }
@@ -78,15 +83,15 @@
 
     private bool ShowError { get; set; } = false;
     
-    private SearchWallet Client { get; set; }
+    private ClientResultModel ClientResult { get; set; }
     
-    private List<SearchWallet> SearchResult { get; set; }
+    private List<ClientResultModel> ClientResults { get; set; }
 
     private async Task Search()
     {
         ShowError = false;
-        Client = null;
-        SearchResult = null;
+        ClientResult = null;
+        ClientResults = new();
         
         StateHasChanged();
         
@@ -97,42 +102,53 @@
             return;
         }
 
-
-        var clients = new SearchWalletsResponse();
-        
         if (IsEmail(SearchText))
         {
-            var personalData = await _personalDataServiceGrpc.GetByEmail(SearchText);
-            clients = await _walletService.SearchClientsAsync(new SearchWalletsRequest()
+            var crmData = await  _crmPersonalDataService.GetByPhraseAsync(new GetByPhraseGrpcRequest()
             {
-                SearchText = personalData?.PersonalData?.Id ?? SearchText,
-                Take = 10
-            });
+                Phrase = SearchText
+            }).ToListAsync();
+            foreach (var result in crmData)
+            {
+                var response = await _walletService.SearchClientsAsync(new SearchWalletsRequest()
+                {
+                    SearchText = result.Id,
+                    Take = 10
+                });
+                ClientResults.AddRange(response.Clients.Select(client => new ClientResultModel(client, result.EmailIsConfirmed)));
+
+            }
         }
         else
         {
-            clients = await _walletService.SearchClientsAsync(new SearchWalletsRequest()
+            var response = await _walletService.SearchClientsAsync(new SearchWalletsRequest()
             {
                 SearchText = SearchText,
                 Take = 10
             });
+            foreach (var client in response.Clients)
+            {
+                var crmData = await _crmPersonalDataService.GetAsync(new GetPersonalDataGrpcRequest()
+                {
+                    TraderId = client.ClientId
+                });
+                ClientResults.Add(new ClientResultModel(client, crmData.Trader.EmailIsConfirmed));
+            }
         }
 
-        if (clients.Clients?.Any() != true)
+        if (ClientResults?.Any() != true)
         {
             ShowError = true;
             StateHasChanged();
             return;
         }
         
-        if (clients.Clients?.Count == 1)
+        if (ClientResults?.Count == 1)
         {
-            Client = clients.Clients[0];
+            ClientResult = ClientResults[0];
             StateHasChanged();
             return;
         }
-
-        SearchResult = clients.Clients;
         
         StateHasChanged();
     }
@@ -151,10 +167,10 @@
     }
 
 
-    private void SelectClient(SearchWallet wallet)
+    private void SelectClient(ClientResultModel result)
     {
-        SearchResult = null;
-        Client = wallet;
+        ClientResults = null;
+        ClientResult = result;
         StateHasChanged();
     }
 

@@ -1,6 +1,7 @@
 using Autofac;
 using Backoffice.Services.Simulations;
 using Highsoft.Web.Mvc.Charts;
+using MyCrm.PersonalData.Grpc;
 using MyJetWallet.BitGo.Settings.Ioc;
 using MyJetWallet.Sdk.Grpc;
 using MyJetWallet.Sdk.Service;
@@ -96,6 +97,12 @@ namespace Backoffice.Modules
             builder
                 .RegisterInstance(personalDataFactory.CreateGrpcService<IPersonalDataServiceGrpc>())
                 .As<IPersonalDataServiceGrpc>()
+                .SingleInstance();
+            
+            var crmPersonalDataFactory = new MyGrpcClientFactory(Program.Settings.CrmPersonalDataServiceUrl);
+            builder
+                .RegisterInstance(crmPersonalDataFactory.CreateGrpcService<IMyCrmPersonalDataGrpcService>())
+                .As<IMyCrmPersonalDataGrpcService>()
                 .SingleInstance();
 
         }
