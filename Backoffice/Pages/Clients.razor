@@ -126,7 +126,15 @@
                 SearchText = SearchText,
                 Take = 10
             });
-            foreach (var client in response.Clients)
+            
+            if (response.Clients?.Any() != true)
+            {
+                ShowError = true;
+                StateHasChanged();
+                return;
+            }
+            
+            foreach (var client in response?.Clients)
             {
                 try
                 {
