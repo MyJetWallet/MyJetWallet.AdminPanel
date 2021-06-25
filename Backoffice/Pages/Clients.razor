@@ -128,11 +128,18 @@
             });
             foreach (var client in response.Clients)
             {
-                var crmData = await _crmPersonalDataService.GetAsync(new GetPersonalDataGrpcRequest()
+                try
                 {
-                    TraderId = client.ClientId
-                });
-                ClientResults.Add(new ClientResultModel(client, crmData.Trader.EmailIsConfirmed));
+                    var crmData = await _crmPersonalDataService.GetAsync(new GetPersonalDataGrpcRequest()
+                    {
+                        TraderId = client.ClientId
+                    });
+                    ClientResults.Add(new ClientResultModel(client, crmData.Trader.EmailIsConfirmed));
+                }
+                catch
+                {
+                    ClientResults.Add(new ClientResultModel(client, false));
+                }
             }
         }
 
