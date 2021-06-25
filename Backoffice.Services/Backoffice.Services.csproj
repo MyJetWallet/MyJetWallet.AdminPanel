@@ -21,7 +21,7 @@
       <PackageReference Include="MyCrm.Calls.Grpc" Version="1.0.12" />
       <PackageReference Include="MyCrm.Comments.GrpcContracts" Version="1.0.3" />
       <PackageReference Include="MyCrm.Deposits.Grpc" Version="1.0.31" />
-      <PackageReference Include="MyCRM.Logs.GrpcContracts" Version="1.0.11" />
+      <PackageReference Include="MyCRM.Logs.GrpcContracts" Version="1.0.12" />
       <PackageReference Include="MyCrm.MyCrmTradersUtmParametersGrpcContracts" Version="1.0.3" />
       <PackageReference Include="MyCrm.PaymentReport.GrpcContracts" Version="1.0.4" />
       <PackageReference Include="MyCrm.PersonalData.Grpc" Version="1.0.47" />
