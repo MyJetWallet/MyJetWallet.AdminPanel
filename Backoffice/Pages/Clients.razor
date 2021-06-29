@@ -158,6 +158,7 @@
         if (ClientResults?.Count == 1)
         {
             ClientResult = ClientResults[0];
+            ClientResults = new();
             StateHasChanged();
             return;
         }
