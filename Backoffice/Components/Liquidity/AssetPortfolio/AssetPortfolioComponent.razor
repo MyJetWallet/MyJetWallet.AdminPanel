@@ -1,0 +1,94 @@
+@using Service.Liquidity.Portfolio.Grpc
+@using Service.Liquidity.Portfolio.Domain.Models
+@using Backoffice.Components.Liquidity.AssetPortfolio.Components
+
+@inject IAssetPortfolioService _assetPortfolioService
+
+
+<ul class="nav nav-tabs nav-pills">
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(AssetPortfolioPages.AssetPortfolio)" aria-current="page" @onclick="SetAssetPortfolio" >Asset Portfolio</button>
+    </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(AssetPortfolioPages.Trades)" aria-current="page" @onclick="SetTrades" >Trades</button>
+    </li>
+</ul>
+
+@if (ActivePage == AssetPortfolioPages.AssetPortfolio)
+{
+    <table class="table" style="width: auto">
+        <thead>
+        <tr>
+            <th>WalletId</th>
+            <th>Asset</th>
+            <th>Volume</th>
+            <th>UpdateDate</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var position in _balanceCollection.OrderBy(elem => elem.Asset))
+        {
+            <tr>
+                <td>@position.WalletId</td>
+                <td>@position.Asset</td>
+                <td>@position.Volume</td>
+                <td>@position.UpdateDate</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+@if (ActivePage == AssetPortfolioPages.Trades)
+{
+    <LeTradePortolioComponent />
+}
+
+@code {
+    private AssetPortfolioPages ActivePage { get; set; }
+
+    private List<AssetBalance> _balanceCollection = new();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await Refresh();
+    }
+    
+    private async Task Refresh()
+    {
+        var response = await _assetPortfolioService.GetBalancesAsync();
+        _balanceCollection = response.Balances ?? new List<AssetBalance>();
+        StateHasChanged();
+    }
+    
+    private async Task GetAssetPortfolioBalance()
+    {
+        var response = await _assetPortfolioService.GetBalancesAsync();
+        _balanceCollection.AddRange(response.Balances);
+        StateHasChanged();
+    }
+
+    private async Task SetAssetPortfolio()
+    {
+        ActivePage = AssetPortfolioPages.AssetPortfolio;
+        StateHasChanged();
+    }
+    private async Task SetTrades()
+    {
+        ActivePage = AssetPortfolioPages.Trades;
+        StateHasChanged();
+    }
+    
+    public enum AssetPortfolioPages
+    {
+        AssetPortfolio,
+        Trades
+    }
+    
+    private string CheckActive(AssetPortfolioPages target)
+    {
+        if (ActivePage == target)
+            return "active";
+
+        return "";
+    }
+}

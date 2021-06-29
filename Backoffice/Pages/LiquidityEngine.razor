@@ -1,6 +1,7 @@
 ﻿@page "/LiquidityEngine"
 
 @using Backoffice.Components.Liquidity.ExternalMarkets
+@using Backoffice.Components.Liquidity.AssetPortfolio
 
 
 <ul class="nav nav-tabs nav-pills">
@@ -9,6 +10,9 @@
     </li>
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(Menus.Portfolio)" aria-current="page" @onclick="SetPortfolio" >Portfolio</button>
+    </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.AssetPortfolio)" aria-current="page" @onclick="SetAssetPortfolio" >Asset Portfolio</button>
     </li>
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(Menus.Settings)" @onclick="SetSettings" >Settings</button>
@@ -38,9 +42,10 @@
     {
         <PortfolioComponent/>
     }
-
-
-
+    @if (ActivePage == Menus.AssetPortfolio)
+    {
+        <AssetPortfolioComponent/>
+    }
     @if (ActivePage == Menus.Settings)
     {
         <LiquiditySettingsComponent/>
@@ -77,6 +82,11 @@
         SetActive(Menus.Settings);
     }
 
+    private void SetAssetPortfolio()
+    {
+        SetActive(Menus.AssetPortfolio);
+    }
+
     private void SetActive(Menus page)
     {
         ActivePage = page;
@@ -88,6 +98,7 @@
         None,
         MarketMaker,
         Portfolio,
+        AssetPortfolio,
         Settings,
         Wallets,
         ExternalMarkets

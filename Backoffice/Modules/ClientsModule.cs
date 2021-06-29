@@ -16,6 +16,7 @@ using Service.ChangeBalanceGateway.Client;
 using Service.ClientWallets.Client;
 using Service.Liquidity.Converter.Client;
 using Service.Liquidity.Engine.Client;
+using Service.Liquidity.Portfolio.Client;
 using Service.Liquidity.Reports.Client;
 using Service.MatchingEngine.PriceSource.Client;
 using Service.PushNotification.Client;
@@ -104,7 +105,8 @@ namespace Backoffice.Modules
                 .RegisterInstance(crmPersonalDataFactory.CreateGrpcService<IMyCrmPersonalDataGrpcService>())
                 .As<IMyCrmPersonalDataGrpcService>()
                 .SingleInstance();
-
+            
+            builder.RegisterPortfolioClient(Program.Settings.LiquidityPortfolioServiceUrl);
         }
         
         private void RegisterMyNoSqlTcpClient(ContainerBuilder builder)

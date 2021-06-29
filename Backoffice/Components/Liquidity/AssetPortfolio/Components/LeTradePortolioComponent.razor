@@ -1,0 +1,112 @@
+@using Service.Liquidity.Portfolio.Grpc
+@using Service.Liquidity.Converter.Grpc.Models
+@using Service.Liquidity.Portfolio.Domain.Models
+@using Service.Liquidity.Portfolio.Grpc.Models
+@inject IAssetPortfolioService _assetPortfolioService
+
+<ul class="nav">
+    @if (_trades?.Any() == true)
+    {
+        <li><button type="button" class="btn-outline-info btn" @onclick="NextPage">>>> Next >>></button></li>
+    }
+    <li><button type="button" class="btn-outline-secondary btn" @onclick="RefreshHistory">Refresh</button></li>
+    <li><span style="margin-left: 10px; vertical-align: center">Count in page: </span><input type="number" style="width: 40px" @bind="CountInPage"/></li>
+</ul>
+
+<table class="table" style="width: auto">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>DateTime</th>
+        <th>Symbol</th>
+        <th>Side</th>
+        <th>Price</th>
+        <th>BaseVolume</th>
+        <th>QuoteVolume</th>
+        <th>WalletId</th>
+        <th>TradeId</th>
+        <th>IsInternal</th>
+        <th>ReferenceId</th>
+    </tr>
+    </thead>
+    <tbody>
+    
+    @{
+        var rowNumber = _index;
+    }
+    
+    @foreach (var trade in _trades)
+    {
+        rowNumber++;
+        <tr>
+            <td>@rowNumber</td>
+            <td>@trade.DateTime</td>
+            <td>@trade.Symbol</td>
+            <td>@trade.Side</td>
+            <td>@trade.Price</td>
+            <td>@trade.BaseVolume</td>
+            <td>@trade.QuoteVolume</td>
+            <td>@trade.WalletId</td>
+            <td>@trade.TradeId</td>
+            <td>@trade.IsInternal</td>
+            <td>@trade.ReferenceId</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@code {
+    private List<PortfolioTrade> _trades = new();
+    private int CountInPage { get; set; } = 20;
+    private DateTime? _lastSeen = null;
+    private long _index = 0;
+    private int _currentPageSize = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshHistory();
+    }
+
+    private async Task RefreshHistory()
+    {
+        _index = 0;
+        
+        var response = await _assetPortfolioService.GetTradesAsync(new GetTradesRequest() {BatchSize = CountInPage});
+        _trades = response.Trades ?? new List<PortfolioTrade>();
+        _lastSeen = response.DateForNextQuery;
+        _currentPageSize = CountInPage;
+        StateHasChanged();
+    }
+    private string ChangeColor(decimal difference)
+    {
+        if (difference > 0)
+            return "background: lightgreen";
+
+        if (difference < 0)
+            return "background: lightpink";
+
+        return "";
+    }
+
+    private async Task NextPage()
+    {
+        if (_trades?.Any() != true)
+            return;
+
+        var request = _lastSeen == null
+            ? new GetTradesRequest() {BatchSize = CountInPage}
+            : new GetTradesRequest() {BatchSize = CountInPage, LastDate = (DateTime)_lastSeen};
+        
+        var response = await _assetPortfolioService.GetTradesAsync(request);
+        
+        if (!response.Success || response.Trades == null || response.Trades.Count == 0)
+            return;
+        
+        _index += _currentPageSize;
+        _trades = response.Trades;
+        _lastSeen = response.DateForNextQuery;
+        _currentPageSize = CountInPage;
+        
+        StateHasChanged();
+    }
+}
