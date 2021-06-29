@@ -14,12 +14,14 @@
     </li>
 </ul>
 
-<ul class="nav">
-    <li><button type="button" class="btn-outline-secondary btn" @onclick="Refresh">Refresh</button></li>
-</ul>
+
 
 @if (ActivePage == AssetPortfolioPages.AssetPortfolio)
 {
+    <ul class="nav">
+        <li><button type="button" class="btn-outline-secondary btn" @onclick="Refresh">Refresh</button></li>
+    </ul>
+    
     <table class="table" style="width: auto">
         <thead>
         <tr>
