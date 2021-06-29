@@ -40,7 +40,7 @@
       <PackageReference Include="MyJetWallet.Service.ClientWallets.Client" Version="1.2.0" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Converter.Client" Version="1.1.1" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Engine.Client" Version="1.4.0" />
-      <PackageReference Include="MyJetWallet.Service.Liquidity.Portfolio.Client" Version="1.0.3" />
+      <PackageReference Include="MyJetWallet.Service.Liquidity.Portfolio.Client" Version="1.0.5" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Reports.Client" Version="1.0.9" />
       <PackageReference Include="MyJetWallet.Service.MatchingEngine.PriceSource.Client" Version="1.2.1" />
       <PackageReference Include="MyJetWallet.Service.PushNotification.Client" Version="1.2.4.1" />

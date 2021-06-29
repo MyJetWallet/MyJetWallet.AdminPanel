@@ -16,7 +16,7 @@
 <table class="table" style="width: auto">
     <thead>
     <tr>
-        <th>#</th>
+        <th>Id</th>
         <th>DateTime</th>
         <th>Symbol</th>
         <th>Side</th>
@@ -30,16 +30,11 @@
     </tr>
     </thead>
     <tbody>
-    
-    @{
-        var rowNumber = _index;
-    }
-    
+
     @foreach (var trade in _trades)
     {
-        rowNumber++;
         <tr>
-            <td>@rowNumber</td>
+            <td>@trade.Id</td>
             <td>@trade.DateTime</td>
             <td>@trade.Symbol</td>
             <td>@trade.Side</td>
@@ -58,9 +53,7 @@
 @code {
     private List<PortfolioTrade> _trades = new();
     private int CountInPage { get; set; } = 20;
-    private DateTime? _lastSeen = null;
-    private long _index = 0;
-    private int _currentPageSize = 0;
+    private long _lastSeen = 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -69,43 +62,24 @@
 
     private async Task RefreshHistory()
     {
-        _index = 0;
-        
         var response = await _assetPortfolioService.GetTradesAsync(new GetTradesRequest() {BatchSize = CountInPage});
         _trades = response.Trades ?? new List<PortfolioTrade>();
-        _lastSeen = response.DateForNextQuery;
-        _currentPageSize = CountInPage;
+        _lastSeen = response.IdForNextQuery;
         StateHasChanged();
-    }
-    private string ChangeColor(decimal difference)
-    {
-        if (difference > 0)
-            return "background: lightgreen";
-
-        if (difference < 0)
-            return "background: lightpink";
-
-        return "";
     }
 
     private async Task NextPage()
     {
         if (_trades?.Any() != true)
             return;
-
-        var request = _lastSeen == null
-            ? new GetTradesRequest() {BatchSize = CountInPage}
-            : new GetTradesRequest() {BatchSize = CountInPage, LastDate = (DateTime)_lastSeen};
         
-        var response = await _assetPortfolioService.GetTradesAsync(request);
+        var response = await _assetPortfolioService.GetTradesAsync(new GetTradesRequest() {BatchSize = CountInPage, LastId = _lastSeen});
         
         if (!response.Success || response.Trades == null || response.Trades.Count == 0)
             return;
         
-        _index += _currentPageSize;
         _trades = response.Trades;
-        _lastSeen = response.DateForNextQuery;
-        _currentPageSize = CountInPage;
+        _lastSeen = response.IdForNextQuery;
         
         StateHasChanged();
     }
