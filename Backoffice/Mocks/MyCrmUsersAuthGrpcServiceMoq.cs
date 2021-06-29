@@ -84,5 +84,10 @@ namespace Backoffice.Mocks
         {
             throw new System.NotImplementedException();
         }
+
+        public async ValueTask<FindIdResponse> FindIdAsync(FindIdRequest request)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
