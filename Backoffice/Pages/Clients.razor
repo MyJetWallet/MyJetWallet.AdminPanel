@@ -102,24 +102,21 @@
             return;
         }
 
-        if (IsEmail(SearchText))
+        var crmData = await _crmPersonalDataService.GetByPhraseAsync(new GetByPhraseGrpcRequest
         {
-            var crmData = await  _crmPersonalDataService.GetByPhraseAsync(new GetByPhraseGrpcRequest()
+            Phrase = SearchText
+        }).ToListAsync();
+        foreach (var result in crmData)
+        {
+            var response = await _walletService.SearchClientsAsync(new SearchWalletsRequest
             {
-                Phrase = SearchText
-            }).ToListAsync();
-            foreach (var result in crmData)
-            {
-                var response = await _walletService.SearchClientsAsync(new SearchWalletsRequest()
-                {
-                    SearchText = result.Id,
-                    Take = 10
-                });
-                ClientResults.AddRange(response.Clients.Select(client => new ClientResultModel(client, result.EmailIsConfirmed)));
-
-            }
+                SearchText = result.Id,
+                Take = 10
+            });
+            ClientResults.AddRange(response.Clients.Select(client => new ClientResultModel(client, result.EmailIsConfirmed)));
         }
-        else
+        
+        if (!ClientResults.Any())
         {
             var response = await _walletService.SearchClientsAsync(new SearchWalletsRequest()
             {
@@ -138,11 +135,11 @@
             {
                 try
                 {
-                    var crmData = await _crmPersonalDataService.GetAsync(new GetPersonalDataGrpcRequest()
+                    var crmResponse = await _crmPersonalDataService.GetAsync(new GetPersonalDataGrpcRequest()
                     {
                         TraderId = client.ClientId
                     });
-                    ClientResults.Add(new ClientResultModel(client, crmData.Trader.EmailIsConfirmed));
+                    ClientResults.Add(new ClientResultModel(client, crmResponse.Trader.EmailIsConfirmed));
                 }
                 catch
                 {
