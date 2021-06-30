@@ -29,7 +29,7 @@
       <PackageReference Include="MyCrm.MyCrmTradersUtmParametersGrpcContracts" Version="1.0.3" />
       <PackageReference Include="MyCrm.TradersDocuments.Grpc" Version="1.0.4" />
       <PackageReference Include="MyJetWallet.BitGo.Settings" Version="1.0.6" />
-      <PackageReference Include="MyJetWallet.Sdk.Authorization" Version="1.0.27" />
+      <PackageReference Include="MyJetWallet.Sdk.Authorization" Version="1.0.28" />
       <PackageReference Include="MyJetWallet.Sdk.Grpc" Version="1.0.2" />
       <PackageReference Include="MyJetWallet.Sdk.NoSql" Version="1.0.4" />
       <PackageReference Include="MyJetWallet.Service.ActiveOrders.Client" Version="1.0.3" />
@@ -59,7 +59,7 @@
       <PackageReference Include="SimpleTrading.Deposit.Grpc" Version="1.2.14" />
       <PackageReference Include="SimpleTrading.ServiceStatusReporterConnector" Version="1.0.9" />
       <PackageReference Include="Sotsera.Blazor.Toaster" Version="3.0.0" />
-      <PackageReference Include="Syncfusion.Blazor" Version="19.1.0.69" />
+      <PackageReference Include="Syncfusion.Blazor" Version="19.2.0.44" />
       <PackageReference Include="MySettingsReader" Version="1.2.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0-preview.5.21301.5" />
       <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0-preview.5.21301.5" />
