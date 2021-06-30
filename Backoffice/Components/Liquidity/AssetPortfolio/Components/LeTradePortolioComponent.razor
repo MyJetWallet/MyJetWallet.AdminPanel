@@ -25,8 +25,6 @@
         <th>QuoteVolume</th>
         <th>WalletId</th>
         <th>TradeId</th>
-        <th>IsInternal</th>
-        <th>ReferenceId</th>
     </tr>
     </thead>
     <tbody>
@@ -43,15 +41,13 @@
             <td>@trade.QuoteVolume</td>
             <td>@trade.WalletId</td>
             <td>@trade.TradeId</td>
-            <td>@trade.IsInternal</td>
-            <td>@trade.ReferenceId</td>
         </tr>
     }
     </tbody>
 </table>
 
 @code {
-    private List<PortfolioTrade> _trades = new();
+    private List<Trade> _trades = new();
     private int CountInPage { get; set; } = 20;
     private long _lastSeen = 0;
 
@@ -63,7 +59,7 @@
     private async Task RefreshHistory()
     {
         var response = await _assetPortfolioService.GetTradesAsync(new GetTradesRequest() {BatchSize = CountInPage});
-        _trades = response.Trades ?? new List<PortfolioTrade>();
+        _trades = response.Trades ?? new List<Trade>();
         _lastSeen = response.IdForNextQuery;
         StateHasChanged();
     }
