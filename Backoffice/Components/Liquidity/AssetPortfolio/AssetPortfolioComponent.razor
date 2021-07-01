@@ -1,6 +1,7 @@
 @using Service.Liquidity.Portfolio.Grpc
 @using Service.Liquidity.Portfolio.Domain.Models
 @using Backoffice.Components.Liquidity.AssetPortfolio.Components
+@using Service.Liquidity.Portfolio.Grpc.Models
 
 @inject IAssetPortfolioService _assetPortfolioService
 
@@ -25,20 +26,26 @@
     <table class="table" style="width: auto">
         <thead>
         <tr>
+            <th>UpdateDate</th>
+            <th>BrokerId</th>
+            <th>ClientId</th>
             <th>WalletId</th>
             <th>Asset</th>
             <th>Volume</th>
-            <th>UpdateDate</th>
+            <th>USD Projection</th>
         </tr>
         </thead>
         <tbody>
-        @foreach (var position in _balanceCollection.OrderBy(elem => elem.Asset))
+        @foreach (var assetBalance in _balanceCollection.OrderBy(elem => elem.Asset))
         {
             <tr>
-                <td>@position.WalletId</td>
-                <td>@position.Asset</td>
-                <td>@position.Volume</td>
-                <td>@position.UpdateDate</td>
+                <td>@assetBalance.UpdateDate</td>
+                <td>@assetBalance.BrokerId</td>
+                <td>@assetBalance.ClientId</td>
+                <td>@assetBalance.WalletId</td>
+                <td>@assetBalance.Asset</td>
+                <td>@assetBalance.Volume</td>
+                <td>@assetBalance.UsdProjection</td>
             </tr>
         }
         </tbody>
@@ -52,7 +59,7 @@
 @code {
     private AssetPortfolioPages ActivePage { get; set; }
 
-    private List<AssetBalance> _balanceCollection = new();
+    private List<AssetBalanceGrpc> _balanceCollection = new();
     
     protected override async Task OnInitializedAsync()
     {
@@ -62,7 +69,7 @@
     private async Task Refresh()
     {
         var response = await _assetPortfolioService.GetBalancesAsync();
-        _balanceCollection = response.Balances ?? new List<AssetBalance>();
+        _balanceCollection = response.Balances ?? new List<AssetBalanceGrpc>();
         StateHasChanged();
     }
     
