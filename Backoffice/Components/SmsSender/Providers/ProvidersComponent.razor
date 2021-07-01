@@ -76,7 +76,8 @@
             try
             {
                 var providersRoutesResponse = await SmsProviderService.GetAllRoutesAsync();
-                ProvidersRoutes = providersRoutesResponse.Routes.OrderBy(r => r.Order).ToList();
+                if(providersRoutesResponse.Routes != null)
+                    ProvidersRoutes = providersRoutesResponse.Routes.OrderBy(r => r.Order).ToList();
                 break;
             }
             catch (Exception ex)
