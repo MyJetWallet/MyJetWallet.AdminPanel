@@ -1,10 +1,8 @@
 @using Service.Liquidity.Portfolio.Grpc
 @using Service.Liquidity.Portfolio.Domain.Models
-@using Backoffice.Components.Liquidity.AssetPortfolio.Components
 @using Service.Liquidity.Portfolio.Grpc.Models
 
 @inject IAssetPortfolioService _assetPortfolioService
-
 
 <ul class="nav nav-tabs nav-pills">
     <li class="nav-item" style="margin: 10px">
@@ -14,8 +12,6 @@
         <button class="nav-link @CheckActive(AssetPortfolioPages.Trades)" aria-current="page" @onclick="SetTrades" >Trades</button>
     </li>
 </ul>
-
-
 
 @if (ActivePage == AssetPortfolioPages.AssetPortfolio)
 {
@@ -38,15 +34,7 @@
         <tbody>
         @foreach (var assetBalance in _balanceCollection.OrderBy(elem => elem.Asset))
         {
-            <tr>
-                <td>@assetBalance.UpdateDate</td>
-                <td>@assetBalance.BrokerId</td>
-                <td>@assetBalance.ClientId</td>
-                <td>@assetBalance.WalletId</td>
-                <td>@assetBalance.Asset</td>
-                <td>@assetBalance.Volume</td>
-                <td>@assetBalance.UsdProjection</td>
-            </tr>
+            <BalanceTableRowComponent AssetBalance="@assetBalance" OnSaveCallback="@Refresh"/>
         }
         </tbody>
     </table>
