@@ -113,7 +113,10 @@
                 SearchText = result.Id,
                 Take = 10
             });
-            ClientResults.AddRange(response.Clients.Select(client => new ClientResultModel(client, result.EmailIsConfirmed)));
+            if (response.Clients?.Any() == true)
+            {
+                ClientResults.AddRange(response.Clients.Select(client => new ClientResultModel(client, result.EmailIsConfirmed)));
+            }
         }
         
         if (!ClientResults.Any())
