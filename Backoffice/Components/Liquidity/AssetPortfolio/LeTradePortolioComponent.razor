@@ -1,0 +1,170 @@
+@using Service.Liquidity.Portfolio.Grpc
+@using Service.Liquidity.Portfolio.Domain.Models
+@using Service.Liquidity.Portfolio.Grpc.Models
+
+@inject IAssetPortfolioService _assetPortfolioService
+
+<ul class="nav">
+    @if (_trades?.Any() == true)
+    {
+        <li><button type="button" class="btn-outline-info btn" @onclick="NextPage">>>> Next >>></button></li>
+    }
+    <li><button type="button" class="btn-outline-secondary btn" @onclick="CreateNew">Create new</button></li>
+    <li><button type="button" class="btn-outline-secondary btn" @onclick="RefreshHistory">Refresh</button></li>
+    <li><span style="margin-left: 10px; vertical-align: center">Count in page: </span><input type="number" style="width: 40px" @bind="CountInPage"/></li>
+</ul>
+
+<table class="table" style="width: auto">
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>DateTime</th>
+        <th>Symbol</th>
+        <th>Side</th>
+        <th>Price</th>
+        <th>BaseVolume</th>
+        <th>QuoteVolume</th>
+        <th>BrokerId</th>
+        <th>ClientId</th>
+        <th>WalletId</th>
+        <th>TradeId</th>
+        <th>TopicSource</th>                
+    </tr>
+    </thead>
+    <tbody>
+
+    @foreach (var trade in _trades.OrderByDescending(elem => elem.Id))
+    {
+        <tr>
+            <td>@trade.Id</td>
+            <td>@trade.DateTime</td>
+            <td>@trade.Symbol</td>
+            <td>@trade.Side</td>
+            <td>@trade.Price</td>
+            <td>@trade.BaseVolume</td>
+            <td>@trade.QuoteVolume</td>
+            <td>@trade.BrokerId</td>
+            <td>@trade.ClientId</td>
+            <td>@trade.WalletId</td>
+            <td>@trade.TradeId</td>
+            <td>@trade.TopicSource</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@if (IsCreateDialogOpen)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption="Create new trade"
+            OnClose="@OnCloseCreateDialog"
+            YesButtonCaption="Save"
+            NoButtonCaption="Cancel"
+            OnSubmit="@OnSaveNewTrade">
+            <table>
+                <tr>
+                    <td>Broker Id</td>
+                    <td><input type="text" class="form-control" @bind=NewTrade.BrokerId/></td>
+                </tr>
+                <tr>
+                    <td>Client Id</td>
+                    <td><input type="text" class="form-control" @bind=NewTrade.ClientId/></td>
+                </tr>
+                <tr>
+                    <td>Wallet Id</td>
+                    <td><input type="text" class="form-control" @bind=NewTrade.WalletId/></td>
+                </tr>
+                <tr>
+                    <td>Instrument Symbol</td>
+                    <td><input type="text" class="form-control" @bind=NewTrade.Symbol/></td>
+                </tr>
+                <tr>
+                    <td>Price</td>
+                    <td><input type="number" class="form-control" @bind=NewTrade.Price/></td>
+                </tr>
+                <tr>
+                    <td>Base volume</td>
+                    <td><input type="number" class="form-control" @bind=NewTrade.BaseVolume/></td>
+                </tr>
+                <tr>
+                    <td>Quote volume</td>
+                    <td><input type="number" class="form-control" @bind=NewTrade.QuoteVolume/></td>
+                </tr>
+            </table>
+            @if (ShowError)
+            {
+                <H3>@ErrorText</H3>
+            }
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+@code {
+    private List<Trade> _trades = new();
+    private int CountInPage { get; set; } = 20;
+    private long _lastSeen = 0;
+    
+    private bool IsCreateDialogOpen { get; set; }
+    private CreateTradeManualRequest NewTrade { get; set; }
+    private bool ShowError { get; set; }
+    private string ErrorText { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshHistory();
+    }
+
+    private async void OnSaveNewTrade()
+    {
+        var response = await _assetPortfolioService.CreateManualTradeAsync(NewTrade);
+        if (response.Success)
+        {
+            _trades.Add(response.Trade);
+            OnCloseCreateDialog();
+        } else 
+        {
+            ShowError = true;
+            ErrorText = response.ErrorMessage;
+            StateHasChanged();
+        }
+    }
+
+    private void OnCloseCreateDialog()
+    {
+        IsCreateDialogOpen = false;
+        ShowError = false;
+        ErrorText = string.Empty;
+        StateHasChanged();
+    }
+
+    private async void CreateNew()
+    {
+        IsCreateDialogOpen = true;
+        NewTrade = new CreateTradeManualRequest();
+    }
+
+    private async Task RefreshHistory()
+    {
+        var response = await _assetPortfolioService.GetTradesAsync(new GetTradesRequest() {BatchSize = CountInPage});
+        _trades = response.Trades ?? new List<Trade>();
+        _lastSeen = response.IdForNextQuery;
+        StateHasChanged();
+    }
+
+    private async Task NextPage()
+    {
+        if (_trades?.Any() != true)
+            return;
+        
+        var response = await _assetPortfolioService.GetTradesAsync(new GetTradesRequest() {BatchSize = CountInPage, LastId = _lastSeen});
+        
+        if (!response.Success || response.Trades == null || response.Trades.Count == 0)
+            return;
+        
+        _trades = response.Trades;
+        _lastSeen = response.IdForNextQuery;
+        
+        StateHasChanged();
+    }
+}
