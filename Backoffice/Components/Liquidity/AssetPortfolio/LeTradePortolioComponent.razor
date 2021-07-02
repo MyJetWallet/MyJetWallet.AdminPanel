@@ -22,13 +22,15 @@
         <th>Symbol</th>
         <th>Side</th>
         <th>Price</th>
-        <th>BaseVolume</th>
-        <th>QuoteVolume</th>
-        <th>BrokerId</th>
-        <th>ClientId</th>
-        <th>WalletId</th>
-        <th>TradeId</th>
-        <th>TopicSource</th>                
+        <th>Base Volume</th>
+        <th>Quote Volume</th>
+        <th>Base Volume In Usd</th>
+        <th>Quote Volume In Usd</th>
+        <th>Broker Id</th>
+        <th>Client Id</th>
+        <th>Wallet Id</th>
+        <th>Trade Id</th>
+        <th>Topic Source</th>                
     </tr>
     </thead>
     <tbody>
@@ -43,6 +45,8 @@
             <td>@trade.Price</td>
             <td>@trade.BaseVolume</td>
             <td>@trade.QuoteVolume</td>
+            <td>@trade.BaseVolumeInUsd</td>
+            <td>@trade.QuoteVolumeInUsd</td>
             <td>@trade.BrokerId</td>
             <td>@trade.ClientId</td>
             <td>@trade.WalletId</td>
