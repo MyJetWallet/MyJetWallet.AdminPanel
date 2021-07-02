@@ -12,6 +12,9 @@
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(AssetPortfolioPages.Trades)" aria-current="page" @onclick="SetTrades" >Trades</button>
     </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(AssetPortfolioPages.ChangeBalanceHistory)" aria-current="page" @onclick="SetChangeBalanceHistory" >Change Balance History</button>
+    </li>
 </ul>
 
 @if (ActivePage == AssetPortfolioPages.AssetPortfolio)
@@ -44,6 +47,10 @@
 {
     <LeTradePortolioComponent />
 }
+@if (ActivePage == AssetPortfolioPages.ChangeBalanceHistory)
+{
+    <LeChangeBalanceHistoryComponent />
+}
 
 @code {
     private AssetPortfolioPages ActivePage { get; set; }
@@ -75,16 +82,23 @@
         await Refresh();
         StateHasChanged();
     }
-    private async Task SetTrades()
+    private void SetTrades()
     {
         ActivePage = AssetPortfolioPages.Trades;
+        StateHasChanged();
+    }
+
+    private void SetChangeBalanceHistory()
+    {
+        ActivePage = AssetPortfolioPages.ChangeBalanceHistory;
         StateHasChanged();
     }
     
     public enum AssetPortfolioPages
     {
         AssetPortfolio,
-        Trades
+        Trades,
+        ChangeBalanceHistory
     }
     
     private string CheckActive(AssetPortfolioPages target)
