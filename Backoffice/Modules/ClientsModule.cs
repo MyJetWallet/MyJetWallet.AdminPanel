@@ -14,6 +14,7 @@ using Service.BalanceHistory.Client;
 using Service.Balances.Client;
 using Service.ChangeBalanceGateway.Client;
 using Service.ClientWallets.Client;
+using Service.External.B2C2.Client;
 using Service.Liquidity.Converter.Client;
 using Service.Liquidity.Engine.Client;
 using Service.Liquidity.Portfolio.Client;
@@ -107,6 +108,8 @@ namespace Backoffice.Modules
                 .SingleInstance();
             
             builder.RegisterPortfolioClient(Program.Settings.LiquidityPortfolioServiceUrl);
+            
+            builder.RegisterExternalB2C2Client(Program.Settings.ExternalMarketsSettingsB2C2);
         }
         
         private void RegisterMyNoSqlTcpClient(ContainerBuilder builder)

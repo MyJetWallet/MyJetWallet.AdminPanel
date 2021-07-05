@@ -1,0 +1,35 @@
+﻿@using Service.External.B2C2.Domain.Models.Settings
+
+<BaseOneButtonsDialog Caption=@($"{Item.Market}") OnClose="OnClose" ButtonCaption="Close">
+    <table>
+    <tr>
+        <td>
+            <table>
+                <tr><td>Market</td><td class="float-left">@Item.Market</td></tr>
+                <tr></tr>
+                <tr><td>Base Asset</td><td class="float-left">@Item.BaseAsset</td></tr>
+                <tr><td>Quote Asset</td><td class="float-left">@Item.QuoteAsset</td></tr>
+                <tr><td>Price Accuracy</td><td class="float-left">@Item.PriceAccuracy</td></tr>
+                <tr><td>Volume Accuracy</td><td class="float-left">@Item.VolumeAccuracy</td></tr>
+                <tr><td>Min Volume</td><td class="float-left">@Item.MinVolume</td></tr>
+                <tr><td>Levels</td><td class="float-left">@Item.Levels</td></tr>
+            </table>
+        </td>
+    </tr>
+    
+  </table>
+</BaseOneButtonsDialog>
+
+@code {
+    
+    [Parameter]
+    public ExternalMarketSettings Item { get; set; }
+    
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+
+    private void OnClose()
+    {
+        OnCloseCallback.InvokeAsync();
+    }
+}

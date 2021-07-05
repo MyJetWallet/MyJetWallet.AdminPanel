@@ -1,0 +1,109 @@
+﻿@using Service.External.B2C2.Domain.Models.Settings
+
+<BaseTwoButtonsDialog
+    Caption=@(!IsCreate ? $"{Item.Market} " : "Create a new External Market")
+    OnClose="OnClose"
+    YesButtonCaption="@(IsCreate ? "Create" : "Save")"
+    NoButtonCaption="Close"
+    OnSubmit="OnSubmit">
+
+    <table>
+
+        <tr>
+            <td>
+
+                <table>
+                    <tr>
+                        <td>Market</td>
+                        <td class="float-left">
+                            @if (!IsCreate)
+                            {
+                                @Item.Market
+                            }
+                            else
+                            {
+                                <input type="text" class="form-control" @bind="Item.Market"/>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Base Asset</td>
+                        <td class="float-left">
+                            <input type="text" class="form-control" @bind="Item.BaseAsset"/>
+                        </td>
+                    </tr>
+                    <tr></tr>
+                    <tr>
+                        <td>Quote Asset</td>
+                        <td class="float-left">
+                            <input type="text" class="form-control" @bind="Item.QuoteAsset"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Price Accuracy</td>
+                        <td class="float-left">
+                            <input type="number" class="form-control" @bind="Item.PriceAccuracy"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Volume Accuracy</td>
+                        <td class="float-left">
+                            <input type="number" class="form-control" @bind="Item.VolumeAccuracy"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Min Volume</td>
+                        <td class="float-left">
+                            <input type="number" class="form-control" @bind="Item.MinVolume"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Levels</td>
+                        <td class="float-left">
+                            <input type="text" class="form-control" @bind="Item.Levels"/>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+
+        </tr>
+    </table>
+</BaseTwoButtonsDialog>
+
+@code {
+
+    [Parameter]
+    public ExternalMarketSettings Item { get; set; }
+
+    [Parameter]
+    public bool IsCreate { get; set; }
+
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+
+    [Parameter]
+    public EventCallback<ExternalMarketSettings> OnCreateCallback { get; set; }
+
+    [Parameter]
+    public EventCallback<ExternalMarketSettings> OnUpdateCallback { get; set; }
+
+    private void OnClose()
+    {
+        OnCloseCallback.InvokeAsync();
+    }
+
+    private async Task OnSubmit()
+    {
+        if (IsCreate)
+            await OnCreateCallback.InvokeAsync(Item);
+        else
+            await OnUpdateCallback.InvokeAsync(Item);
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (IsCreate)
+            Item = new ExternalMarketSettings();
+    }
+}

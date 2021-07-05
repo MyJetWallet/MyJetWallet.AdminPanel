@@ -13,6 +13,7 @@ namespace Backoffice
         public const string BitGo = "BitGo";
         public const string SmsSender = "SmsSender";
         public const string Converter = "Converter";
+        public const string ExternalMarkets = "ExternalMarkets";
         public const string Notifications = "Notifications";
         public const string Monitor = "Monitor";
     }
@@ -61,6 +62,7 @@ namespace Backoffice
             NavsItem.Create("Simulations", "Simulations", "list-rich", Menu.Simulations),
             NavsItem.Create("Clients", "Clients", "list-rich", Menu.Clients),
             NavsItem.Create("BitGo", "BitGo", "list-rich", Menu.BitGo),
+            NavsItem.Create("External Markets", "ExternalMarkets", "list-rich", Menu.ExternalMarkets),
             NavsItem.Create("SmsSender", "SmsSender", "list-rich", Menu.SmsSender),
             NavsItem.Create("Converter", "Converter", "list-rich", Menu.Converter),
             NavsItem.Create("Notifications", "Notifications","list-rich",Menu.Notifications),

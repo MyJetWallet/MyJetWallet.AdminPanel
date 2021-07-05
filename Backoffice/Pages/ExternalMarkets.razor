@@ -1,0 +1,46 @@
+﻿@using Backoffice.Components.ExternalMarkets.B2C2
+
+@page "/ExternalMarkets"
+
+<ul class="nav nav-tabs nav-pills">
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.B2C2)" aria-current="page" @onclick="SetB2C2">B2C2</button>
+    </li>
+</ul>
+
+<div style="margin: 10px">
+    @if (ActivePage == Menus.B2C2)
+    {
+        <ExternalMarketsB2C2ListComponent/>
+    }
+</div>
+
+@code {
+    private Menus ActivePage { get; set; } = Menus.B2C2;
+
+    private string CheckActive(Menus target)
+    {
+        if (ActivePage == target)
+            return "active";
+
+        return "";
+    }
+
+    private void SetActive(Menus page)
+    {
+        ActivePage = page;
+        StateHasChanged();
+    }
+
+    public enum Menus
+    {
+        None,
+        B2C2
+    }
+
+    private void SetB2C2()
+    {
+        ActivePage = Menus.B2C2;
+        StateHasChanged();
+    }
+}

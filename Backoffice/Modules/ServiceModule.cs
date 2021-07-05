@@ -7,6 +7,7 @@ using Backoffice.Services.Assets;
 using Backoffice.Services.Backoffice;
 using Backoffice.Services.BitGo.Assets;
 using Backoffice.Services.BitGo.Coins;
+using Backoffice.Services.ExternalMarkets.B2C2;
 using Backoffice.Services.SpotInstruments;
 using Backoffice.TableStorage;
 using MyCRM.AccountTransactions.Grpc;
@@ -53,6 +54,11 @@ namespace Backoffice.Modules
             builder
                 .RegisterType<BitGoCoinManager>()
                 .As<IBitGoCoinManager>()
+                .SingleInstance();
+            
+            builder
+                .RegisterType<ExternalMarketsB2C2Manager>()
+                .As<IExternalMarketsB2C2Manager>()
                 .SingleInstance();
 
             RegisterGrpcService(builder);

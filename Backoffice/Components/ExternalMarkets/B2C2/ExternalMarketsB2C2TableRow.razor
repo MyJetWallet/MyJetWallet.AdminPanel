@@ -1,0 +1,136 @@
+﻿@using Backoffice.Services.ExternalMarkets.B2C2
+@using Service.External.B2C2.Domain.Models.Settings
+@using Backoffice.Abstractions.Models
+
+@inject IExternalMarketsB2C2Manager ExternalMarketsB2C2Manager
+@inject IToaster ToastService;
+
+
+<tr>
+    <td>@Item.Market</td>
+    <td>@Item.BaseAsset</td>
+    <td>@Item.QuoteAsset</td>
+    <td>@Item.PriceAccuracy</td>
+    <td>@Item.VolumeAccuracy</td>
+    <td>@Item.MinVolume</td>
+
+    <td>
+        <ul class="nav">
+            <li><button type="button" class="btn-outline-info btn" @onclick="ShowDetails" >Details</button></li>
+            <li><button type="button" class="btn-outline-warning btn" @onclick="ShowEdit" >Edit</button></li>
+            <li><button type="button" class="btn-outline-danger btn" @onclick="ShowDelete" >Delete</button></li>
+        </ul>
+    </td>
+</tr>
+
+@if (IsShowDetails)
+{
+    <ExternalMarketsB2C2DetailsDialog Item="@Item" OnCloseCallback="OnCloseAssetDialog" />
+}
+
+@if (IsShowEdit)
+{
+    <div>
+        <ExternalMarketsB2C2DetailsDialogEdit Item="@Item" IsCreate="false" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="OnUpdateAsset" />
+    </div>
+}
+
+@if (IsShowDelete)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption=@($"Delete External Market Settings {Item.Market}")
+            OnClose="OnCloseDeleteDialog"
+            YesButtonCaption="Delete"
+            NoButtonCaption="Cancel"
+            OnSubmit="DeleteItem">
+            
+            <h3 class="alert-warning">Are you sure you want to delete the External Market Settings <b>@Item.Market</b></h3>
+            
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+
+
+@code {
+    
+    [Parameter]
+    public ExternalMarketSettings Item { get; set; }
+
+    [Parameter]
+    public ILoaderConfiguration LoaderConfig { get; set; }
+    
+    [Parameter]
+    public EventCallback<ExternalMarketSettings> OnDeleteCallback { get; set; }
+    
+    private bool IsShowDetails { get; set; }
+    
+    private bool IsShowEdit { get; set; }
+    
+    private bool IsShowDelete { get; set; }
+    
+    private bool IsShowBrand { get; set; }
+    private string ChangeBrandId { get; set; }
+    private bool IsBrandAssigned { get; set; }
+
+    private void OnCloseAssetDialog()
+    {
+        IsShowDetails = false;
+        StateHasChanged();
+    }
+
+    private void ShowDetails()
+    {
+        IsShowDetails = true;
+        StateHasChanged();
+    }
+
+    private void ShowEdit()
+    {
+        IsShowEdit = true;
+        StateHasChanged();
+    }
+
+    private void OnCloseEditDialog()
+    {
+        IsShowEdit = false;
+        StateHasChanged();
+    }
+    
+    private async void OnUpdateAsset(ExternalMarketSettings item)
+    {
+        try
+        {
+            await ExternalMarketsB2C2Manager.UpdateExternalMarketSettings(item);
+
+            IsShowEdit = false;
+
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Edit External Market Settings");
+        }
+    }
+
+
+    private void OnCloseDeleteDialog()
+    {
+        IsShowDelete = false;
+        StateHasChanged();
+    }
+
+
+    private async Task DeleteItem()
+    {
+        IsShowDelete = false;
+        await OnDeleteCallback.InvokeAsync(Item);
+    }
+
+    private void ShowDelete()
+    {
+        IsShowDelete = true;
+        StateHasChanged();
+    }
+}

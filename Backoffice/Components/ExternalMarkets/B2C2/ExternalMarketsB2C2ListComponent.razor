@@ -1,0 +1,114 @@
+﻿@using Backoffice.Abstractions.Models
+@using Backoffice.Services.ExternalMarkets.B2C2
+@using Service.External.B2C2.Domain.Models.Settings
+
+@inject IExternalMarketsB2C2Manager ExternalMarketsB2C2Manager
+@inject IToaster ToastService
+
+<Loader LoaderConfig="@LoaderConfig"/>
+
+<ul class="nav float-left">
+    <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
+    <li><button @onclick="OnAddAsset" type="button" class="btn btn-outline-success" style="margin: 5px; border-radius: 10px">Add</button></li>
+</ul>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Market</th>
+            <th>Price Accuracy</th>
+            <th>Volume Accuracy</th>
+            <th>Min Volume</th>
+            <th>Levels</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var externalMarketSettings in ExternalMarketSettingsList)
+        {
+            <ExternalMarketsB2C2TableRow Item="@externalMarketSettings" LoaderConfig="@LoaderConfig" OnDeleteCallback="DeleteExternalMarketSettings" />
+        }
+    
+    </tbody>
+</table>
+
+@if (IsShowAdding)
+{
+    <div>
+        <ExternalMarketsB2C2DetailsDialogEdit IsCreate="true" OnCloseCallback="OnCloseAddingDialog" OnCreateCallback="OnCreateExternalMarketSettings" />
+    </div>
+}
+
+
+@code {
+    private string Message { get; set; } = "-- none --";
+
+    private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+    
+    private bool IsShowAdding { get; set; }
+
+    private List<ExternalMarketSettings> ExternalMarketSettingsList { get; set; } = new();
+
+    private async void OnRefresh()
+    {
+        LoaderConfig.Enable();
+        
+        ExternalMarketSettingsList = await ExternalMarketsB2C2Manager.GetAll();
+        
+        LoaderConfig.Disable();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override void OnInitialized()
+    {
+        OnRefresh();
+        
+        base.OnInitialized();
+    }
+
+    private async Task OnAddAsset()
+    {
+        IsShowAdding = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void OnCloseAddingDialog()
+    {
+        IsShowAdding = false;
+        StateHasChanged();
+    }
+    
+    private async void OnCreateExternalMarketSettings(ExternalMarketSettings item)
+    {
+        try
+        {
+            await ExternalMarketsB2C2Manager.CreateExternalMarketSettings(item);
+            
+            ToastService.Info($"External Market Settings {item.Market} is created", "Create External Market Settings");
+            
+            IsShowAdding = false;
+            
+            OnRefresh();    
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "External Market Settings creation");
+        }
+    }
+
+    private async void DeleteExternalMarketSettings(ExternalMarketSettings item)
+    {
+        try
+        {
+            await ExternalMarketsB2C2Manager.DeleteExternalMarketSettings(item);
+            
+            ToastService.Info($"External Market Settings {item.Market} is deleted", "Delete External Market Settings");
+            
+            OnRefresh();    
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "External Market Settings deletion");
+        }
+    }
+}
