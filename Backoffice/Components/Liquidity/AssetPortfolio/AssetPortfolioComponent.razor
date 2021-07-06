@@ -31,16 +31,21 @@
         </tr>
         </thead>
         <tbody>
+        
         @foreach (var walletName in _balanceCollection
             .Select(elem => elem.WalletName)
             .OrderBy(elem => elem)
             .Distinct())
         {
             <tr>
-                <td>@walletName</td>
-                <td>@(Math.Round(_balanceCollection.Where(elem => elem.WalletName == walletName).Sum(elem => elem.UsdProjection), 2))</td>
+            <td><b>@walletName</b></td>
+            <td>@(Math.Round(_balanceCollection.Where(elem => elem.WalletName == walletName).Sum(elem => elem.UsdProjection), 2))</td>
             </tr>
         }
+        <tr>
+            <td></td>
+            <td><b>@(Math.Round(_balanceCollection.Sum(elem => elem.UsdProjection), 2))</b></td>
+        </tr>
         </tbody>
     </table>
 
