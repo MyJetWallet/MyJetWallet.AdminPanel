@@ -1,8 +1,10 @@
 @using Service.Liquidity.Portfolio.Grpc
 @using Service.Liquidity.Portfolio.Domain.Models
 @using Service.Liquidity.Portfolio.Grpc.Models
+@using Backoffice.Services.SpotInstruments
 
 @inject IAssetPortfolioService _assetPortfolioService
+@inject ISpotInstrumentManager _spotInstrumentManager;
 
 <ul class="nav">
     @if (_trades?.Any() == true)
@@ -27,10 +29,11 @@
         <th>Base Volume In Usd</th>
         <th>Quote Volume In Usd</th>
         <th>Broker Id</th>
-        <th>Client Id</th>
-        <th>Wallet Id</th>
+        <th>Wallet Name</th>
         <th>Trade Id</th>
-        <th>Topic Source</th>                
+        <th>Source</th>
+        <th>Comment</th>
+        <th>User</th>
     </tr>
     </thead>
     <tbody>
@@ -48,10 +51,11 @@
             <td>@trade.BaseVolumeInUsd</td>
             <td>@trade.QuoteVolumeInUsd</td>
             <td>@trade.BrokerId</td>
-            <td>@trade.ClientId</td>
-            <td>@trade.WalletId</td>
+            <td>@trade.WalletName</td>
             <td>@trade.TradeId</td>
-            <td>@trade.TopicSource</td>
+            <td>@trade.Source</td>
+            <td>@trade.Comment</td>
+            <td>@trade.User</td>
         </tr>
     }
     </tbody>
@@ -72,12 +76,22 @@
                     <td><input type="text" class="form-control" @bind=NewTrade.BrokerId/></td>
                 </tr>
                 <tr>
-                    <td>Client Id</td>
-                    <td><input type="text" class="form-control" @bind=NewTrade.ClientId/></td>
+                    <td>Wallet Name</td>
+                    <td><input type="text" class="form-control" @bind=NewTrade.WalletName/></td>
+                </tr>
+                
+
+                
+                <!-- HERE-->
+                
+                
+                <tr>
+                    <td>Comment</td>
+                    <td><input type="text" class="form-control" @bind=NewTrade.Comment/></td>
                 </tr>
                 <tr>
-                    <td>Wallet Id</td>
-                    <td><input type="text" class="form-control" @bind=NewTrade.WalletId/></td>
+                    <td>User</td>
+                    <td><input type="text" class="form-control" @bind=NewTrade.User/></td>
                 </tr>
                 <tr>
                     <td>Instrument Symbol</td>
@@ -105,6 +119,7 @@
 }
 
 @code {
+    
     private List<Trade> _trades = new();
     private int CountInPage { get; set; } = 20;
     private long _lastSeen = 0;
@@ -121,6 +136,18 @@
 
     private async void OnSaveNewTrade()
     {
+        var instruments = await _spotInstrumentManager.GetAll();
+
+        var instrumentExist = instruments.Any(elem => elem.Instrument.Symbol == NewTrade.Symbol);
+
+        if (!instrumentExist)
+        {
+            ShowError = true;
+            ErrorText = "Instrument not found";
+            StateHasChanged();
+            return;
+        }
+        
         var response = await _assetPortfolioService.CreateManualTradeAsync(NewTrade);
         if (response.Success)
         {
@@ -142,10 +169,10 @@
         StateHasChanged();
     }
 
-    private async void CreateNew()
+    private void CreateNew()
     {
-        IsCreateDialogOpen = true;
         NewTrade = new CreateTradeManualRequest();
+        IsCreateDialogOpen = true;
     }
 
     private async Task Refresh()
