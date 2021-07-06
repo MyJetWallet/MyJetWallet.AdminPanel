@@ -112,15 +112,30 @@
             <table>
                 <tr>
                     <td>BrokerId</td>
-                    <td><input type="text" class="form-control" @bind=BrokerId /></td>
+                    <select @bind="@BrokerId">
+                        @foreach (var name in _balanceCollection.Select(elem => elem.BrokerId).Distinct())
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
                 </tr>
                 <tr>
                     <td>Wallet Name</td>
-                    <td><input type="text" class="form-control" @bind=WalletName /></td>
+                    <select @bind="@WalletName">
+                        @foreach (var name in _balanceCollection.Select(elem => elem.WalletName).Distinct())
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
                 </tr>
                 <tr>
                     <td>Asset</td>
-                    <td><input type="text" class="form-control" @bind=Asset /></td>
+                    <select @bind="@Asset">
+                        @foreach (var name in _balanceCollection.Select(elem => elem.Asset).Distinct())
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
                 </tr>
                 <tr>
                     <td>Balance difference</td>
@@ -204,6 +219,12 @@
     private void ShowEdit()
     {
         IsShowEdit = true;
+        Comment = string.Empty;
+        User = string.Empty;
+        WalletName = string.Empty;
+        Asset = string.Empty;
+        BalanceDiff = 0;
+        
         StateHasChanged();
     }
     
@@ -221,6 +242,22 @@
     
     private async void SaveBalance()
     {
+        if (string.IsNullOrEmpty(BrokerId) && 
+            _balanceCollection.Select(elem => elem.BrokerId).Distinct().Count() == 1)
+        {
+            BrokerId = _balanceCollection.FirstOrDefault().BrokerId;
+        }
+        if (string.IsNullOrEmpty(WalletName) && 
+            _balanceCollection.Select(elem => elem.WalletName).Distinct().Count() == 1)
+        {
+            WalletName = _balanceCollection.FirstOrDefault().WalletName;
+        }
+        if (string.IsNullOrEmpty(Asset) && 
+            _balanceCollection.Select(elem => elem.Asset).Distinct().Count() == 1)
+        {
+            Asset = _balanceCollection.FirstOrDefault().Asset;
+        }
+
         if (BalanceDiff != 0 &&
             !string.IsNullOrWhiteSpace(Asset) &&
             !string.IsNullOrWhiteSpace(Comment) &&
