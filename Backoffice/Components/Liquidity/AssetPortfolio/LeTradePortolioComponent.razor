@@ -183,6 +183,7 @@
         {
             _trades.Add(response.Trade);
             await Refresh();
+            OnCloseCreateDialog();
         } else 
         {
             ShowError = true;
