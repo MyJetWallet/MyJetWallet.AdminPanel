@@ -73,18 +73,22 @@
             <table>
                 <tr>
                     <td>Broker Id</td>
-                    <td><input type="text" class="form-control" @bind=NewTrade.BrokerId/></td>
+                    <select @bind="@NewTrade.BrokerId">
+                        @foreach (var name in _trades.Select(elem => elem.BrokerId).Distinct())
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
                 </tr>
                 <tr>
                     <td>Wallet Name</td>
-                    <td><input type="text" class="form-control" @bind=NewTrade.WalletName/></td>
+                    <select @bind="@NewTrade.WalletName">
+                        @foreach (var name in _trades.Select(elem => elem.WalletName).Distinct())
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
                 </tr>
-                
-
-                
-                <!-- HERE-->
-                
-                
                 <tr>
                     <td>Comment</td>
                     <td><input type="text" class="form-control" @bind=NewTrade.Comment/></td>
@@ -136,6 +140,17 @@
 
     private async void OnSaveNewTrade()
     {
+        if (string.IsNullOrEmpty(NewTrade.BrokerId) && 
+            _trades.Select(elem => elem.BrokerId).Distinct().Count() == 1)
+        {
+            NewTrade.BrokerId = _trades.FirstOrDefault().BrokerId;
+        }
+        if (string.IsNullOrEmpty(NewTrade.WalletName) && 
+            _trades.Select(elem => elem.WalletName).Distinct().Count() == 1)
+        {
+            NewTrade.WalletName = _trades.FirstOrDefault().WalletName;
+        }
+
         var instruments = await _spotInstrumentManager.GetAll();
 
         var instrumentExist = instruments.Any(elem => elem.Instrument.Symbol == NewTrade.Symbol);
