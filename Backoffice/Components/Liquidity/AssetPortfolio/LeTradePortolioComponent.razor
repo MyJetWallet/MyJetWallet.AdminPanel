@@ -14,6 +14,17 @@
     <li><button type="button" class="btn-outline-secondary btn" @onclick="CreateNew">Create new</button></li>
     <li><button type="button" class="btn-outline-secondary btn" @onclick="Refresh">Refresh</button></li>
     <li><span style="margin-left: 10px; vertical-align: center">Count in page: </span><input type="number" style="width: 40px" @bind="CountInPage"/></li>
+    
+    <li><span style="margin-left: 10px; vertical-align: center">Asset Filter Active </span><input type="checkbox" style="width: 40px" @bind="AssetFilerActive"/></li>
+    @if (AssetFilerActive)
+    {
+        <select @bind="@FilterAsset">
+            @foreach (var name in AssetCollection)
+            {
+                <option value="@name">@name</option>
+            }
+        </select>
+    }
 </ul>
 
 <table class="table" style="width: auto">
@@ -132,6 +143,10 @@
     private CreateTradeManualRequest NewTrade { get; set; }
     private bool ShowError { get; set; }
     private string ErrorText { get; set; }
+    
+    private bool AssetFilerActive { get; set; }
+    private List<string> AssetCollection { get; set; }
+    private string FilterAsset { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -167,7 +182,7 @@
         if (response.Success)
         {
             _trades.Add(response.Trade);
-            OnCloseCreateDialog();
+            await Refresh();
         } else 
         {
             ShowError = true;
@@ -192,18 +207,51 @@
 
     private async Task Refresh()
     {
-        var response = await _assetPortfolioService.GetTradesAsync(new GetTradesRequest() {BatchSize = CountInPage});
+        var request = new GetTradesRequest() {BatchSize = CountInPage};
+
+        if (AssetFilerActive && !string.IsNullOrEmpty(FilterAsset))
+        {
+            request.AssetFilter = FilterAsset;
+        }
+        
+        var response = await _assetPortfolioService.GetTradesAsync(request);
         _trades = response.Trades ?? new List<Trade>();
         _lastSeen = response.IdForNextQuery;
+        await SetAssetCollection();
         StateHasChanged();
+    }
+
+    private async Task SetAssetCollection()
+    {
+        var instruments = await _spotInstrumentManager.GetAll();
+        var ourSymbols = _trades.Select(elem => elem.Symbol);
+
+        var ourInstruments = instruments.Where(inst => ourSymbols.Contains(inst.Instrument.Symbol));
+        
+        AssetCollection = new List<string>();
+        
+        foreach (var instrument in ourInstruments)
+        {
+            AssetCollection.Add(instrument.Instrument.BaseAsset);
+            AssetCollection.Add(instrument.Instrument.QuoteAsset);
+        }
+
+        AssetCollection = AssetCollection.Distinct().ToList();
     }
 
     private async Task NextPage()
     {
         if (_trades?.Any() != true)
             return;
+
+        var request = new GetTradesRequest() {BatchSize = CountInPage, LastId = _lastSeen};
         
-        var response = await _assetPortfolioService.GetTradesAsync(new GetTradesRequest() {BatchSize = CountInPage, LastId = _lastSeen});
+        if (AssetFilerActive && !string.IsNullOrEmpty(FilterAsset))
+        {
+            request.AssetFilter = FilterAsset;
+        }
+        
+        var response = await _assetPortfolioService.GetTradesAsync(request);
         
         if (!response.Success || response.Trades == null || response.Trades.Count == 0)
             return;
