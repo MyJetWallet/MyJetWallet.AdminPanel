@@ -1,0 +1,133 @@
+﻿@using Backoffice.Abstractions.Models
+@using Backoffice.Services.Fees.Instruments
+@using Service.Fees.Domain.Models
+
+@inject IInstrumentFeesManager InstrumentFeesManager;
+@inject IToaster ToastService;
+
+
+<tr>
+    <td>@Item.SpotInstrumentId</td>
+    <td>@Item.WalletId</td>
+    <td>@Item.FeeType</td>
+    <td>@Item.MakerFeeSize</td>
+    <td>@Item.MakerFeeSizeType</td>
+    <td>@Item.TakerFeeSize</td>
+    <td>@Item.TakerFeeSizeType</td>
+
+    <td>
+        <ul class="nav">
+            <li><button type="button" class="btn-outline-info btn" @onclick="ShowDetails" >Details</button></li>
+            <li><button type="button" class="btn-outline-warning btn" @onclick="ShowEdit" >Edit</button></li>
+            <li><button type="button" class="btn-outline-danger btn" @onclick="ShowDelete" >Delete</button></li>
+        </ul>
+    </td>
+</tr>
+
+@if (IsShowDetails)
+{
+    <InstrumentFeesDetailsDialog Item="@Item" OnCloseCallback="OnCloseAssetDialog" />
+}
+
+@if (IsShowEdit)
+{
+    <div>
+        <InstrumentFeesDetailsDialogEdit Item="@Item" IsCreate="false" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="OnUpdateAsset" />
+    </div>
+}
+
+@if (IsShowDelete)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption=@($"Delete instrument fees {Item.SpotInstrumentId} [{Item.BrokerId}]")
+            OnClose="OnCloseDeleteDialog"
+            YesButtonCaption="Delete"
+            NoButtonCaption="Cancel"
+            OnSubmit="DeleteItem">
+            
+            <h3 class="alert-warning">Are you sure you want to delete the instrument fees <b>@Item.SpotInstrumentId [@Item.BrokerId]?</b></h3>
+            
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+
+
+@code {
+    
+    [Parameter]
+    public SpotInstrumentFees Item { get; set; }
+
+    [Parameter]
+    public ILoaderConfiguration LoaderConfig { get; set; }
+    
+    [Parameter]
+    public EventCallback<SpotInstrumentFees> OnDeleteCallback { get; set; }
+    
+    private bool IsShowDetails { get; set; }
+    
+    private bool IsShowEdit { get; set; }
+    
+    private bool IsShowDelete { get; set; }
+
+    private void OnCloseAssetDialog()
+    {
+        IsShowDetails = false;
+        StateHasChanged();
+    }
+
+    private void ShowDetails()
+    {
+        IsShowDetails = true;
+        StateHasChanged();
+    }
+
+    private void ShowEdit()
+    {
+        IsShowEdit = true;
+        StateHasChanged();
+    }
+
+    private void OnCloseEditDialog()
+    {
+        IsShowEdit = false;
+        StateHasChanged();
+    }
+    
+    private async void OnUpdateAsset(SpotInstrumentFees asset)
+    {
+        try
+        {
+            await InstrumentFeesManager.UpdateSpotInstrumentFeesSettings(asset);
+
+            IsShowEdit = false;
+
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Edit instrument fee");
+        }
+    }
+
+
+    private void OnCloseDeleteDialog()
+    {
+        IsShowDelete = false;
+        StateHasChanged();
+    }
+
+
+    private async Task DeleteItem()
+    {
+        IsShowDelete = false;
+        await OnDeleteCallback.InvokeAsync(Item);
+    }
+
+    private void ShowDelete()
+    {
+        IsShowDelete = true;
+        StateHasChanged();
+    }
+}

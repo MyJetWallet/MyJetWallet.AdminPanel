@@ -14,6 +14,7 @@ namespace Backoffice
         public const string SmsSender = "SmsSender";
         public const string Converter = "Converter";
         public const string ExternalMarkets = "ExternalMarkets";
+        public const string Fees = "Fees";
         public const string Notifications = "Notifications";
         public const string Monitor = "Monitor";
     }
@@ -65,6 +66,7 @@ namespace Backoffice
             NavsItem.Create("External Markets", "ExternalMarkets", "list-rich", Menu.ExternalMarkets),
             NavsItem.Create("SmsSender", "SmsSender", "list-rich", Menu.SmsSender),
             NavsItem.Create("Converter", "Converter", "list-rich", Menu.Converter),
+            NavsItem.Create("Fees", "Fees", "list-rich", Menu.Fees),
             NavsItem.Create("Notifications", "Notifications","list-rich",Menu.Notifications),
             NavsItem.Create("Monitor", "Monitor","list-rich",Menu.Monitor)
         };

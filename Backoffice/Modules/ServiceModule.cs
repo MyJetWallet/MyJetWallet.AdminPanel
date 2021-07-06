@@ -8,6 +8,8 @@ using Backoffice.Services.Backoffice;
 using Backoffice.Services.BitGo.Assets;
 using Backoffice.Services.BitGo.Coins;
 using Backoffice.Services.ExternalMarkets.B2C2;
+using Backoffice.Services.Fees.Assets;
+using Backoffice.Services.Fees.Instruments;
 using Backoffice.Services.SpotInstruments;
 using Backoffice.TableStorage;
 using MyCRM.AccountTransactions.Grpc;
@@ -59,6 +61,16 @@ namespace Backoffice.Modules
             builder
                 .RegisterType<ExternalMarketsB2C2Manager>()
                 .As<IExternalMarketsB2C2Manager>()
+                .SingleInstance();
+            
+            builder
+                .RegisterType<AssetFeesManager>()
+                .As<IAssetFeesManager>()
+                .SingleInstance();
+            
+            builder
+                .RegisterType<InstrumentFeesManager>()
+                .As<IInstrumentFeesManager>()
                 .SingleInstance();
 
             RegisterGrpcService(builder);

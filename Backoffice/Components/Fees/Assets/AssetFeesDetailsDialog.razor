@@ -1,0 +1,37 @@
+﻿@using Service.Fees.Domain.Models
+
+<BaseOneButtonsDialog Caption=@($"{Item.AssetId} [{Item.BrokerId}]") OnClose="OnClose" ButtonCaption="Close">
+    <table>
+    <tr>
+        <td>
+            <table>
+                <tr><td>Broker</td><td class="float-left">@Item.BrokerId</td></tr>
+                <tr><td>Asset</td><td class="float-left">@Item.AssetId</td></tr>
+                <tr><td>Operation Type</td><td class="float-left">@Item.OperationType</td></tr>
+                <tr></tr>
+                <tr><td>Fee type</td><td class="float-left">@Item.FeeType</td></tr>
+                <tr><td>Fee account id</td><td class="float-left">@Item.AccountId</td></tr>
+                <tr><td>Fee wallet id</td><td class="float-left">@Item.WalletId</td></tr>
+                <tr><td>Fee asset id</td><td class="float-left">@Item.FeeAssetId</td></tr>
+                <tr><td>Fee size</td><td class="float-left">@Item.FeeSize</td></tr>
+                <tr><td>Fee size type</td><td class="float-left">@Item.FeeSizeType</td></tr>
+            </table>
+        </td>
+    </tr>
+    
+  </table>
+</BaseOneButtonsDialog>
+
+@code {
+    
+    [Parameter]
+    public AssetFees Item { get; set; }
+    
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+
+    private void OnClose()
+    {
+        OnCloseCallback.InvokeAsync();
+    }
+}

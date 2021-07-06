@@ -1,0 +1,113 @@
+﻿@using Backoffice.Services.Fees.Assets
+@using Service.Fees.Domain.Models
+@using Backoffice.Abstractions.Models
+
+@inject IAssetFeesManager AssetFeesManager;
+@inject IToaster ToastService
+
+<Loader LoaderConfig="@LoaderConfig"/>
+
+<ul class="nav float-left">
+    <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
+    <li><button @onclick="OnAddAsset" type="button" class="btn btn-outline-success" style="margin: 5px; border-radius: 10px">Add</button></li>
+</ul>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Symbol</th>
+            <th>BitGo wallet</th>
+            <th>Enabled BitGo wallet</th>
+            <th>BitGo coin</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var assetFees in AssetFeesList)
+        {
+            <AssetFeesTableRow Item="@assetFees" LoaderConfig="@LoaderConfig" OnDeleteCallback="DeleteAssetFee" />
+        }
+    
+    </tbody>
+</table>
+
+@if (IsShowAdding)
+{
+    <div>
+        <AssetFeesDetailsDialogEdit IsCreate="true" OnCloseCallback="OnCloseAddingDialog" OnCreateCallback="OnCreateAsset" />
+    </div>
+}
+
+
+@code {
+    private string Message { get; set; } = "-- none --";
+
+    private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+    
+    private bool IsShowAdding { get; set; }
+
+    private List<AssetFees> AssetFeesList { get; set; } = new();
+
+    private async void OnRefresh()
+    {
+        LoaderConfig.Enable();
+        
+        AssetFeesList = await AssetFeesManager.GetAll();
+        
+        LoaderConfig.Disable();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override void OnInitialized()
+    {
+        OnRefresh();
+        
+        base.OnInitialized();
+    }
+
+    private async Task OnAddAsset()
+    {
+        IsShowAdding = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void OnCloseAddingDialog()
+    {
+        IsShowAdding = false;
+        StateHasChanged();
+    }
+    
+    private async void OnCreateAsset(AssetFees item)
+    {
+        try
+        {
+            await AssetFeesManager.CreateAssetFeesSettings(item);
+            
+            ToastService.Info($"Asset fees {item.AssetId} is created", "Create asset fees");
+            
+            IsShowAdding = false;
+            
+            OnRefresh();    
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Asset fees creation");
+        }
+    }
+
+    private async void DeleteAssetFee(AssetFees item)
+    {
+        try
+        {
+            await AssetFeesManager.DeleteAssetFeesSettings(item);
+            
+            ToastService.Info($"Asset fees {item.AssetId} is deleted", "Delete asset fees");
+            
+            OnRefresh();    
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Asset fees deletion");
+        }
+    }
+}

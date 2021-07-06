@@ -85,5 +85,11 @@ namespace Backoffice
 
         [YamlProperty("AdminPanel.LiquidityPortfolioServiceUrl")]
         public string LiquidityPortfolioServiceUrl { get; set; }
+
+        [YamlProperty("AdminPanel.FeesServiceUrl")]
+        public string FeesServiceUrl { get; set; }
+
+        [YamlProperty("AdminPanel.FeesWalletId")]
+        public string FeesWalletId { get; set; }
     }
 }

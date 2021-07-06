@@ -1,0 +1,38 @@
+﻿@using Service.Fees.Domain.Models
+
+<BaseOneButtonsDialog Caption=@($"{Item.SpotInstrumentId} [{Item.BrokerId}]") OnClose="OnClose" ButtonCaption="Close">
+    <table>
+    <tr>
+        <td>
+            <table>
+                <tr><td>Broker</td><td class="float-left">@Item.BrokerId</td></tr>
+                <tr><td>Asset</td><td class="float-left">@Item.SpotInstrumentId</td></tr>
+                <tr></tr>
+                <tr><td>Fee type</td><td class="float-left">@Item.FeeType</td></tr>
+                <tr><td>Fee account id</td><td class="float-left">@Item.AccountId</td></tr>
+                <tr><td>Fee wallet id</td><td class="float-left">@Item.WalletId</td></tr>
+                <tr><td>Fee asset id</td><td class="float-left">@Item.FeeAssetId</td></tr>
+                <tr><td>Fee size</td><td class="float-left">@Item.MakerFeeSize</td></tr>
+                <tr><td>Fee size type</td><td class="float-left">@Item.MakerFeeSizeType</td></tr>
+                <tr><td>Fee size</td><td class="float-left">@Item.TakerFeeSize</td></tr>
+                <tr><td>Fee size type</td><td class="float-left">@Item.TakerFeeSizeType</td></tr>
+            </table>
+        </td>
+    </tr>
+    
+  </table>
+</BaseOneButtonsDialog>
+
+@code {
+    
+    [Parameter]
+    public SpotInstrumentFees Item { get; set; }
+    
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+
+    private void OnClose()
+    {
+        OnCloseCallback.InvokeAsync();
+    }
+}
