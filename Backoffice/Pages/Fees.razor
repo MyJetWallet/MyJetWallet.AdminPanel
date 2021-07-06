@@ -1,11 +1,18 @@
 ﻿@using Backoffice.Components.Fees.Assets
 @using Backoffice.Components.Fees.Instruments
+@using Backoffice.Components.Fees.Balance
 
 @page "/Fees"
 
 <ul class="nav nav-tabs nav-pills">
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(Menus.Assets)" aria-current="page" @onclick="SetAssets">Assets</button>
+    </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.Instruments)" aria-current="page" @onclick="SetAssets">Instruments</button>
+    </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.Balance)" aria-current="page" @onclick="SetAssets">Fee wallet balance</button>
     </li>
 </ul>
 
@@ -17,6 +24,10 @@
     @if (ActivePage == Menus.Instruments)
     {
         <InstrumentFeesListComponent/>
+    }
+    @if (ActivePage == Menus.Balance)
+    {
+        <FeesBalanceComponent/>
     }
 </div>
 
@@ -41,7 +52,8 @@
     {
         None,
         Assets,
-        Instruments
+        Instruments,
+        Balance
     }
 
     private void SetAssets()
@@ -53,6 +65,12 @@
     private void SetInstruments()
     {
         SetActive(Menus.Instruments);
+        StateHasChanged();
+    }
+
+    private void SetBalance()
+    {
+        SetActive(Menus.Balance);
         StateHasChanged();
     }
 
