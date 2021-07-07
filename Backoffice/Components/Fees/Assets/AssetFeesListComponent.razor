@@ -54,7 +54,7 @@
     {
         LoaderConfig.Enable();
         
-        AssetFeesList = await AssetFeesManager.GetAll();
+        AssetFeesList = await AssetFeesManager.GetAll() ?? new List<AssetFees>();
         
         LoaderConfig.Disable();
         await InvokeAsync(StateHasChanged);

@@ -52,7 +52,7 @@
     {
         LoaderConfig.Enable();
         
-        BitGoAssetList = await BitGoAssetManager.GetAll();
+        BitGoAssetList = await BitGoAssetManager.GetAll() ?? new List<BitgoAssetMapEntity>();
         
         LoaderConfig.Disable();
         await InvokeAsync(StateHasChanged);

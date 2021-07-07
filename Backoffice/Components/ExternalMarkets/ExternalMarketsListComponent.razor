@@ -55,7 +55,7 @@
     {
         LoaderConfig.Enable();
         
-        ExternalMarketSettingsList = (await ExternalMarketsSettingsService.SettingsManager.GetExternalMarketSettingsList()).List;
+        ExternalMarketSettingsList = (await ExternalMarketsSettingsService.SettingsManager.GetExternalMarketSettingsList())?.List ?? new List<ExternalMarketSettings>();
         
         LoaderConfig.Disable();
         await InvokeAsync(StateHasChanged);

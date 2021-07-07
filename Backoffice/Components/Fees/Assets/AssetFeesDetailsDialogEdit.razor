@@ -7,10 +7,8 @@
     OnSubmit="OnSubmit">
     <EditForm Model="@this">
         <table>
-
             <tr>
                 <td>
-
                     <table>
                         <tr>
                             <td>Broker</td>
@@ -64,9 +62,6 @@
                                     <option value="@FeeType.ClientFee">
                                         <MyLabel Text="@(FeeType.ClientFee.ToString())"/>
                                     </option>
-                                    <option value="@FeeType.ExternalFee">
-                                        <MyLabel Text="@(FeeType.ExternalFee.ToString())"/>
-                                    </option>
                                 </InputSelect>
                             </td>
                         </tr>
@@ -109,7 +104,6 @@
                         </tr>
                     </table>
                 </td>
-
             </tr>
         </table>
     </EditForm>

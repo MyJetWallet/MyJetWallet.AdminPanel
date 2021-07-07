@@ -1,10 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Backoffice.Services.Simulations;
-using Microsoft.Extensions.Logging;
 using MyJetWallet.Sdk.ExternalMarketsSettings.Autofac;
-using Service.Simulation.Binance.Client;
-using Service.Simulation.FTX.Client;
 
 namespace Backoffice.Services.ExternalMarkets
 {
@@ -16,8 +12,6 @@ namespace Backoffice.Services.ExternalMarkets
     public class ExternalMarketsSettingsManager : IExternalMarketsSettingsManager
     {
         private List<ExternalMarketsSettingsService> _services { get; set; }
-        
-        private readonly ILogger<ExternalMarketsSettingsManager> _logger;
 
         public ExternalMarketsSettingsManager(Dictionary<string, string> settings)
         {
