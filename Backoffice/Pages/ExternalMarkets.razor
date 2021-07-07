@@ -1,6 +1,9 @@
 ﻿@using Backoffice.Services.ExternalMarkets
 
+@page "/ExternalMarkets"
+
 @inject IExternalMarketsSettingsManager _manager
+
 
 @{
     var externalMarketsSettingsServices = _manager.GetExternalMarketsSettingsServices();
