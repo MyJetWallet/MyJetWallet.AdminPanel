@@ -1,9 +1,9 @@
-﻿@using Backoffice.Services.ExternalMarkets
+﻿@page "/ExternalMarkets"
 
-@page "/ExternalMarkets"
+@using Backoffice.Components.ExternalMarkets
+@using Backoffice.Services.ExternalMarkets
 
 @inject IExternalMarketsSettingsManager _manager
-
 
 @{
     var externalMarketsSettingsServices = _manager.GetExternalMarketsSettingsServices();
@@ -22,7 +22,7 @@
 {
     if (ActiveService == externalMarketsSettingsService)
     {
-        <Extern ExternalMarketsSettingsService="@externalMarketsSettingsService"/>
+        <ExternalMarketsListComponent ExternalMarketsSettingsService="@externalMarketsSettingsService"/>
     }
 }
 
