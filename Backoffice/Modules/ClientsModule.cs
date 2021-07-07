@@ -1,4 +1,5 @@
 using Autofac;
+using Backoffice.Services.ExternalMarkets;
 using Backoffice.Services.Simulations;
 using MyCrm.PersonalData.Grpc;
 using MyJetWallet.BitGo.Settings.Ioc;
@@ -109,7 +110,8 @@ namespace Backoffice.Modules
             
             builder.RegisterPortfolioClient(Program.Settings.LiquidityPortfolioServiceUrl);
             
-            builder.RegisterExternalB2C2Client(Program.Settings.ExternalMarketsSettingsB2C2);
+            var externalSettingsManager = new ExternalMarketsSettingsManager(Program.Settings.ExternalMarketsSettings);
+            builder.RegisterInstance(externalSettingsManager).As<IExternalMarketsSettingsManager>().SingleInstance();
             
             builder.RegisterFeesSettingsClients(Program.Settings.FeesServiceUrl);
         }

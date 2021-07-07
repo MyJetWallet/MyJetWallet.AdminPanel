@@ -1,8 +1,7 @@
-﻿@using Backoffice.Services.ExternalMarkets.B2C2
-@using Service.External.B2C2.Domain.Models.Settings
+﻿@using MyJetWallet.Sdk.ExternalMarketsSettings.Models
 @using Backoffice.Abstractions.Models
+@using Backoffice.Services.ExternalMarkets
 
-@inject IExternalMarketsB2C2Manager ExternalMarketsB2C2Manager
 @inject IToaster ToastService;
 
 
@@ -24,13 +23,13 @@
 
 @if (IsShowDetails)
 {
-    <ExternalMarketsB2C2DetailsDialog Item="@Item" OnCloseCallback="OnCloseAssetDialog" />
+    <ExternalMarketsDetailsDialog Item="@Item" OnCloseCallback="OnCloseAssetDialog" />
 }
 
 @if (IsShowEdit)
 {
     <div>
-        <ExternalMarketsB2C2DetailsDialogEdit Item="@Item" IsCreate="false" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="OnUpdateAsset" />
+        <ExternalMarketsDetailsDialogEdit Item="@Item" IsCreate="false" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="OnUpdateSettings" />
     </div>
 }
 
@@ -53,6 +52,8 @@
 
 
 @code {
+    [Parameter]
+    public ExternalMarketsSettingsService ExternalMarketsSettingsService { get; set; }
     
     [Parameter]
     public ExternalMarketSettings Item { get; set; }
@@ -68,10 +69,6 @@
     private bool IsShowEdit { get; set; }
     
     private bool IsShowDelete { get; set; }
-    
-    private bool IsShowBrand { get; set; }
-    private string ChangeBrandId { get; set; }
-    private bool IsBrandAssigned { get; set; }
 
     private void OnCloseAssetDialog()
     {
@@ -97,11 +94,11 @@
         StateHasChanged();
     }
     
-    private async void OnUpdateAsset(ExternalMarketSettings item)
+    private async void OnUpdateSettings(ExternalMarketSettings item)
     {
         try
         {
-            await ExternalMarketsB2C2Manager.UpdateExternalMarketSettings(item);
+            await ExternalMarketsSettingsService.SettingsManager.UpdateExternalMarketSettings(item);
 
             IsShowEdit = false;
 
