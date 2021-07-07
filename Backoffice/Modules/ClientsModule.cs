@@ -14,7 +14,6 @@ using Service.BalanceHistory.Client;
 using Service.Balances.Client;
 using Service.ChangeBalanceGateway.Client;
 using Service.ClientWallets.Client;
-using Service.External.B2C2.Client;
 using Service.Fees.Client.Grpc;
 using Service.Liquidity.Converter.Client;
 using Service.Liquidity.Engine.Client;

@@ -26,7 +26,7 @@
     <tbody>
         @foreach(var externalMarketSettings in ExternalMarketSettingsList)
         {
-            <ExternalMarketsB2C2TableRow ExternalMarketsSettingsService="@ExternalMarketsSettingsService" Item="@externalMarketSettings" LoaderConfig="@LoaderConfig" OnDeleteCallback="DeleteExternalMarketSettings" />
+            <ExternalMarketsTableRow ExternalMarketsSettingsService="@ExternalMarketsSettingsService" Item="@externalMarketSettings" LoaderConfig="@LoaderConfig" OnDeleteCallback="DeleteExternalMarketSettings" />
         }
     
     </tbody>
@@ -35,7 +35,7 @@
 @if (IsShowAdding)
 {
     <div>
-        <ExternalMarketsB2C2DetailsDialogEdit IsCreate="true" OnCloseCallback="OnCloseAddingDialog" OnCreateCallback="OnCreateExternalMarketSettings" />
+        <ExternalMarketsDetailsDialogEdit IsCreate="true" OnCloseCallback="OnCloseAddingDialog" OnCreateCallback="OnCreateExternalMarketSettings" />
     </div>
 }
 
