@@ -1,6 +1,6 @@
 ﻿@using Service.Fees.Domain.Models
 <BaseTwoButtonsDialog
-    Caption=@(!IsCreate ? $"{Item.SpotInstrumentId} [{Item.BrokerId}]" : "Create a new Asset fees")
+    Caption=@(!IsCreate ? $"{Item.SpotInstrumentId} [{Item.BrokerId}]" : "Create a new Instrument fees")
     OnClose="OnClose"
     YesButtonCaption="@(IsCreate ? "Create" : "Save")"
     NoButtonCaption="Close"

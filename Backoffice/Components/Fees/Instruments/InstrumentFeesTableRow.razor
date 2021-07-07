@@ -26,13 +26,13 @@
 
 @if (IsShowDetails)
 {
-    <InstrumentFeesDetailsDialog Item="@Item" OnCloseCallback="OnCloseAssetDialog" />
+    <InstrumentFeesDetailsDialog Item="@Item" OnCloseCallback="OnCloseInstrumentDialog" />
 }
 
 @if (IsShowEdit)
 {
     <div>
-        <InstrumentFeesDetailsDialogEdit Item="@Item" IsCreate="false" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="OnUpdateAsset" />
+        <InstrumentFeesDetailsDialogEdit Item="@Item" IsCreate="false" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="OnUpdateInstrument" />
     </div>
 }
 
@@ -71,7 +71,7 @@
     
     private bool IsShowDelete { get; set; }
 
-    private void OnCloseAssetDialog()
+    private void OnCloseInstrumentDialog()
     {
         IsShowDetails = false;
         StateHasChanged();
@@ -95,7 +95,7 @@
         StateHasChanged();
     }
     
-    private async void OnUpdateAsset(SpotInstrumentFees asset)
+    private async void OnUpdateInstrument(SpotInstrumentFees asset)
     {
         try
         {
