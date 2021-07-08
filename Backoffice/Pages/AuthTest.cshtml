@@ -1,0 +1,82 @@
+@page "/AuthTest"
+@using Backoffice
+@model Backoffice.Pages.AuthTest
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/html">
+<head>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <meta name="google-signin-client_id" content="@Program.Settings.GoogleClientId">
+    <meta name="google-signin-scope" content="profile email">
+    <meta name="google-signin-fetch_basic_profile" content="false">
+</head>
+<body>
+<div>
+    <div id="googleSignIn" class="g-signin2 disableOnRequest" data-onsuccess="googleSignIn" data-theme="dark" data-prompt="select_account"></div>
+</div>
+<script>
+    function googleSignIn(googleUser) {
+    var idToken = googleUser.getAuthResponse().id_token;
+    var profile = googleUser.getBasicProfile();
+    this.myToken = idToken;
+    this.myEmail = profile.getEmail();
+    var data = {
+        googleSignInIdToken: this.myToken
+    };
+    document.getElementById('gtoken').value = data.googleSignInIdToken;
+    }            
+</script>
+<textarea id="gtoken"></textarea>
+<br>
+<script>
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : @Program.Settings.FacebookClientId,
+      cookie     : true,
+      xfbml      : true,
+      version    : 'v11.0'
+    });}
+      
+    function statusChangeCallback(response) {
+    console.log('statusChangeCallback');
+    console.log(response);
+    if (response.status === 'connected') {
+        document.getElementById('fbtoken').value = response.authResponse.accessToken;
+    } else if (response.status === 'not_authorized') {
+        document.getElementById('status').innerHTML = 'Please log ' +
+            'into this app.';
+    } else {
+        document.getElementById('status').innerHTML = 'Please log ' +
+            'into Facebook.';
+        }
+    }
+
+    function checkLoginState() {
+    FB.getLoginStatus(function(response) {
+        statusChangeCallback(response);
+    });
+}
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = "//connect.facebook.net/en_US/sdk.js";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+
+</script>
+<br>
+<fb:login-button
+    scope="public_profile,email"
+    onlogin="checkLoginState();">
+</fb:login-button>
+<br>
+<textarea id="fbtoken"></textarea>
+
+</body>
+</html>
