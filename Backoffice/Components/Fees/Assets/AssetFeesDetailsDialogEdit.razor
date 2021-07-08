@@ -1,0 +1,155 @@
+﻿@using Service.Fees.Domain.Models
+<BaseTwoButtonsDialog
+    Caption=@(!IsCreate ? $"{Item.AssetId} [{Item.BrokerId}]" : "Create a new Asset fees")
+    OnClose="OnClose"
+    YesButtonCaption="@(IsCreate ? "Create" : "Save")"
+    NoButtonCaption="Close"
+    OnSubmit="OnSubmit">
+    <EditForm Model="@this">
+        <table>
+            <tr>
+                <td>
+                    <table>
+                        <tr>
+                            <td>Broker</td>
+                            <td class="float-left">
+                                @if (!IsCreate)
+                                {
+                                    @Item.BrokerId
+                                }
+                                else
+                                {
+                                    <input type="text" class="form-control" @bind="Item.BrokerId"/>
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Asset</td>
+                            <td class="float-left">
+                                @if (!IsCreate)
+                                {
+                                    @Item.AssetId
+                                }
+                                else
+                                {
+                                    <input type="text" class="form-control" @bind="Item.AssetId"/>
+                                }
+                            </td>
+                        </tr>
+                        <tr></tr>
+                        <tr>
+                            <td>Operation Type</td>
+                            <td class="float-left">
+                                @if (!IsCreate)
+                                {
+                                    @Item.OperationType
+                                }
+                                else
+                                {
+                                    <InputSelect @bind-Value="@Item.OperationType">
+                                        <option value="@OperationType.Withdrawal">@OperationType.Withdrawal.ToString()</option>
+                                    </InputSelect>
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Fee Type</td>
+                            <td class="float-left">
+                                <InputSelect @bind-Value="@Item.FeeType">
+                                    <option value="@FeeType.NoFee">
+                                        <MyLabel Text="@(FeeType.NoFee.ToString())"/>
+                                    </option>
+                                    <option value="@FeeType.ClientFee">
+                                        <MyLabel Text="@(FeeType.ClientFee.ToString())"/>
+                                    </option>
+                                </InputSelect>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Fee account id</td>
+                            <td class="float-left">
+                                <input type="text" class="form-control" @bind="Item.AccountId"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Fee wallet id</td>
+                            <td class="float-left">
+                                <input type="text" class="form-control" @bind="Item.WalletId"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Fee asset id</td>
+                            <td class="float-left">
+                                <input type="text" class="form-control" @bind="Item.FeeAssetId"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Fee size</td>
+                            <td class="float-left">
+                                <input type="number" class="form-control" @bind="Item.FeeSize"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Fee size type</td>
+                            <td class="float-left">
+                                <InputSelect @bind-Value="@Item.FeeSizeType">
+                                    <option value="@FeeSizeType.Absolute">
+                                        <MyLabel Text="@(FeeSizeType.Absolute.ToString())"/>
+                                    </option>
+                                    <option value="@FeeSizeType.Percentage">
+                                        <MyLabel Text="@(FeeSizeType.Percentage.ToString())"/>
+                                    </option>
+                                </InputSelect>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </EditForm>
+</BaseTwoButtonsDialog>
+
+@code {
+
+    [Parameter]
+    public AssetFees Item { get; set; }
+
+    [Parameter]
+    public bool IsCreate { get; set; }
+
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+
+    [Parameter]
+    public EventCallback<AssetFees> OnCreateCallback { get; set; }
+
+    [Parameter]
+    public EventCallback<AssetFees> OnUpdateCallback { get; set; }
+
+    private void OnClose()
+    {
+        OnCloseCallback.InvokeAsync();
+    }
+
+    private async Task OnSubmit()
+    {
+        if (IsCreate)
+            await OnCreateCallback.InvokeAsync(Item);
+        else
+            await OnUpdateCallback.InvokeAsync(Item);
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (IsCreate)
+            Item = new AssetFees()
+            {
+                BrokerId = "jetwallet",
+                OperationType = OperationType.Withdrawal,
+                FeeType = FeeType.NoFee,
+                FeeSizeType = FeeSizeType.Absolute,
+            };
+    }
+
+}

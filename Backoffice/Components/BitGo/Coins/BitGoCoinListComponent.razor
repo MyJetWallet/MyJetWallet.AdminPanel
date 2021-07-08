@@ -50,7 +50,7 @@
     {
         LoaderConfig.Enable();
         
-        BitGoCoinList = await BitGoCoinManager.GetAll();
+        BitGoCoinList = await BitGoCoinManager.GetAll() ?? new List<BitgoCoinEntity>();
         
         LoaderConfig.Disable();
         await InvokeAsync(StateHasChanged);

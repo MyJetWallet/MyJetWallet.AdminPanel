@@ -2,6 +2,7 @@
 @using Service.Liquidity.Portfolio.Domain.Models
 @using Service.Liquidity.Portfolio.Grpc.Models
 @using Backoffice.Components.Liquidity.AssetPortfolio
+@using Service.Liquidity.Portfolio.Grpc.Models.GetBalances
 
 @inject IAssetPortfolioService _assetPortfolioService
 
@@ -21,24 +22,65 @@
 {
     <ul class="nav">
         <li><button type="button" class="btn-outline-secondary btn" @onclick="Refresh">Refresh</button></li>
+        <li><button type="button" class="btn-outline-warning btn" @onclick="ShowEdit">Change balance</button></li>
     </ul>
-    
     <table class="table" style="width: auto">
         <thead>
         <tr>
-            <th>UpdateDate</th>
-            <th>BrokerId</th>
-            <th>ClientId</th>
-            <th>WalletId</th>
-            <th>Asset</th>
-            <th>Volume</th>
-            <th>USD Projection</th>
+            <th>Wallet Name</th>
+            <th>NET USD</th>
         </tr>
         </thead>
         <tbody>
-        @foreach (var assetBalance in _balanceCollection.OrderByDescending(elem => elem.UpdateDate))
+        
+        @foreach (var wallet in _balanceByWallets)
         {
-            <BalanceTableRowComponent AssetBalance="@assetBalance" OnSaveCallback="@Refresh"/>
+            <tr>
+            <td><b>@wallet.WalletName</b></td>
+            <td>@wallet.NetUsdVolume</td>
+            </tr>
+        }
+        <tr>
+            <td></td>
+            <td><b>@_balanceByWallets.Sum(elem => elem.NetUsdVolume)</b></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <table class="table" style="width: auto">
+        <thead>
+        <tr>
+            <th>Asset</th>
+            @foreach (var wallet in _balanceByWallets.OrderBy(elem => elem.WalletName))
+            {
+                <th>@wallet.WalletName</th>
+            }
+            <th style="background: lightgray">NET</th>
+        </tr>
+        </thead>
+        <tbody>
+        
+        @foreach (var netBalanceByAsset in _balanceByAssets)
+        {
+            <tr>
+                <td><b>@netBalanceByAsset.Asset</b></td>
+                @foreach (var wallet in _balanceByWallets.OrderBy(elem => elem.WalletName))
+                {
+                    <td>
+                        @if (netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetVolume != 0)
+                        {
+                            <span><b>@netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetVolume</b></span>
+                            <br>
+                            <span>USD: @netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetUsdVolume</span>
+                        }
+                    </td>
+                }
+                <td style="background: lightgray">
+                    <span><b>@netBalanceByAsset.NetVolume</b></span>
+                    <br>
+                    <span>USD: @netBalanceByAsset.NetUsdVolume</span>
+                </td>
+            </tr>
         }
         </tbody>
     </table>
@@ -52,10 +94,73 @@
     <LeChangeBalanceHistoryComponent />
 }
 
+@if (IsShowEdit)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption="Change balance"
+            OnClose="@OnCloseEditDialog"
+            YesButtonCaption="Save"
+            NoButtonCaption="Cancel"
+            OnSubmit="@SaveBalance">
+            <table>
+                <tr>
+                    <td>BrokerId</td>
+                    <select @bind="@BrokerId">
+                        @foreach (var name in _balanceByWallets.Select(elem => elem.BrokerId).Distinct())
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
+                    <td>Wallet Name</td>
+                    <select @bind="@WalletName">
+                        @foreach (var name in _balanceByWallets.Select(elem => elem.WalletName))
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
+                    <td>Asset</td>
+                    <select @bind="@Asset">
+                        @foreach (var name in _balanceByAssets.Select(elem => elem.Asset))
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
+                    <td>Balance difference</td>
+                    <td><input type="number" class="form-control" @bind=BalanceDiff /></td>
+                </tr>
+                <tr>
+                    <td>Comment</td>
+                    <td><input type="text" class="form-control" @bind=Comment /></td>
+                </tr>
+                <tr>
+                    <td>User</td>
+                    <td><input type="text" class="form-control" @bind=User /></td>
+                </tr>
+            </table>
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+
 @code {
     private AssetPortfolioPages ActivePage { get; set; }
-
-    private List<AssetBalanceGrpc> _balanceCollection = new();
+    private List<NetBalanceByWallet> _balanceByWallets = new();
+    private List<NetBalanceByAsset> _balanceByAssets = new();
+    
+    private bool IsShowEdit { get; set; }
+    private double BalanceDiff { get; set; }
+    private string Comment { get; set; }
+    private string User { get; set; }
+    private string BrokerId { get; set; }
+    private string WalletName { get; set; }
+    private string Asset { get; set; }
     
     protected override async Task OnInitializedAsync()
     {
@@ -65,14 +170,8 @@
     private async Task Refresh()
     {
         var response = await _assetPortfolioService.GetBalancesAsync();
-        _balanceCollection = response.Balances ?? new List<AssetBalanceGrpc>();
-        StateHasChanged();
-    }
-    
-    private async Task GetAssetPortfolioBalance()
-    {
-        var response = await _assetPortfolioService.GetBalancesAsync();
-        _balanceCollection.AddRange(response.Balances);
+        _balanceByWallets = response.BalanceByWallet ?? new List<NetBalanceByWallet>();
+        _balanceByAssets = response.BalanceByAsset ?? new List<NetBalanceByAsset>();
         StateHasChanged();
     }
 
@@ -103,9 +202,67 @@
     
     private string CheckActive(AssetPortfolioPages target)
     {
-        if (ActivePage == target)
-            return "active";
+        return ActivePage == target ? "active" : "";
+    }
+    
+    private void ShowEdit()
+    {
+        IsShowEdit = true;
+        Comment = string.Empty;
+        User = string.Empty;
+        WalletName = string.Empty;
+        Asset = string.Empty;
+        BalanceDiff = 0;
+        
+        StateHasChanged();
+    }
+    
+    private void OnCloseEditDialog()
+    {
+        IsShowEdit = false;
+        Comment = string.Empty;
+        User = string.Empty;
+        WalletName = string.Empty;
+        Asset = string.Empty;
+        BalanceDiff = 0;
+        
+        StateHasChanged();
+    }
+    
+    private async void SaveBalance()
+    {
+        if (string.IsNullOrEmpty(BrokerId) && 
+            _balanceByWallets.Select(elem => elem.BrokerId).Distinct().Count() == 1)
+        {
+            BrokerId = _balanceByWallets.First().BrokerId;
+        }
+        if (string.IsNullOrEmpty(WalletName) && _balanceByWallets.Count() == 1)
+        {
+            WalletName = _balanceByWallets.First().WalletName;
+        }
+        if (string.IsNullOrEmpty(Asset) && _balanceByAssets.Count() == 1)
+        {
+            Asset = _balanceByAssets.First().Asset;
+        }
 
-        return "";
+        if (BalanceDiff != 0 &&
+            !string.IsNullOrWhiteSpace(Asset) &&
+            !string.IsNullOrWhiteSpace(Comment) &&
+            !string.IsNullOrWhiteSpace(User) &&
+            !string.IsNullOrWhiteSpace(BrokerId) &&
+            !string.IsNullOrWhiteSpace(WalletName))
+        {
+            var response = await _assetPortfolioService.UpdateBalance(new UpdateBalanceRequest()
+            {
+                BrokerId = BrokerId,
+                WalletName = WalletName,
+                Asset = Asset,
+                BalanceDifference = BalanceDiff,
+                Comment = Comment,
+                User = User
+            });
+            await Refresh();
+        }
+        OnCloseEditDialog();
     }
 }

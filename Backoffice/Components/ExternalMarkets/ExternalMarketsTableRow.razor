@@ -1,0 +1,132 @@
+﻿@using MyJetWallet.Sdk.ExternalMarketsSettings.Models
+@using Backoffice.Abstractions.Models
+@using Backoffice.Services.ExternalMarkets
+
+@inject IToaster ToastService;
+
+
+<tr>
+    <td>@Item.Market</td>
+    <td>@Item.PriceAccuracy</td>
+    <td>@Item.VolumeAccuracy</td>
+    <td>@Item.MinVolume</td>
+    <td>@Item.Levels</td>
+
+    <td>
+        <ul class="nav">
+            <li><button type="button" class="btn-outline-info btn" @onclick="ShowDetails" >Details</button></li>
+            <li><button type="button" class="btn-outline-warning btn" @onclick="ShowEdit" >Edit</button></li>
+            <li><button type="button" class="btn-outline-danger btn" @onclick="ShowDelete" >Delete</button></li>
+        </ul>
+    </td>
+</tr>
+
+@if (IsShowDetails)
+{
+    <ExternalMarketsDetailsDialog Item="@Item" OnCloseCallback="OnCloseAssetDialog" />
+}
+
+@if (IsShowEdit)
+{
+    <div>
+        <ExternalMarketsDetailsDialogEdit Item="@Item" IsCreate="false" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="OnUpdateSettings" />
+    </div>
+}
+
+@if (IsShowDelete)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption=@($"Delete External Market Settings {Item.Market}")
+            OnClose="OnCloseDeleteDialog"
+            YesButtonCaption="Delete"
+            NoButtonCaption="Cancel"
+            OnSubmit="DeleteItem">
+            
+            <h3 class="alert-warning">Are you sure you want to delete the External Market Settings <b>@Item.Market</b></h3>
+            
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+
+
+@code {
+    [Parameter]
+    public ExternalMarketsSettingsService ExternalMarketsSettingsService { get; set; }
+    
+    [Parameter]
+    public ExternalMarketSettings Item { get; set; }
+
+    [Parameter]
+    public ILoaderConfiguration LoaderConfig { get; set; }
+    
+    [Parameter]
+    public EventCallback<ExternalMarketSettings> OnDeleteCallback { get; set; }
+    
+    private bool IsShowDetails { get; set; }
+    
+    private bool IsShowEdit { get; set; }
+    
+    private bool IsShowDelete { get; set; }
+
+    private void OnCloseAssetDialog()
+    {
+        IsShowDetails = false;
+        StateHasChanged();
+    }
+
+    private void ShowDetails()
+    {
+        IsShowDetails = true;
+        StateHasChanged();
+    }
+
+    private void ShowEdit()
+    {
+        IsShowEdit = true;
+        StateHasChanged();
+    }
+
+    private void OnCloseEditDialog()
+    {
+        IsShowEdit = false;
+        StateHasChanged();
+    }
+    
+    private async void OnUpdateSettings(ExternalMarketSettings item)
+    {
+        try
+        {
+            await ExternalMarketsSettingsService.SettingsManager.UpdateExternalMarketSettings(item);
+
+            IsShowEdit = false;
+
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Edit External Market Settings");
+        }
+    }
+
+
+    private void OnCloseDeleteDialog()
+    {
+        IsShowDelete = false;
+        StateHasChanged();
+    }
+
+
+    private async Task DeleteItem()
+    {
+        IsShowDelete = false;
+        await OnDeleteCallback.InvokeAsync(Item);
+    }
+
+    private void ShowDelete()
+    {
+        IsShowDelete = true;
+        StateHasChanged();
+    }
+}

@@ -1,8 +1,8 @@
 ﻿@using Backoffice.Abstractions.Models
-@using Backoffice.Services.ExternalMarkets.B2C2
-@using Service.External.B2C2.Domain.Models.Settings
+@using Backoffice.Services.ExternalMarkets
+@using MyJetWallet.Sdk.ExternalMarketsSettings.Grpc.Models
+@using MyJetWallet.Sdk.ExternalMarketsSettings.Models
 
-@inject IExternalMarketsB2C2Manager ExternalMarketsB2C2Manager
 @inject IToaster ToastService
 
 <Loader LoaderConfig="@LoaderConfig"/>
@@ -26,7 +26,7 @@
     <tbody>
         @foreach(var externalMarketSettings in ExternalMarketSettingsList)
         {
-            <ExternalMarketsB2C2TableRow Item="@externalMarketSettings" LoaderConfig="@LoaderConfig" OnDeleteCallback="DeleteExternalMarketSettings" />
+            <ExternalMarketsTableRow ExternalMarketsSettingsService="@ExternalMarketsSettingsService" Item="@externalMarketSettings" LoaderConfig="@LoaderConfig" OnDeleteCallback="DeleteExternalMarketSettings" />
         }
     
     </tbody>
@@ -35,12 +35,14 @@
 @if (IsShowAdding)
 {
     <div>
-        <ExternalMarketsB2C2DetailsDialogEdit IsCreate="true" OnCloseCallback="OnCloseAddingDialog" OnCreateCallback="OnCreateExternalMarketSettings" />
+        <ExternalMarketsDetailsDialogEdit IsCreate="true" OnCloseCallback="OnCloseAddingDialog" OnCreateCallback="OnCreateExternalMarketSettings" />
     </div>
 }
 
-
 @code {
+    [Parameter]
+    public ExternalMarketsSettingsService ExternalMarketsSettingsService { get; set; }
+    
     private string Message { get; set; } = "-- none --";
 
     private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
@@ -53,7 +55,7 @@
     {
         LoaderConfig.Enable();
         
-        ExternalMarketSettingsList = await ExternalMarketsB2C2Manager.GetAll();
+        ExternalMarketSettingsList = (await ExternalMarketsSettingsService.SettingsManager.GetExternalMarketSettingsList())?.List ?? new List<ExternalMarketSettings>();
         
         LoaderConfig.Disable();
         await InvokeAsync(StateHasChanged);
@@ -82,7 +84,7 @@
     {
         try
         {
-            await ExternalMarketsB2C2Manager.CreateExternalMarketSettings(item);
+            await ExternalMarketsSettingsService.SettingsManager.AddExternalMarketSettings(item);
             
             ToastService.Info($"External Market Settings {item.Market} is created", "Create External Market Settings");
             
@@ -100,7 +102,7 @@
     {
         try
         {
-            await ExternalMarketsB2C2Manager.DeleteExternalMarketSettings(item);
+            await ExternalMarketsSettingsService.SettingsManager.RemoveExternalMarketSettings(new RemoveMarketRequest { Symbol = item.Market });
             
             ToastService.Info($"External Market Settings {item.Market} is deleted", "Delete External Market Settings");
             

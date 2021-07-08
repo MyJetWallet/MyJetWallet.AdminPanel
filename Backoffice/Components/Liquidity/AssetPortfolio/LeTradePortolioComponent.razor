@@ -1,8 +1,10 @@
 @using Service.Liquidity.Portfolio.Grpc
 @using Service.Liquidity.Portfolio.Domain.Models
 @using Service.Liquidity.Portfolio.Grpc.Models
+@using Backoffice.Services.SpotInstruments
 
 @inject IAssetPortfolioService _assetPortfolioService
+@inject ISpotInstrumentManager _spotInstrumentManager;
 
 <ul class="nav">
     @if (_trades?.Any() == true)
@@ -12,6 +14,17 @@
     <li><button type="button" class="btn-outline-secondary btn" @onclick="CreateNew">Create new</button></li>
     <li><button type="button" class="btn-outline-secondary btn" @onclick="Refresh">Refresh</button></li>
     <li><span style="margin-left: 10px; vertical-align: center">Count in page: </span><input type="number" style="width: 40px" @bind="CountInPage"/></li>
+    
+    <li><span style="margin-left: 10px; vertical-align: center">Asset Filter Active </span><input type="checkbox" style="width: 40px" @bind="AssetFilerActive"/></li>
+    @if (AssetFilerActive)
+    {
+        <select @bind="@FilterAsset">
+            @foreach (var name in AssetCollection)
+            {
+                <option value="@name">@name</option>
+            }
+        </select>
+    }
 </ul>
 
 <table class="table" style="width: auto">
@@ -27,10 +40,11 @@
         <th>Base Volume In Usd</th>
         <th>Quote Volume In Usd</th>
         <th>Broker Id</th>
-        <th>Client Id</th>
-        <th>Wallet Id</th>
+        <th>Wallet Name</th>
         <th>Trade Id</th>
-        <th>Topic Source</th>                
+        <th>Source</th>
+        <th>Comment</th>
+        <th>User</th>
     </tr>
     </thead>
     <tbody>
@@ -48,10 +62,11 @@
             <td>@trade.BaseVolumeInUsd</td>
             <td>@trade.QuoteVolumeInUsd</td>
             <td>@trade.BrokerId</td>
-            <td>@trade.ClientId</td>
-            <td>@trade.WalletId</td>
+            <td>@trade.WalletName</td>
             <td>@trade.TradeId</td>
-            <td>@trade.TopicSource</td>
+            <td>@trade.Source</td>
+            <td>@trade.Comment</td>
+            <td>@trade.User</td>
         </tr>
     }
     </tbody>
@@ -69,15 +84,29 @@
             <table>
                 <tr>
                     <td>Broker Id</td>
-                    <td><input type="text" class="form-control" @bind=NewTrade.BrokerId/></td>
+                    <select @bind="@NewTrade.BrokerId">
+                        @foreach (var name in _trades.Select(elem => elem.BrokerId).Distinct())
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
                 </tr>
                 <tr>
-                    <td>Client Id</td>
-                    <td><input type="text" class="form-control" @bind=NewTrade.ClientId/></td>
+                    <td>Wallet Name</td>
+                    <select @bind="@NewTrade.WalletName">
+                        @foreach (var name in _trades.Select(elem => elem.WalletName).Distinct())
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
                 </tr>
                 <tr>
-                    <td>Wallet Id</td>
-                    <td><input type="text" class="form-control" @bind=NewTrade.WalletId/></td>
+                    <td>Comment</td>
+                    <td><input type="text" class="form-control" @bind=NewTrade.Comment/></td>
+                </tr>
+                <tr>
+                    <td>User</td>
+                    <td><input type="text" class="form-control" @bind=NewTrade.User/></td>
                 </tr>
                 <tr>
                     <td>Instrument Symbol</td>
@@ -105,6 +134,7 @@
 }
 
 @code {
+    
     private List<Trade> _trades = new();
     private int CountInPage { get; set; } = 20;
     private long _lastSeen = 0;
@@ -113,6 +143,10 @@
     private CreateTradeManualRequest NewTrade { get; set; }
     private bool ShowError { get; set; }
     private string ErrorText { get; set; }
+    
+    private bool AssetFilerActive { get; set; }
+    private List<string> AssetCollection { get; set; }
+    private string FilterAsset { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -121,10 +155,34 @@
 
     private async void OnSaveNewTrade()
     {
+        if (string.IsNullOrEmpty(NewTrade.BrokerId) && 
+            _trades.Select(elem => elem.BrokerId).Distinct().Count() == 1)
+        {
+            NewTrade.BrokerId = _trades.FirstOrDefault().BrokerId;
+        }
+        if (string.IsNullOrEmpty(NewTrade.WalletName) && 
+            _trades.Select(elem => elem.WalletName).Distinct().Count() == 1)
+        {
+            NewTrade.WalletName = _trades.FirstOrDefault().WalletName;
+        }
+
+        var instruments = await _spotInstrumentManager.GetAll();
+
+        var instrumentExist = instruments.Any(elem => elem.Instrument.Symbol == NewTrade.Symbol);
+
+        if (!instrumentExist)
+        {
+            ShowError = true;
+            ErrorText = "Instrument not found";
+            StateHasChanged();
+            return;
+        }
+        
         var response = await _assetPortfolioService.CreateManualTradeAsync(NewTrade);
         if (response.Success)
         {
             _trades.Add(response.Trade);
+            await Refresh();
             OnCloseCreateDialog();
         } else 
         {
@@ -142,26 +200,59 @@
         StateHasChanged();
     }
 
-    private async void CreateNew()
+    private void CreateNew()
     {
-        IsCreateDialogOpen = true;
         NewTrade = new CreateTradeManualRequest();
+        IsCreateDialogOpen = true;
     }
 
     private async Task Refresh()
     {
-        var response = await _assetPortfolioService.GetTradesAsync(new GetTradesRequest() {BatchSize = CountInPage});
+        var request = new GetTradesRequest() {BatchSize = CountInPage};
+
+        if (AssetFilerActive && !string.IsNullOrEmpty(FilterAsset))
+        {
+            request.AssetFilter = FilterAsset;
+        }
+        
+        var response = await _assetPortfolioService.GetTradesAsync(request);
         _trades = response.Trades ?? new List<Trade>();
         _lastSeen = response.IdForNextQuery;
+        await SetAssetCollection();
         StateHasChanged();
+    }
+
+    private async Task SetAssetCollection()
+    {
+        var instruments = await _spotInstrumentManager.GetAll();
+        var ourSymbols = _trades.Select(elem => elem.Symbol);
+
+        var ourInstruments = instruments.Where(inst => ourSymbols.Contains(inst.Instrument.Symbol));
+        
+        AssetCollection = new List<string>();
+        
+        foreach (var instrument in ourInstruments)
+        {
+            AssetCollection.Add(instrument.Instrument.BaseAsset);
+            AssetCollection.Add(instrument.Instrument.QuoteAsset);
+        }
+
+        AssetCollection = AssetCollection.Distinct().ToList();
     }
 
     private async Task NextPage()
     {
         if (_trades?.Any() != true)
             return;
+
+        var request = new GetTradesRequest() {BatchSize = CountInPage, LastId = _lastSeen};
         
-        var response = await _assetPortfolioService.GetTradesAsync(new GetTradesRequest() {BatchSize = CountInPage, LastId = _lastSeen});
+        if (AssetFilerActive && !string.IsNullOrEmpty(FilterAsset))
+        {
+            request.AssetFilter = FilterAsset;
+        }
+        
+        var response = await _assetPortfolioService.GetTradesAsync(request);
         
         if (!response.Success || response.Trades == null || response.Trades.Count == 0)
             return;

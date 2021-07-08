@@ -1,46 +1,41 @@
-﻿@using Backoffice.Components.ExternalMarkets.B2C2
+﻿@page "/ExternalMarkets"
 
-@page "/ExternalMarkets"
+@using Backoffice.Components.ExternalMarkets
+@using Backoffice.Services.ExternalMarkets
+
+@inject IExternalMarketsSettingsManager _manager
+
+@{
+    var externalMarketsSettingsServices = _manager.GetExternalMarketsSettingsServices();
+}
 
 <ul class="nav nav-tabs nav-pills">
-    <li class="nav-item" style="margin: 10px">
-        <button class="nav-link @CheckActive(Menus.B2C2)" aria-current="page" @onclick="SetB2C2">B2C2</button>
-    </li>
+    @foreach (var externalMarketsSettingsService in externalMarketsSettingsServices)
+    {
+        <li class="nav-item" style="margin: 10px">
+            <button class="nav-link" aria-current="page" @onclick="@(() => SetService(externalMarketsSettingsService))" >@externalMarketsSettingsService.Name</button>
+        </li>
+    }
 </ul>
 
-<div style="margin: 10px">
-    @if (ActivePage == Menus.B2C2)
+@foreach (var externalMarketsSettingsService in externalMarketsSettingsServices)
+{
+    if (ActiveService == externalMarketsSettingsService)
     {
-        <ExternalMarketsB2C2ListComponent/>
+        <ExternalMarketsListComponent ExternalMarketsSettingsService="@externalMarketsSettingsService"/>
     }
-</div>
+}
 
 @code {
-    private Menus ActivePage { get; set; } = Menus.B2C2;
 
-    private string CheckActive(Menus target)
+    private ExternalMarketsSettingsService ActiveService { get; set; }
+
+    private void SetService(ExternalMarketsSettingsService service)
     {
-        if (ActivePage == target)
-            return "active";
-
-        return "";
-    }
-
-    private void SetActive(Menus page)
-    {
-        ActivePage = page;
+        ActiveService = null;
         StateHasChanged();
-    }
-
-    public enum Menus
-    {
-        None,
-        B2C2
-    }
-
-    private void SetB2C2()
-    {
-        ActivePage = Menus.B2C2;
+        
+        ActiveService = service;
         StateHasChanged();
     }
 }

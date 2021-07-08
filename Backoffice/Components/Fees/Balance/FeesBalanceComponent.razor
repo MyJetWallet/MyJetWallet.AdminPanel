@@ -1,0 +1,74 @@
+﻿@using Service.Balances.Grpc
+@using Service.Balances.Grpc.Models
+@using Microsoft.Extensions.Logging
+@using Service.Balances.Domain.Models
+@using Backoffice.Abstractions.Models
+@inject IWalletBalanceService _balanceService
+@inject IToaster Toaster
+@inject ILogger<FeesBalanceComponent> _logger
+
+<Loader LoaderConfig="@LoaderConfig"/>
+
+<h3>Balances for fees wallet @Program.Settings.FeesWalletId</h3>
+
+<ul class="nav">
+    <li><button @onclick="Refresh" type="button" class="btn btn-outline-success">Refresh</button></li>
+</ul>
+<table class="table" style="font-size: 12px; width: auto">
+    <thead>
+    <tr>
+        <th>Asset</th>
+        <th>Balance</th>
+        <th>Reserve</th>
+        <th>LastUpdate</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var balance in Balances.OrderBy(e => e.AssetId))
+    {
+        <tr>
+            <td>@balance.AssetId</td>
+            <td>@balance.Balance</td>
+            <td>@balance.Reserve</td>
+            <td>@balance.LastUpdate.ToString("yyyy-MM-dd HH:mm:ss")</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<FeesBalanceHistoryComponent WalletId="@Program.Settings.FeesWalletId"/>
+
+@code {
+
+    private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+    
+    private List<WalletBalance> Balances { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Refresh();
+    }
+
+    private async Task Refresh()
+    {
+        LoaderConfig.Enable();
+        StateHasChanged();
+        if (!string.IsNullOrEmpty(Program.Settings.FeesWalletId))
+        {
+            var balancesDto = await _balanceService.GetWalletBalancesAsync(new GetWalletBalancesRequest()
+            {
+                WalletId = Program.Settings.FeesWalletId
+            });
+
+            Balances = balancesDto.Balances ?? new List<WalletBalance>();
+        }
+
+        LoaderConfig.Disable();
+        StateHasChanged();
+    }
+
+    private void OnClose()
+    {
+        StateHasChanged();
+    }
+}

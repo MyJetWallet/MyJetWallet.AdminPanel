@@ -1,17 +1,18 @@
-﻿@using Backoffice.Services.ExternalMarkets.B2C2
-@using Service.External.B2C2.Domain.Models.Settings
-@using Backoffice.Abstractions.Models
+﻿@using Backoffice.Abstractions.Models
+@using Backoffice.Services.Fees.Assets
+@using Service.Fees.Domain.Models
 
-@inject IExternalMarketsB2C2Manager ExternalMarketsB2C2Manager
+@inject IAssetFeesManager AssetFeesManager;
 @inject IToaster ToastService;
 
 
 <tr>
-    <td>@Item.Market</td>
-    <td>@Item.PriceAccuracy</td>
-    <td>@Item.VolumeAccuracy</td>
-    <td>@Item.MinVolume</td>
-    <td>@Item.Levels</td>
+    <td>@Item.AssetId</td>
+    <td>@Item.OperationType</td>
+    <td>@Item.WalletId</td>
+    <td>@Item.FeeType</td>
+    <td>@Item.FeeSize</td>
+    <td>@Item.FeeSizeType</td>
 
     <td>
         <ul class="nav">
@@ -24,13 +25,13 @@
 
 @if (IsShowDetails)
 {
-    <ExternalMarketsB2C2DetailsDialog Item="@Item" OnCloseCallback="OnCloseAssetDialog" />
+    <AssetFeesDetailsDialog Item="@Item" OnCloseCallback="OnCloseAssetDialog" />
 }
 
 @if (IsShowEdit)
 {
     <div>
-        <ExternalMarketsB2C2DetailsDialogEdit Item="@Item" IsCreate="false" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="OnUpdateAsset" />
+        <AssetFeesDetailsDialogEdit Item="@Item" IsCreate="false" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="OnUpdateAsset" />
     </div>
 }
 
@@ -38,13 +39,13 @@
 {
     <div>
         <BaseTwoButtonsDialog
-            Caption=@($"Delete External Market Settings {Item.Market}")
+            Caption=@($"Delete asset fees {Item.AssetId} [{Item.BrokerId}]")
             OnClose="OnCloseDeleteDialog"
             YesButtonCaption="Delete"
             NoButtonCaption="Cancel"
             OnSubmit="DeleteItem">
             
-            <h3 class="alert-warning">Are you sure you want to delete the External Market Settings <b>@Item.Market</b></h3>
+            <h3 class="alert-warning">Are you sure you want to delete the asset fees <b>@Item.AssetId [@Item.BrokerId]?</b></h3>
             
         </BaseTwoButtonsDialog>
     </div>
@@ -55,23 +56,19 @@
 @code {
     
     [Parameter]
-    public ExternalMarketSettings Item { get; set; }
+    public AssetFees Item { get; set; }
 
     [Parameter]
     public ILoaderConfiguration LoaderConfig { get; set; }
     
     [Parameter]
-    public EventCallback<ExternalMarketSettings> OnDeleteCallback { get; set; }
+    public EventCallback<AssetFees> OnDeleteCallback { get; set; }
     
     private bool IsShowDetails { get; set; }
     
     private bool IsShowEdit { get; set; }
     
     private bool IsShowDelete { get; set; }
-    
-    private bool IsShowBrand { get; set; }
-    private string ChangeBrandId { get; set; }
-    private bool IsBrandAssigned { get; set; }
 
     private void OnCloseAssetDialog()
     {
@@ -97,11 +94,11 @@
         StateHasChanged();
     }
     
-    private async void OnUpdateAsset(ExternalMarketSettings item)
+    private async void OnUpdateAsset(AssetFees asset)
     {
         try
         {
-            await ExternalMarketsB2C2Manager.UpdateExternalMarketSettings(item);
+            await AssetFeesManager.UpdateAssetFeesSettings(asset);
 
             IsShowEdit = false;
 
@@ -109,7 +106,7 @@
         }
         catch (Exception ex)
         {
-            ToastService.Error(ex.Message, "Edit External Market Settings");
+            ToastService.Error(ex.Message, "Edit asset fee");
         }
     }
 

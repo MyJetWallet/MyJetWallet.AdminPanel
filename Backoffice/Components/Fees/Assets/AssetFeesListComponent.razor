@@ -1,8 +1,8 @@
-﻿@using MyJetWallet.BitGo.Settings.NoSql
+﻿@using Backoffice.Services.Fees.Assets
+@using Service.Fees.Domain.Models
 @using Backoffice.Abstractions.Models
-@using Backoffice.Services.BitGo.Assets
 
-@inject IBitGoAssetManager BitGoAssetManager;
+@inject IAssetFeesManager AssetFeesManager;
 @inject IToaster ToastService
 
 <Loader LoaderConfig="@LoaderConfig"/>
@@ -15,17 +15,19 @@
 <table class="table">
     <thead>
         <tr>
-            <th>Symbol</th>
-            <th>BitGo wallet</th>
-            <th>Enabled BitGo wallet</th>
-            <th>BitGo coin</th>
+            <th>Asset</th>
+            <th>Operation type</th>
+            <th>Fee wallet</th>
+            <th>Fee Type</th>
+            <th>Fee Size</th>
+            <th>Fee Size Type</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-        @foreach(var bitGoAsset in BitGoAssetList)
+        @foreach(var assetFees in AssetFeesList)
         {
-            <BitGoAssetTableRow Item="@bitGoAsset" LoaderConfig="@LoaderConfig" OnDeleteCallback="DeleteAsset" />
+            <AssetFeesTableRow Item="@assetFees" LoaderConfig="@LoaderConfig" OnDeleteCallback="DeleteAssetFee" />
         }
     
     </tbody>
@@ -34,7 +36,7 @@
 @if (IsShowAdding)
 {
     <div>
-        <BitGoAssetDetailsDialogEdit IsCreate="true" OnCloseCallback="OnCloseAddingDialog" OnCreateCallback="OnCreateAsset" />
+        <AssetFeesDetailsDialogEdit IsCreate="true" OnCloseCallback="OnCloseAddingDialog" OnCreateCallback="OnCreateAsset" />
     </div>
 }
 
@@ -46,13 +48,13 @@
     
     private bool IsShowAdding { get; set; }
 
-    private List<BitgoAssetMapEntity> BitGoAssetList { get; set; } = new();
+    private List<AssetFees> AssetFeesList { get; set; } = new();
 
     private async void OnRefresh()
     {
         LoaderConfig.Enable();
         
-        BitGoAssetList = await BitGoAssetManager.GetAll() ?? new List<BitgoAssetMapEntity>();
+        AssetFeesList = await AssetFeesManager.GetAll() ?? new List<AssetFees>();
         
         LoaderConfig.Disable();
         await InvokeAsync(StateHasChanged);
@@ -77,13 +79,13 @@
         StateHasChanged();
     }
     
-    private async void OnCreateAsset(BitgoAssetMapEntity item)
+    private async void OnCreateAsset(AssetFees item)
     {
         try
         {
-            await BitGoAssetManager.CreateBitGoAsset(item);
+            await AssetFeesManager.CreateAssetFeesSettings(item);
             
-            ToastService.Info($"BitGo Asset {item.AssetSymbol} is created", "Create BitGo asset");
+            ToastService.Info($"Asset fees {item.AssetId} is created", "Create asset fees");
             
             IsShowAdding = false;
             
@@ -91,23 +93,23 @@
         }
         catch (Exception ex)
         {
-            ToastService.Error(ex.Message, "BitGo Asset creation");
+            ToastService.Error(ex.Message, "Asset fees creation");
         }
     }
 
-    private async void DeleteAsset(BitgoAssetMapEntity item)
+    private async void DeleteAssetFee(AssetFees item)
     {
         try
         {
-            await BitGoAssetManager.DeleteAsset(item);
+            await AssetFeesManager.DeleteAssetFeesSettings(item);
             
-            ToastService.Info($"BitGO Asset {item.AssetSymbol} is deleted", "Delete BitGo asset");
+            ToastService.Info($"Asset fees {item.AssetId} is deleted", "Delete asset fees");
             
             OnRefresh();    
         }
         catch (Exception ex)
         {
-            ToastService.Error(ex.Message, "Asset deletion");
+            ToastService.Error(ex.Message, "Asset fees deletion");
         }
     }
 }

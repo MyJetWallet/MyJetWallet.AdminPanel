@@ -62,8 +62,8 @@ namespace Backoffice
         [YamlProperty("AdminPanel.SimulationsBinance")]
         public Dictionary<string, string> SimulationsBinance { get; set; }
         
-        [YamlProperty("AdminPanel.ExternalMarketsSettingsB2C2")]
-        public string ExternalMarketsSettingsB2C2 { get; set; }
+        [YamlProperty("AdminPanel.ExternalMarketsSettings")]
+        public Dictionary<string, string> ExternalMarketsSettings { get; set; }
 
         [YamlProperty("AdminPanel.LiquidityConverterGrpcServiceUrl")]
         public string LiquidityConverterGrpcServiceUrl { get; set; }
@@ -85,7 +85,13 @@ namespace Backoffice
 
         [YamlProperty("AdminPanel.LiquidityPortfolioServiceUrl")]
         public string LiquidityPortfolioServiceUrl { get; set; }
-        
+
+        [YamlProperty("AdminPanel.FeesServiceUrl")]
+        public string FeesServiceUrl { get; set; }
+
+        [YamlProperty("AdminPanel.FeesWalletId")]
+        public string FeesWalletId { get; set; }
+              
         [YamlProperty("AdminPanel.GoogleClientId")]
         public string GoogleClientId { get; set; }
         

@@ -7,7 +7,8 @@ using Backoffice.Services.Assets;
 using Backoffice.Services.Backoffice;
 using Backoffice.Services.BitGo.Assets;
 using Backoffice.Services.BitGo.Coins;
-using Backoffice.Services.ExternalMarkets.B2C2;
+using Backoffice.Services.Fees.Assets;
+using Backoffice.Services.Fees.Instruments;
 using Backoffice.Services.SpotInstruments;
 using Backoffice.TableStorage;
 using MyCRM.AccountTransactions.Grpc;
@@ -22,12 +23,9 @@ using MyCrm.Deposits.Grpc;
 using MyCrm.Kyc.Grpc;
 using MyCrm.MyCrmTradersUtmParametersGrpcContracts;
 using MyCrm.PaymentReport.GrpcContracts;
-using MyCrm.PersonalData.Grpc;
 using MyCrm.TraderMarketingSalesData.Grpc.Backoffice;
 using MyCrm.TraderOnlineData.Grpc;
 using MyCrm.TradersDocuments.Grpc;
-using MyJetWallet.BitGo.Settings.Ioc;
-using Service.SmsSender.Grpc;
 using SimpleTrading.Deposit.Grpc;
 
 namespace Backoffice.Modules
@@ -57,8 +55,13 @@ namespace Backoffice.Modules
                 .SingleInstance();
             
             builder
-                .RegisterType<ExternalMarketsB2C2Manager>()
-                .As<IExternalMarketsB2C2Manager>()
+                .RegisterType<AssetFeesManager>()
+                .As<IAssetFeesManager>()
+                .SingleInstance();
+            
+            builder
+                .RegisterType<InstrumentFeesManager>()
+                .As<IInstrumentFeesManager>()
                 .SingleInstance();
 
             RegisterGrpcService(builder);

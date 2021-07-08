@@ -1,6 +1,6 @@
 using Autofac;
+using Backoffice.Services.ExternalMarkets;
 using Backoffice.Services.Simulations;
-using Highsoft.Web.Mvc.Charts;
 using MyCrm.PersonalData.Grpc;
 using MyJetWallet.BitGo.Settings.Ioc;
 using MyJetWallet.Sdk.Grpc;
@@ -14,7 +14,7 @@ using Service.BalanceHistory.Client;
 using Service.Balances.Client;
 using Service.ChangeBalanceGateway.Client;
 using Service.ClientWallets.Client;
-using Service.External.B2C2.Client;
+using Service.Fees.Client.Grpc;
 using Service.Liquidity.Converter.Client;
 using Service.Liquidity.Engine.Client;
 using Service.Liquidity.Portfolio.Client;
@@ -109,7 +109,10 @@ namespace Backoffice.Modules
             
             builder.RegisterPortfolioClient(Program.Settings.LiquidityPortfolioServiceUrl);
             
-            builder.RegisterExternalB2C2Client(Program.Settings.ExternalMarketsSettingsB2C2);
+            var externalSettingsManager = new ExternalMarketsSettingsManager(Program.Settings.ExternalMarketsSettings);
+            builder.RegisterInstance(externalSettingsManager).As<IExternalMarketsSettingsManager>().SingleInstance();
+            
+            builder.RegisterFeesSettingsClients(Program.Settings.FeesServiceUrl);
         }
         
         private void RegisterMyNoSqlTcpClient(ContainerBuilder builder)
