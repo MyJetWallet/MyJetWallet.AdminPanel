@@ -67,7 +67,7 @@
                 @foreach (var wallet in _balanceByWallets.OrderBy(elem => elem.WalletName))
                 {
                     <td>
-                        @if (true)
+                        @if (netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetVolume != 0)
                         {
                             <span><b>@netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetVolume</b></span>
                             <br>
