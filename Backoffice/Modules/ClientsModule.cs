@@ -108,6 +108,7 @@ namespace Backoffice.Modules
                 .SingleInstance();
             
             builder.RegisterPortfolioClient(Program.Settings.LiquidityPortfolioServiceUrl);
+            builder.RegisterAssetPortfolioSettingsClient(Program.Settings.LiquidityPortfolioServiceUrl);
             
             var externalSettingsManager = new ExternalMarketsSettingsManager(Program.Settings.ExternalMarketsSettings);
             builder.RegisterInstance(externalSettingsManager).As<IExternalMarketsSettingsManager>().SingleInstance();
