@@ -107,7 +107,7 @@
                 <tr>
                     <td>BrokerId</td>
                     <select @bind="@BrokerId">
-                        @foreach (var name in _balanceByWallets.Select(elem => elem.BrokerId))
+                        @foreach (var name in _balanceByWallets.Select(elem => elem.BrokerId).Distinct())
                         {
                             <option value="@name">@name</option>
                         }
