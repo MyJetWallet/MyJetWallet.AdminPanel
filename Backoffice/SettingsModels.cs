@@ -91,5 +91,11 @@ namespace Backoffice
 
         [YamlProperty("AdminPanel.FeesWalletId")]
         public string FeesWalletId { get; set; }
+              
+        [YamlProperty("AdminPanel.GoogleClientId")]
+        public string GoogleClientId { get; set; }
+        
+        [YamlProperty("AdminPanel.FacebookClientId")]
+        public string FacebookClientId { get; set; }
     }
 }
