@@ -2,6 +2,7 @@
 @using Service.Liquidity.Portfolio.Domain.Models
 @using Service.Liquidity.Portfolio.Grpc.Models
 @using Backoffice.Components.Liquidity.AssetPortfolio
+@using Service.Liquidity.Portfolio.Grpc.Models.GetBalances
 
 @inject IAssetPortfolioService _assetPortfolioService
 
@@ -32,19 +33,16 @@
         </thead>
         <tbody>
         
-        @foreach (var walletName in _balanceCollection
-            .Select(elem => elem.WalletName)
-            .OrderBy(elem => elem)
-            .Distinct())
+        @foreach (var wallet in _balanceByWallets)
         {
             <tr>
-            <td><b>@walletName</b></td>
-            <td>@(Math.Round(_balanceCollection.Where(elem => elem.WalletName == walletName).Sum(elem => elem.UsdProjection), 2))</td>
+            <td><b>@wallet.WalletName</b></td>
+            <td>@wallet.NetUsdVolume</td>
             </tr>
         }
         <tr>
             <td></td>
-            <td><b>@(Math.Round(_balanceCollection.Sum(elem => elem.UsdProjection), 2))</b></td>
+            <td><b>@_balanceByWallets.Sum(elem => elem.NetUsdVolume)</b></td>
         </tr>
         </tbody>
     </table>
@@ -53,43 +51,34 @@
         <thead>
         <tr>
             <th>Asset</th>
-            @foreach (var walletName in _balanceCollection
-                .Select(elem => elem.WalletName)
-                .OrderBy(elem => elem)
-                .Distinct())
+            @foreach (var wallet in _balanceByWallets.OrderBy(elem => elem.WalletName))
             {
-                <th>@walletName</th>
+                <th>@wallet.WalletName</th>
             }
             <th style="background: lightgray">NET</th>
         </tr>
         </thead>
         <tbody>
         
-        @foreach (var asset in _balanceCollection.Select(elem => elem.Asset)
-            .OrderBy(elem => elem)
-            .Distinct())
+        @foreach (var netBalanceByAsset in _balanceByAssets)
         {
             <tr>
-                <td><b>@asset</b></td>
-                @foreach (var walletName in _balanceCollection
-                    .Select(elem => elem.WalletName)
-                    .OrderBy(elem => elem)
-                    .Distinct())
+                <td><b>@netBalanceByAsset.Asset</b></td>
+                @foreach (var wallet in _balanceByWallets.OrderBy(elem => elem.WalletName))
                 {
                     <td>
-                        @if (_balanceCollection.FirstOrDefault(elem => elem.Asset == asset && elem.WalletName == walletName)?.Volume != null &&
-                            _balanceCollection.FirstOrDefault(elem => elem.Asset == asset && elem.WalletName == walletName)?.Volume != 0)
+                        @if (true)
                         {
-                            <span><b>@(Math.Round(_balanceCollection.FirstOrDefault(elem => elem.Asset == asset && elem.WalletName == walletName).Volume, 2))</b></span>
+                            <span><b>@netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetVolume</b></span>
                             <br>
-                            <span>USD: @(Math.Round(_balanceCollection.FirstOrDefault(elem => elem.Asset == asset && elem.WalletName == walletName).UsdProjection, 2))</span>
+                            <span>USD: @netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetUsdVolume</span>
                         }
                     </td>
                 }
                 <td style="background: lightgray">
-                    <span><b>@(Math.Round(_balanceCollection.Where(elem => elem.Asset == asset).Sum(elem => elem.Volume), 2))</b></span>
+                    <span><b>@netBalanceByAsset.NetVolume</b></span>
                     <br>
-                    <span>USD: @(Math.Round(_balanceCollection.Where(elem => elem.Asset == asset).Sum(elem => elem.UsdProjection), 2))</span>
+                    <span>USD: @netBalanceByAsset.NetUsdVolume</span>
                 </td>
             </tr>
         }
@@ -118,7 +107,7 @@
                 <tr>
                     <td>BrokerId</td>
                     <select @bind="@BrokerId">
-                        @foreach (var name in _balanceCollection.Select(elem => elem.BrokerId).Distinct())
+                        @foreach (var name in _balanceByWallets.Select(elem => elem.BrokerId))
                         {
                             <option value="@name">@name</option>
                         }
@@ -127,7 +116,7 @@
                 <tr>
                     <td>Wallet Name</td>
                     <select @bind="@WalletName">
-                        @foreach (var name in _balanceCollection.Select(elem => elem.WalletName).Distinct())
+                        @foreach (var name in _balanceByWallets.Select(elem => elem.WalletName))
                         {
                             <option value="@name">@name</option>
                         }
@@ -136,7 +125,7 @@
                 <tr>
                     <td>Asset</td>
                     <select @bind="@Asset">
-                        @foreach (var name in _balanceCollection.Select(elem => elem.Asset).Distinct())
+                        @foreach (var name in _balanceByAssets.Select(elem => elem.Asset))
                         {
                             <option value="@name">@name</option>
                         }
@@ -162,7 +151,8 @@
 
 @code {
     private AssetPortfolioPages ActivePage { get; set; }
-    private List<AssetBalanceGrpc> _balanceCollection = new();
+    private List<NetBalanceByWallet> _balanceByWallets = new();
+    private List<NetBalanceByAsset> _balanceByAssets = new();
     
     private bool IsShowEdit { get; set; }
     private double BalanceDiff { get; set; }
@@ -180,14 +170,8 @@
     private async Task Refresh()
     {
         var response = await _assetPortfolioService.GetBalancesAsync();
-        _balanceCollection = response.Balances ?? new List<AssetBalanceGrpc>();
-        StateHasChanged();
-    }
-    
-    private async Task GetAssetPortfolioBalance()
-    {
-        var response = await _assetPortfolioService.GetBalancesAsync();
-        _balanceCollection.AddRange(response.Balances);
+        _balanceByWallets = response.BalanceByWallet ?? new List<NetBalanceByWallet>();
+        _balanceByAssets = response.BalanceByAsset ?? new List<NetBalanceByAsset>();
         StateHasChanged();
     }
 
@@ -248,19 +232,17 @@
     private async void SaveBalance()
     {
         if (string.IsNullOrEmpty(BrokerId) && 
-            _balanceCollection.Select(elem => elem.BrokerId).Distinct().Count() == 1)
+            _balanceByWallets.Select(elem => elem.BrokerId).Distinct().Count() == 1)
         {
-            BrokerId = _balanceCollection.FirstOrDefault().BrokerId;
+            BrokerId = _balanceByWallets.First().BrokerId;
         }
-        if (string.IsNullOrEmpty(WalletName) && 
-            _balanceCollection.Select(elem => elem.WalletName).Distinct().Count() == 1)
+        if (string.IsNullOrEmpty(WalletName) && _balanceByWallets.Count() == 1)
         {
-            WalletName = _balanceCollection.FirstOrDefault().WalletName;
+            WalletName = _balanceByWallets.First().WalletName;
         }
-        if (string.IsNullOrEmpty(Asset) && 
-            _balanceCollection.Select(elem => elem.Asset).Distinct().Count() == 1)
+        if (string.IsNullOrEmpty(Asset) && _balanceByAssets.Count() == 1)
         {
-            Asset = _balanceCollection.FirstOrDefault().Asset;
+            Asset = _balanceByAssets.First().Asset;
         }
 
         if (BalanceDiff != 0 &&
