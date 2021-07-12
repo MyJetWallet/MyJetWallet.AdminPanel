@@ -86,11 +86,7 @@ namespace Backoffice.Modules
             builder.RegisterBalanceHistoryClient(Program.Settings.BalanceHistoryGrpcServiceUrl);
             builder.RegisterSwapHistoryClient(Program.Settings.BalanceHistoryGrpcServiceUrl);
 
-            var activeOrderClientFactory = new ActiveOrdersClientFactory(Program.Settings.ActiveOrdersGrpcServiceUrl, null);
-            builder
-                .RegisterInstance(activeOrderClientFactory.ActiveOrderServiceGrpc())
-                .As<IActiveOrderService>()
-                .SingleInstance();
+            builder.RegisterActiveOrdersClientsWithoutCache(Program.Settings.ActiveOrdersGrpcServiceUrl);
 
             builder.RegisterTradeHistoryClient(Program.Settings.BalanceHistoryGrpcServiceUrl);
 
