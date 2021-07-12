@@ -32,14 +32,16 @@
     <tr>
         <th>Id</th>
         <th>DateTime</th>
-        <th>Symbol</th>
+        <th>Associate Symbol</th>
+        <th>Base Asset</th>
+        <th>Quote Asset</th>
         <th>Side</th>
         <th>Price</th>
         <th>Base Volume</th>
         <th>Quote Volume</th>
         <th>Base Volume In Usd</th>
         <th>Quote Volume In Usd</th>
-        <th>Broker Id</th>
+        <th>Associate Broker Id</th>
         <th>Wallet Name</th>
         <th>Trade Id</th>
         <th>Source</th>
@@ -54,14 +56,16 @@
         <tr>
             <td>@trade.Id</td>
             <td>@trade.DateTime</td>
-            <td>@trade.Symbol</td>
+            <td>@trade.AssociateSymbol</td>
+            <td>@trade.BaseAsset</td>
+            <td>@trade.QuoteAsset</td>
             <td>@trade.Side</td>
             <td>@trade.Price</td>
             <td>@trade.BaseVolume</td>
             <td>@trade.QuoteVolume</td>
             <td>@trade.BaseVolumeInUsd</td>
             <td>@trade.QuoteVolumeInUsd</td>
-            <td>@trade.BrokerId</td>
+            <td>@trade.AssociateBrokerId</td>
             <td>@trade.WalletName</td>
             <td>@trade.TradeId</td>
             <td>@trade.Source</td>
@@ -85,7 +89,7 @@
                 <tr>
                     <td>Broker Id</td>
                     <select @bind="@NewTrade.BrokerId">
-                        @foreach (var name in _trades.Select(elem => elem.BrokerId).Distinct())
+                        @foreach (var name in _trades.Select(elem => elem.AssociateBrokerId).Distinct())
                         {
                             <option value="@name">@name</option>
                         }
@@ -156,14 +160,14 @@
     private async void OnSaveNewTrade()
     {
         if (string.IsNullOrEmpty(NewTrade.BrokerId) && 
-            _trades.Select(elem => elem.BrokerId).Distinct().Count() == 1)
+            _trades.Select(elem => elem.AssociateBrokerId).Distinct().Count() == 1)
         {
-            NewTrade.BrokerId = _trades.FirstOrDefault().BrokerId;
+            NewTrade.BrokerId = _trades.First().AssociateBrokerId;
         }
         if (string.IsNullOrEmpty(NewTrade.WalletName) && 
             _trades.Select(elem => elem.WalletName).Distinct().Count() == 1)
         {
-            NewTrade.WalletName = _trades.FirstOrDefault().WalletName;
+            NewTrade.WalletName = _trades.First().WalletName;
         }
 
         var instruments = await _spotInstrumentManager.GetAll();
@@ -224,17 +228,12 @@
 
     private async Task SetAssetCollection()
     {
-        var instruments = await _spotInstrumentManager.GetAll();
-        var ourSymbols = _trades.Select(elem => elem.Symbol);
-
-        var ourInstruments = instruments.Where(inst => ourSymbols.Contains(inst.Instrument.Symbol));
-        
         AssetCollection = new List<string>();
         
-        foreach (var instrument in ourInstruments)
+        foreach (var trade in _trades)
         {
-            AssetCollection.Add(instrument.Instrument.BaseAsset);
-            AssetCollection.Add(instrument.Instrument.QuoteAsset);
+            AssetCollection.Add(trade.BaseAsset);
+            AssetCollection.Add(trade.QuoteAsset);
         }
 
         AssetCollection = AssetCollection.Distinct().ToList();
