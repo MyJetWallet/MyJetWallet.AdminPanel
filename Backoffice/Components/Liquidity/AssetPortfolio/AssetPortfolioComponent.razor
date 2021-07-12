@@ -2,9 +2,13 @@
 @using Service.Liquidity.Portfolio.Domain.Models
 @using Service.Liquidity.Portfolio.Grpc.Models
 @using Backoffice.Components.Liquidity.AssetPortfolio
+@using DotNetCoreDecorators
 @using Service.Liquidity.Portfolio.Grpc.Models.GetBalances
+@using Service.Liquidity.PortfolioHedger.Grpc
+@using Service.Liquidity.PortfolioHedger.Grpc.Models
 
 @inject IAssetPortfolioService _assetPortfolioService
+@inject IExternalExchangeTradeService _externalExchangeTradeService;
 
 <ul class="nav nav-tabs nav-pills">
     <li class="nav-item" style="margin: 10px">
@@ -26,6 +30,7 @@
     <ul class="nav">
         <li><button type="button" class="btn-outline-secondary btn" @onclick="Refresh">Refresh</button></li>
         <li><button type="button" class="btn-outline-warning btn" @onclick="ShowEdit">Change balance</button></li>
+        <li><button type="button" class="btn-outline-warning btn" @onclick="CreateMarketTrade">Create Market Trade</button></li>
     </ul>
     <table class="table" style="width: auto">
         <thead>
@@ -155,6 +160,44 @@
     </div>
 }
 
+@if (MarketTradeWindowOpen)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption="Change balance"
+            OnClose="@OnCloseMarketTradeWindow"
+            YesButtonCaption="Save"
+            NoButtonCaption="Cancel"
+            OnSubmit="@PushMarketTrade">
+            <table>
+                <tr>
+                    <td>Wallet Name</td>
+                    <select @bind="@ExchangeName">
+                        @foreach (var name in ExchangeList)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
+                    <td>Instrument Symbol</td>
+                    <td><input type="text" class="form-control" @bind=InstrumentSymbol /></td>
+                </tr>
+                <tr>
+                    <td>Base Volume</td>
+                    <td><input type="number" class="form-control" @bind=BaseVolume /></td>
+                </tr>
+                @if (MarketTradeWindowException)
+                {
+                    <tr>
+                        <td>@MarketTradeWindowExceptionText</td>
+                    </tr>
+                }
+            </table>
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
 
 @code {
     private AssetPortfolioPages ActivePage { get; set; }
@@ -169,6 +212,14 @@
     private string WalletName { get; set; }
     private string Asset { get; set; }
     
+    private bool MarketTradeWindowOpen { get; set; }
+    private List<string> ExchangeList { get; set; }
+    private string ExchangeName { get; set; }
+    private string InstrumentSymbol { get; set; }
+    private double BaseVolume { get; set; }
+    private bool MarketTradeWindowException { get; set; }
+    private string MarketTradeWindowExceptionText { get; set; }
+    
     protected override async Task OnInitializedAsync()
     {
         await Refresh();
@@ -179,6 +230,10 @@
         var response = await _assetPortfolioService.GetBalancesAsync();
         _balanceByWallets = response.BalanceByWallet ?? new List<NetBalanceByWallet>();
         _balanceByAssets = response.BalanceByAsset ?? new List<NetBalanceByAsset>();
+
+        var exchangeCollectionResponse = await _externalExchangeTradeService.GetExternalExchangeCollectionAsync();
+        ExchangeList = exchangeCollectionResponse.ExchangeNames;
+        
         StateHasChanged();
     }
 
@@ -279,4 +334,43 @@
         ActivePage = AssetPortfolioPages.Settings;
         StateHasChanged();
     }
+
+    private async Task CreateMarketTrade()
+    {
+        MarketTradeWindowOpen = true;
+        ExchangeName = string.Empty;
+        InstrumentSymbol = string.Empty;
+        BaseVolume = 0.0;
+        
+        MarketTradeWindowException = false;
+        MarketTradeWindowExceptionText = string.Empty;
+        
+        StateHasChanged();
+    }
+
+    private async Task PushMarketTrade()
+    {
+        var request = new CreateManualTradeRequest()
+        {
+            ExchangeName = ExchangeName,
+            BaseVolume = BaseVolume,
+            InstrumentSymbol = InstrumentSymbol
+        };
+        var response = await _externalExchangeTradeService.CreateManualTradeAsync(request);
+
+        if (!response.Success)
+        {
+            MarketTradeWindowException = true;
+            MarketTradeWindowExceptionText = response.ErrorMessage;
+            return;
+        }
+        await OnCloseMarketTradeWindow();
+    }
+
+    private async Task OnCloseMarketTradeWindow()
+    {
+        MarketTradeWindowOpen = false;
+        StateHasChanged();
+    }
+
 }

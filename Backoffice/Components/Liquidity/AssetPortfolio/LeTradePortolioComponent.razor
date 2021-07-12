@@ -11,7 +11,7 @@
     {
         <li><button type="button" class="btn-outline-info btn" @onclick="NextPage">>>> Next >>></button></li>
     }
-    <li><button type="button" class="btn-outline-secondary btn" @onclick="CreateNew">Create new</button></li>
+    <li><button type="button" class="btn-outline-secondary btn" @onclick="ReportTrade">Report trade</button></li>
     <li><button type="button" class="btn-outline-secondary btn" @onclick="Refresh">Refresh</button></li>
     <li><span style="margin-left: 10px; vertical-align: center">Count in page: </span><input type="number" style="width: 40px" @bind="CountInPage"/></li>
     
@@ -200,7 +200,7 @@
         StateHasChanged();
     }
 
-    private void CreateNew()
+    private void ReportTrade()
     {
         NewTrade = new CreateTradeManualRequest();
         IsCreateDialogOpen = true;

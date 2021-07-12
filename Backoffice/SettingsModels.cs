@@ -97,5 +97,8 @@ namespace Backoffice
         
         [YamlProperty("AdminPanel.FacebookClientId")]
         public string FacebookClientId { get; set; }
+
+        [YamlProperty("AdminPanel.PortfolioHedgerGrpcUrl")]
+        public string PortfolioHedgerGrpcUrl { get; set; }
     }
 }

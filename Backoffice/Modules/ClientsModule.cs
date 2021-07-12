@@ -18,6 +18,7 @@ using Service.Fees.Client.Grpc;
 using Service.Liquidity.Converter.Client;
 using Service.Liquidity.Engine.Client;
 using Service.Liquidity.Portfolio.Client;
+using Service.Liquidity.PortfolioHedger.Client;
 using Service.Liquidity.Reports.Client;
 using Service.MatchingEngine.PriceSource.Client;
 using Service.PushNotification.Client;
@@ -114,6 +115,7 @@ namespace Backoffice.Modules
             builder.RegisterInstance(externalSettingsManager).As<IExternalMarketsSettingsManager>().SingleInstance();
             
             builder.RegisterFeesSettingsClients(Program.Settings.FeesServiceUrl);
+            builder.RegisterPortfolioHedgerClient(Program.Settings.PortfolioHedgerGrpcUrl);
         }
         
         private void RegisterMyNoSqlTcpClient(ContainerBuilder builder)
