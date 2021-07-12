@@ -9,6 +9,7 @@ using Backoffice.Services.BitGo.Assets;
 using Backoffice.Services.BitGo.Coins;
 using Backoffice.Services.Fees.Assets;
 using Backoffice.Services.Fees.Instruments;
+using Backoffice.Services.References;
 using Backoffice.Services.SpotInstruments;
 using Backoffice.TableStorage;
 using MyCRM.AccountTransactions.Grpc;
@@ -42,6 +43,11 @@ namespace Backoffice.Modules
             builder
                 .RegisterType<SpotInstrumentManager>()
                 .As<ISpotInstrumentManager>()
+                .SingleInstance();
+            
+            builder
+                .RegisterType<MarketReferenceManager>()
+                .As<IMarketReferenceManager>()
                 .SingleInstance();
             
             builder

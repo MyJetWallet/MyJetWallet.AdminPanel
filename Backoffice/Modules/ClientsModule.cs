@@ -53,6 +53,11 @@ namespace Backoffice.Modules
                 .RegisterInstance(assetDictionaryFactory.GetBrandAssetsAndInstrumentsService())
                 .As<IBrandAssetsAndInstrumentsService>()
                 .SingleInstance();
+            
+            builder
+                .RegisterInstance(assetDictionaryFactory.GetMarketReferenceDictionaryService())
+                .As<IMarketReferencesDictionaryService>()
+                .SingleInstance();
 
             builder.RegisterLiquidityEngineClient(Program.Settings.LiquidityEngineGrpcServiceUrl);
 

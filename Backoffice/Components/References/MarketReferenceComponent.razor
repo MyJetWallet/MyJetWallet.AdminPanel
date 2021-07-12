@@ -1,0 +1,117 @@
+﻿@using Backoffice.Abstractions.Models
+@using Backoffice.Services.References
+
+@inject IMarketReferenceManager MarketReferenceManager
+@inject IToaster ToastService
+
+<Loader LoaderConfig="@LoaderConfig"/>
+
+<ul class="nav float-left">
+    <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
+    <li><button @onclick="OnAddInstrument" type="button" class="btn btn-outline-success" style="margin: 5px; border-radius: 10px">Add</button></li>
+</ul>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Id</th>
+            
+        <th>BrokerId</th>
+        <th>Name</th>
+        <th>AssociateAsset</th>
+        <th>AssociateAssetPair</th>
+        <th>Weight</th>
+        <th>IconUrl</th>
+
+        <th>Brands</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach(var reference in ReferenceList)
+    {
+        <MarketReferenceTableRow Item="@reference" OnDeleteCallback="DeleteReference" />
+    }
+    
+    </tbody>
+</table>
+
+@if (IsShowAdding)
+{
+    <div>
+        <MarketReferenceDetailsDialogEdit IsCreate="true" OnCloseCallback="OnCloseAddingDialog" OnCreateCallback="OnCreateReference" />
+    </div>
+}
+
+@code {
+
+    private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+
+    private List<MarketReferenceItem> ReferenceList { get; set; } = new();
+    
+    private bool IsShowAdding { get; set; }
+
+    private async Task OnRefresh()
+    {
+        LoaderConfig.Enable();
+        
+        ReferenceList = await MarketReferenceManager.GetAll();
+        
+        LoaderConfig.Disable();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void OnAddInstrument()
+    {
+        IsShowAdding = true;
+        StateHasChanged();   
+    }
+
+    private async Task DeleteReference(MarketReferenceItem item)
+    {
+        try
+        {
+            await MarketReferenceManager.DeleteReference(item);
+            
+            ToastService.Info($"Market reference {item.Reference.Id} is deleted", "Reference deletion");
+            
+            await OnRefresh();    
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Instrument deletion");
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await OnRefresh();
+        
+        await base.OnInitializedAsync();
+    }
+
+    private void OnCloseAddingDialog()
+    {
+        IsShowAdding = false;
+        StateHasChanged();
+    }
+
+    private async Task OnCreateReference(MarketReferenceItem item)
+    {
+        try
+        {
+            await MarketReferenceManager.AddReference(item);
+            
+            ToastService.Info($"Reference {item.Reference.Id} is created", "Create reference");
+            
+            IsShowAdding = false;
+            
+            await OnRefresh();    
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Reference creation");
+        }
+    }
+
+}

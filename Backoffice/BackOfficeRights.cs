@@ -18,6 +18,7 @@ namespace Backoffice
         public const string Notifications = "Notifications";
         public const string Monitor = "Monitor";
         public const string SocialNetworkAuth = "SocialNetworkAuth";
+        public const string References = "References";
     }
     
     public static class Actions
@@ -71,6 +72,8 @@ namespace Backoffice
             NavsItem.Create("Notifications", "Notifications","list-rich",Menu.Notifications),
             NavsItem.Create("Monitor", "Monitor","list-rich",Menu.Monitor),
             NavsItem.Create("Social Network Auth", "AuthTest","list-rich",Menu.SocialNetworkAuth),
+            NavsItem.Create("Market References", "References","list-rich",Menu.References),
+
         };
         
         public static IEnumerable<NavsItem> GenerateMenuItems() => MenuItems;

@@ -1,0 +1,210 @@
+﻿@using Backoffice.Services.References
+
+@inject IMarketReferenceManager MarketReferenceManager;
+@inject IToaster ToastService;
+
+<tr>
+    <td>@Item.Reference.Id</td>
+    
+    <td>@Item.Reference.BrokerId</td>
+    <td>@Item.Reference.Name</td>
+    <td>@Item.Reference.AssociateAsset</td>
+    <td>@Item.Reference.AssociateAssetPair</td>
+    <td>@Item.Reference.Weight</td>
+    <td>
+        @if (!String.IsNullOrWhiteSpace(Item.Reference.IconUrl))
+        {
+            <img src="@Item.Reference.IconUrl" width="25px">
+        }
+    </td>
+
+    
+    <td>
+        @foreach (var brand in Item.Brands)
+        {
+            <MyLabel Color="lightyellow" Text="@brand" />            
+        }
+    </td>
+
+    <td>
+        <ul class="nav">
+            <li><button type="button" class="btn-outline-info btn" @onclick="ShowDetails" >Details</button></li>
+            <li><button type="button" class="btn-outline-warning btn" @onclick="ShowEdit" >Edit</button></li>
+            <li><button type="button" class="btn-outline-danger btn" @onclick="ShowDelete">Delete</button></li>
+            <li><button type="button" class="btn-outline-secondary btn" @onclick="ShowBrand">Brand</button></li>
+        </ul>
+    </td>
+</tr>
+
+@if (IsShowDetails)
+{
+    <MarketReferenceDetailsDialog Item="@Item" OnCloseCallback="OnCloseReferenceDialog" />
+}
+
+@if (IsShowEdit)
+{
+    <div>
+        <MarketReferenceDetailsDialogEdit Item="@Item" IsCreate="false" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="OnUpdateReference" />
+    </div>
+}
+
+@if (IsShowDelete)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption=@($"Delete instrument {Item.Reference.Id} [{Item.Reference.BrokerId}]")
+            OnClose="OnCloseDeleteDialog"
+            YesButtonCaption="Delete"
+            NoButtonCaption="Cancel"
+            OnSubmit="DeleteItem">
+            
+            <h3 class="alert-warning">Are you sure you want to delete the asset <b>@Item.Reference.Id [@Item.Reference.BrokerId]?</b></h3>
+            
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+@if (IsShowBrand)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption=@($"Change Brands {Item.Reference.Id} [{Item.Reference.BrokerId}]")
+            OnClose="OnCloseBrandDialog"
+            YesButtonCaption="Change"
+            NoButtonCaption="Cancel"
+            OnSubmit="ChangeBrand">
+            
+            <table>
+                <tr>
+                    <td>Brand Id</td>
+                    <td><input type="text" class="form-control" @bind=ChangeBrandId /></td>
+                </tr>
+                
+                <tr>
+                    <td>Assigned</td>
+                    <td><input type="checkbox" @bind=IsBrandAssigned /></td>
+                </tr>
+                
+            </table>
+            
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+
+
+
+
+@code {
+    
+    [Parameter]
+    public MarketReferenceItem Item { get; set; }
+    
+    [Parameter]
+    public EventCallback<MarketReferenceItem> OnDeleteCallback { get; set; }
+    
+    private bool IsShowDetails { get; set; }
+    private bool IsShowEdit { get; set; }
+    private bool IsShowDelete { get; set; }
+    
+    private bool IsShowBrand { get; set; }
+    private string ChangeBrandId { get; set; }
+    private bool IsBrandAssigned { get; set; }
+
+    private void ShowDetails()
+    {
+        IsShowDetails = true;
+        StateHasChanged();        
+    }
+
+    private void ShowEdit()
+    {
+        IsShowEdit = true;
+        StateHasChanged();
+    }
+
+    private void ShowDelete()
+    {
+        IsShowDelete = true;
+        StateHasChanged();
+    }
+
+    private void ShowBrand()
+    {
+        ChangeBrandId = "";
+        IsBrandAssigned = false;
+        
+        IsShowBrand = true;
+        StateHasChanged();
+    }
+
+    private void OnCloseReferenceDialog()
+    {
+        IsShowDetails = false;
+        StateHasChanged();
+    }
+
+    private void OnCloseEditDialog()
+    {
+        IsShowEdit = false;
+        StateHasChanged();
+    }
+    
+    private async void OnUpdateReference(MarketReferenceItem item)
+    {
+        try
+        {
+            await MarketReferenceManager.UpdateReference(item);
+
+            IsShowEdit = false;
+            
+            ToastService.Info("Market Reference is updated", "Edit Market Reference");
+
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Edit Market Reference");
+        }
+    }
+
+
+    private void OnCloseDeleteDialog()
+    {
+        IsShowDelete = false;
+        StateHasChanged();
+    }
+
+    private async Task DeleteItem()
+    {
+        IsShowDelete = false;
+        await OnDeleteCallback.InvokeAsync(Item);
+    }
+
+    private void OnCloseBrandDialog()
+    {
+        IsShowBrand = false;
+        StateHasChanged();
+    }
+
+    private async Task ChangeBrand()
+    {
+        try
+        {
+            if (IsBrandAssigned && !string.IsNullOrEmpty(ChangeBrandId))
+                await MarketReferenceManager.AddBrand(Item, ChangeBrandId);
+            else
+                await MarketReferenceManager.RemoveBrand(Item, ChangeBrandId);
+            
+            ToastService.Info("Brand is changed", "Change reference brand");
+            
+            IsShowBrand = false;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Change reference brand");
+        }
+    }
+
+}

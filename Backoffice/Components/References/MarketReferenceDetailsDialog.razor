@@ -1,0 +1,43 @@
+﻿@using Backoffice.Services.References
+<BaseOneButtonsDialog Caption=@($"{Item.Reference.Id} [{Item.Reference.BrokerId}]") OnClose="OnClose" ButtonCaption="Close">
+    <table>
+        <tr>
+            <td>
+            
+                <table>
+                    <tr><td>Broker</td><td class="float-left">@Item.Reference.BrokerId</td></tr>
+                    <tr><td>ID</td><td class="float-left">@Item.Reference.Id</td></tr>
+                    <tr></tr>
+                    <tr><td>AssociateAsset</td><td class="float-left">@Item.Reference.AssociateAsset</td></tr>
+                    <tr><td>AssociateAssetPair</td><td class="float-left">@Item.Reference.AssociateAssetPair</td></tr>
+                    <tr><td>Name</td><td class="float-left">@Item.Reference.Name</td></tr>
+                    <tr><td>Weight</td><td class="float-left">@Item.Reference.Weight</td></tr>
+                    <tr><td>IconUrl</td><td class="float-left">
+                                @if (!String.IsNullOrWhiteSpace(Item.Reference.IconUrl))
+                                {
+                                    <img src="@Item.Reference.IconUrl" width="100px">
+                                }
+                    </td></tr>
+
+                </table>
+
+            </td>
+        </tr>
+    </table>
+</BaseOneButtonsDialog>
+
+
+@code {
+    
+    [Parameter]
+    public MarketReferenceItem Item { get; set; }
+    
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+
+    private void OnClose()
+    {
+        OnCloseCallback.InvokeAsync();
+    }
+    
+}

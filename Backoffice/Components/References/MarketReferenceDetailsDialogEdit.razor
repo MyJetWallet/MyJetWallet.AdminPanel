@@ -1,0 +1,123 @@
+﻿@using Backoffice.Services.SpotInstruments
+@using Service.AssetsDictionary.Domain.Models
+@using Backoffice.Services.References
+
+<BaseTwoButtonsDialog 
+    Caption=@(!IsCreate ? $"{Item.Reference.Id} [{Item.Reference.BrokerId}]" : "Create a new reference") 
+    OnClose="OnClose" 
+    YesButtonCaption="@(IsCreate ? "Create" : "Save")"
+    NoButtonCaption="Close"
+    OnSubmit="OnSubmit">
+
+    <table>
+        <tr>
+            <td>
+            
+                <table>
+                    <tr>
+                        <td>Broker</td>
+                        <td class="float-left">
+                            @if (!IsCreate)
+                            {
+                                @Item.Reference.BrokerId
+                            }
+                            else
+                            {
+                                <input type="text" class="form-control" @bind="Item.Reference.BrokerId"/>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Id</td>
+                        <td class="float-left">
+                            @if (!IsCreate)
+                            {
+                                @Item.Reference.Id
+                            }
+                            else
+                            {
+                                <input type="text" class="form-control" @bind="Item.Reference.Id"/>
+                            }
+                        </td>
+                    </tr>
+                    <tr></tr>
+                    <tr>
+                        <td>AssociateAsset</td>
+                        <input type="text" class="form-control" @bind="Item.Reference.AssociateAsset"/>
+                    </tr>
+                    <tr>
+                        <td>AssociateAssetPair</td>
+                        <input type="text" class="form-control" @bind="Item.Reference.AssociateAssetPair"/>
+                    </tr>
+                    <tr>
+                        <td>Name</td>
+                        <input type="text" class="form-control" @bind="Item.Reference.Name"/>
+                    </tr>
+                    
+                    <tr>
+                        <td>Weight</td>
+                        <input type="number" class="form-control" @bind="Item.Reference.Weight"/>
+                    </tr>
+                    <tr>
+                        <td>IconUrl</td>
+                        <input type="text" class="form-control" @bind="Item.Reference.IconUrl"/>
+                    </tr>
+                </table>
+
+            </td>
+        </tr>
+    </table>
+</BaseTwoButtonsDialog>
+
+
+@code {
+    
+    [Parameter]
+    public MarketReferenceItem Item { get; set; }
+    
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+    
+    [Parameter]
+    public EventCallback<MarketReferenceItem> OnCreateCallback { get; set; }
+    
+    [Parameter]
+    public EventCallback<MarketReferenceItem> OnUpdateCallback { get; set; }
+
+    
+    [Parameter]
+    public bool IsCreate { get; set; }
+
+
+    private void OnClose()
+    {
+        OnCloseCallback.InvokeAsync();
+    }
+
+    private async Task OnSubmit()
+    {
+        if (IsCreate)
+            await OnCreateCallback.InvokeAsync(Item);
+        else
+            await OnUpdateCallback.InvokeAsync(Item);
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        if (IsCreate)
+        {
+            Item = new MarketReferenceItem()
+            {
+                Reference = new MarketReference()
+                {
+                    BrokerId = "jetwallet"
+                },
+                Brands = new List<string>()
+            };
+        }
+
+        Item.Brands ??= new List<string>();
+    }
+}
