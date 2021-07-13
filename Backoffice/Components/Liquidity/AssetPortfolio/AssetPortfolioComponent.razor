@@ -2,6 +2,7 @@
 @using Service.Liquidity.Portfolio.Domain.Models
 @using Service.Liquidity.Portfolio.Grpc.Models
 @using Backoffice.Components.Liquidity.AssetPortfolio
+@using Backoffice.Services.SpotInstruments
 @using DotNetCoreDecorators
 @using Service.Liquidity.Portfolio.Grpc.Models.GetBalances
 @using Service.Liquidity.PortfolioHedger.Grpc
@@ -9,6 +10,7 @@
 
 @inject IAssetPortfolioService _assetPortfolioService
 @inject IExternalExchangeTradeService _externalExchangeTradeService;
+@inject ISpotInstrumentManager _spotInstrumentManager;
 
 <ul class="nav nav-tabs nav-pills">
     <li class="nav-item" style="margin: 10px">
@@ -171,7 +173,7 @@
 {
     <div>
         <BaseTwoButtonsDialog
-            Caption="Change balance"
+            Caption="Market Trade"
             OnClose="@OnCloseMarketTradeWindow"
             YesButtonCaption="Save"
             NoButtonCaption="Cancel"
@@ -200,11 +202,21 @@
                 </tr>
                 <tr>
                     <td>Base Asset</td>
-                    <td><input type="text" class="form-control" @bind=BaseAsset /></td>
-                </tr>
+                    <select @bind="@BaseAsset">
+                        @foreach (var name in AllAssets)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                    </tr>
                 <tr>
                     <td>Quote Asset</td>
-                    <td><input type="text" class="form-control" @bind=QuoteAsset /></td>
+                    <select @bind="@QuoteAsset">
+                        @foreach (var name in AllAssets)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
                 </tr>
                 <tr>
                     <td>Comment</td>
@@ -230,6 +242,7 @@
     private AssetPortfolioPages ActivePage { get; set; }
     private List<NetBalanceByWallet> _balanceByWallets = new();
     private List<NetBalanceByAsset> _balanceByAssets = new();
+    private List<string> AllAssets { get; set; }
     
     private bool IsShowEdit { get; set; }
     private double BalanceDiff { get; set; }
@@ -252,6 +265,7 @@
     
     protected override async Task OnInitializedAsync()
     {
+        await CacheAllAssets();
         await Refresh();
     }
     
@@ -291,6 +305,21 @@
         Trades,
         ChangeBalanceHistory,
         Settings
+    }
+    
+    private async Task CacheAllAssets()
+    {
+        var instruments = await _spotInstrumentManager.GetAll();
+
+        AllAssets = new List<string>();
+        
+        instruments.ForEach(instrument =>
+        {
+            AllAssets.Add(instrument.Instrument.BaseAsset);
+            AllAssets.Add(instrument.Instrument.QuoteAsset);
+        });
+
+        AllAssets = AllAssets.Distinct().ToList();
     }
     
     private string CheckActive(AssetPortfolioPages target)
