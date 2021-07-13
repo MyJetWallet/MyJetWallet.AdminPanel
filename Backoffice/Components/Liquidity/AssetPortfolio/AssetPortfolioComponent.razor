@@ -191,6 +191,24 @@
                     </select>
                 </tr>
                 <tr>
+                    <td>Base Asset</td>
+                    <select @bind="@BaseAsset">
+                        @foreach (var name in AllAssets)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
+                    <td>Quote Asset</td>
+                    <select @bind="@QuoteAsset">
+                        @foreach (var name in AllAssets)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
                     <td>Market</td>
                     <td><input type="text" class="form-control" @bind=Market /></td>
                 </tr>
@@ -201,24 +219,6 @@
                 <tr>
                     <td>Associate Broker Id</td>
                     <td><input type="text" class="form-control" @bind=AssociateBrokerId /></td>
-                </tr>
-                <tr>
-                    <td>Base Asset</td>
-                    <select @bind="@BaseAsset">
-                        @foreach (var name in AllAssets)
-                        {
-                            <option value="@name">@name</option>
-                        }
-                    </select>
-                    </tr>
-                <tr>
-                    <td>Quote Asset</td>
-                    <select @bind="@QuoteAsset">
-                        @foreach (var name in AllAssets)
-                        {
-                            <option value="@name">@name</option>
-                        }
-                    </select>
                 </tr>
                 <tr>
                     <td>Comment</td>
