@@ -173,13 +173,11 @@
                     <td>User</td>
                     <td><input type="text" class="form-control" @bind=User /></td>
                 </tr>
-                @if (ChangeBalanceWindowException)
-                {
-                    <tr>
-                        <td>@ChangeBalanceWindowExceptionText</td>
-                    </tr>
-                }
             </table>
+            @if (ChangeBalanceWindowException)
+            {
+                <H3>@ChangeBalanceWindowExceptionText</H3>
+            }
         </BaseTwoButtonsDialog>
     </div>
 }
@@ -241,13 +239,11 @@
                     <td>User</td>
                     <td><input type="text" class="form-control" @bind=User /></td>
                 </tr>
-                @if (MarketTradeWindowException)
-                {
-                    <tr>
-                        <td>@MarketTradeWindowExceptionText</td>
-                    </tr>
-                }
             </table>
+           @if (MarketTradeWindowException)
+           {
+               <H3>@MarketTradeWindowExceptionText</H3>
+           }
         </BaseTwoButtonsDialog>
     </div>
 }
