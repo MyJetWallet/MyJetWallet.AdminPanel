@@ -151,9 +151,12 @@
     private bool AssetFilerActive { get; set; }
     private List<string> AssetCollection { get; set; }
     private string FilterAsset { get; set; }
+    
+    private List<SpotInstrumentItem> AllInstruments { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
+        await CacheAllInstruments();
         await Refresh();
     }
 
@@ -169,10 +172,8 @@
         {
             NewTrade.WalletName = _trades.First().WalletName;
         }
-
-        var instruments = await _spotInstrumentManager.GetAll();
-
-        var instrumentExist = instruments.Any(elem => elem.Instrument.Symbol == NewTrade.Symbol);
+        
+        var instrumentExist = AllInstruments.Any(elem => elem.Instrument.Symbol == NewTrade.Symbol);
 
         if (!instrumentExist)
         {
@@ -230,6 +231,11 @@
         StateHasChanged();
     }
 
+    private async Task CacheAllInstruments()
+    {
+        AllInstruments = await _spotInstrumentManager.GetAll();
+    }
+
     private void RoundAllValues(List<Trade> trades)
     {
         trades.ForEach(trade =>
@@ -245,12 +251,12 @@
     private async Task SetAssetCollection()
     {
         AssetCollection = new List<string>();
-        
-        foreach (var trade in _trades)
+
+        AllInstruments.ForEach(instrument =>
         {
-            AssetCollection.Add(trade.BaseAsset);
-            AssetCollection.Add(trade.QuoteAsset);
-        }
+            AssetCollection.Add(instrument.Instrument.BaseAsset);
+            AssetCollection.Add(instrument.Instrument.QuoteAsset);
+        });
 
         AssetCollection = AssetCollection.Distinct().ToList();
     }
