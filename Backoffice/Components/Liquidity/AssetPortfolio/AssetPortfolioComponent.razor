@@ -199,6 +199,14 @@
                     <td>Quote Asset</td>
                     <td><input type="text" class="form-control" @bind=QuoteAsset /></td>
                 </tr>
+                <tr>
+                    <td>Comment</td>
+                    <td><input type="text" class="form-control" @bind=Comment /></td>
+                </tr>
+                <tr>
+                    <td>User</td>
+                    <td><input type="text" class="form-control" @bind=User /></td>
+                </tr>
                 @if (MarketTradeWindowException)
                 {
                     <tr>
@@ -360,6 +368,8 @@
         AssociateBrokerId = string.Empty;
         BaseAsset = string.Empty;
         QuoteAsset = string.Empty;
+        Comment = string.Empty;
+        User = string.Empty;
         
         MarketTradeWindowException = false;
         MarketTradeWindowExceptionText = string.Empty;
@@ -376,7 +386,9 @@
             Market = Market,
             AssociateBrokerId = AssociateBrokerId,
             BaseAsset = BaseAsset,
-            QuoteAsset = QuoteAsset
+            QuoteAsset = QuoteAsset,
+            Comment = Comment,
+            User = User
         };
         var response = await _externalExchangeTradeService.CreateManualTradeAsync(request);
 
