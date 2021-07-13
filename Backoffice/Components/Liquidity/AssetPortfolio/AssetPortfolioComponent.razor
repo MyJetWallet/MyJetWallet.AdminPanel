@@ -13,6 +13,7 @@
 @inject IAssetPortfolioService _assetPortfolioService
 @inject IExternalExchangeTradeService _externalExchangeTradeService;
 @inject ISpotInstrumentManager _spotInstrumentManager;
+@inject ILogger<AssetPortfolioComponent> _logger;
 
 <ul class="nav nav-tabs nav-pills">
     <li class="nav-item" style="margin: 10px">
@@ -253,7 +254,6 @@
     private AssetPortfolioPages ActivePage { get; set; }
     private List<NetBalanceByWallet> _balanceByWallets = new();
     private List<NetBalanceByAsset> _balanceByAssets = new();
-    private ILogger<AssetPortfolioComponent> _logger = new Logger<AssetPortfolioComponent>();
     private List<string> AllAssets { get; set; }
     
     private bool IsShowEdit { get; set; }
