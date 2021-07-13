@@ -35,22 +35,22 @@
     <table class="table" style="width: auto">
         <thead>
         <tr>
-            <th>Wallet Name</th>
-            <th>NET USD</th>
+            <th></th>
+            @foreach (var wallet in _balanceByWallets)
+            {
+                <th>@wallet.WalletName</th>
+            }
+            <th></th>
         </tr>
         </thead>
         <tbody>
-        
+        <tr>
+        <td><b>NET USD</b></td>
         @foreach (var wallet in _balanceByWallets)
         {
-            <tr>
-            <td><b>@wallet.WalletName</b></td>
             <td>@Math.Round(wallet.NetUsdVolume, 2)</td>
-            </tr>
         }
-        <tr>
-            <td></td>
-            <td><b>@Math.Round(_balanceByWallets.Sum(elem => elem.NetUsdVolume), 2)</b></td>
+        <td><b>@Math.Round(_balanceByWallets.Sum(elem => elem.NetUsdVolume), 2)</b></td>
         </tr>
         </tbody>
     </table>
@@ -254,6 +254,7 @@
         _balanceByWallets = response.BalanceByWallet ?? new List<NetBalanceByWallet>();
         _balanceByAssets = response.BalanceByAsset ?? new List<NetBalanceByAsset>();
 
+        
         var exchangeCollectionResponse = await _externalExchangeTradeService.GetExternalExchangeCollectionAsync();
         ExchangeList = exchangeCollectionResponse.ExchangeNames;
         
