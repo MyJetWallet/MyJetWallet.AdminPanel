@@ -32,7 +32,7 @@
         <li><button type="button" class="btn-outline-warning btn" @onclick="ShowEdit">Change balance</button></li>
         <li><button type="button" class="btn-outline-warning btn" @onclick="CreateMarketTrade">Create Market Trade</button></li>
     </ul>
-    <table class="table" style="width: auto">
+    <table class="table" style="width: auto; background: lightgray">
         <thead>
         <tr>
             <th></th>
@@ -78,8 +78,6 @@
                         <br>
                         <span>@netBalanceByAsset.BalanceState</span>
                     }
-                    <br>
-                    <span>@netBalanceByAsset.BalanceState</span>
                 </td>
                 @foreach (var wallet in _balanceByWallets.OrderBy(elem => elem.WalletName))
                 {
