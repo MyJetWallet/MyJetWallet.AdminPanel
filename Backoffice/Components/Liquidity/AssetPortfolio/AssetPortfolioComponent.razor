@@ -15,6 +15,8 @@
 @inject ISpotInstrumentManager _spotInstrumentManager;
 @inject ILogger<AssetPortfolioComponent> _logger;
 
+@implements IDisposable
+
 <ul class="nav nav-tabs nav-pills">
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(AssetPortfolioPages.AssetPortfolio)" aria-current="page" @onclick="SetAssetPortfolio" >Asset Portfolio</button>
@@ -37,10 +39,6 @@
         <li><button type="button" class="btn-outline-warning btn" @onclick="ShowChangeBalanceWindow">Change balance</button></li>
         <li><button type="button" class="btn-outline-warning btn" @onclick="CreateMarketTrade">Create Market Trade</button></li>
         <li><span style="margin-left: 10px; vertical-align: center">Timer</span><input type="checkbox" style="width: 40px" @bind="_timerIsActive"/></li>
-        @if (_timerIsActive)
-        {
-            <li><span style="margin-left: 10px; vertical-align: center">Refresh Time In Second</span><input type="number" style="width: 40px" @bind="_refreshTimeInSec"/></li>
-        }
     </ul>
     <table class="table" style="width: auto">
         <thead>
@@ -279,37 +277,27 @@
     
     private MyTaskTimer Timer { get; set; }
     private bool _timerIsActive = true;
-    private int _refreshTimeInSec = 5;
     
     protected override async Task OnInitializedAsync()
     {
         await CacheAllAssets();
         await Refresh();
-
-        InitTimer();
-    }
-
-    private void InitTimer()
-    {
-        Timer = new MyTaskTimer(nameof(AssetPortfolioComponent), TimeSpan.FromSeconds(_refreshTimeInSec), _logger, DoTime);
-        Timer.Start();
+        
+        GlobalTimers.RefreshTimer.RegisterCallback(nameof(AssetPortfolioComponent), DoTime);
     }
 
     private async Task DoTime()
     {
-        if (_timerIsActive)
-        {
-            if (_refreshTimeInSec < 1)
-            {
-                _refreshTimeInSec = 1;
-            }
-            await InvokeAsync(async () =>
-            {
-                await Refresh();
-                StateHasChanged();
-            });
-            Timer.ChangeInterval(TimeSpan.FromSeconds(_refreshTimeInSec));
-        }
+        if (_timerIsActive) return;
+        await Refresh();
+        
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    public void Dispose()
+    {
+        _timerIsActive = true;
+        GlobalTimers.RefreshTimer.RemoveCallback(nameof(AssetPortfolioComponent));
     }
 
     private async Task Refresh()
