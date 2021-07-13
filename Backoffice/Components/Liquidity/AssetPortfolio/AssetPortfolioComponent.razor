@@ -180,12 +180,32 @@
                     </select>
                 </tr>
                 <tr>
-                    <td>Instrument Symbol</td>
-                    <td><input type="text" class="form-control" @bind=InstrumentSymbol /></td>
+                    <td>Market</td>
+                    <td><input type="text" class="form-control" @bind=Market /></td>
                 </tr>
                 <tr>
                     <td>Base Volume</td>
                     <td><input type="number" class="form-control" @bind=BaseVolume /></td>
+                </tr>
+                <tr>
+                    <td>Associate Broker Id</td>
+                    <td><input type="text" class="form-control" @bind=AssociateBrokerId /></td>
+                </tr>
+                <tr>
+                    <td>Base Asset</td>
+                    <td><input type="text" class="form-control" @bind=BaseAsset /></td>
+                </tr>
+                <tr>
+                    <td>Quote Asset</td>
+                    <td><input type="text" class="form-control" @bind=QuoteAsset /></td>
+                </tr>
+                <tr>
+                    <td>Comment</td>
+                    <td><input type="text" class="form-control" @bind=Comment /></td>
+                </tr>
+                <tr>
+                    <td>User</td>
+                    <td><input type="text" class="form-control" @bind=User /></td>
                 </tr>
                 @if (MarketTradeWindowException)
                 {
@@ -215,7 +235,10 @@
     private bool MarketTradeWindowOpen { get; set; }
     private List<string> ExchangeList { get; set; }
     private string ExchangeName { get; set; }
-    private string InstrumentSymbol { get; set; }
+    private string AssociateBrokerId { get; set; }
+    private string Market { get; set; }
+    private string BaseAsset { get; set; }
+    private string QuoteAsset { get; set; }
     private double BaseVolume { get; set; }
     private bool MarketTradeWindowException { get; set; }
     private string MarketTradeWindowExceptionText { get; set; }
@@ -338,9 +361,15 @@
     private async Task CreateMarketTrade()
     {
         MarketTradeWindowOpen = true;
+        
         ExchangeName = string.Empty;
-        InstrumentSymbol = string.Empty;
+        Market = string.Empty;
         BaseVolume = 0.0;
+        AssociateBrokerId = string.Empty;
+        BaseAsset = string.Empty;
+        QuoteAsset = string.Empty;
+        Comment = string.Empty;
+        User = string.Empty;
         
         MarketTradeWindowException = false;
         MarketTradeWindowExceptionText = string.Empty;
@@ -354,7 +383,12 @@
         {
             ExchangeName = ExchangeName,
             BaseVolume = BaseVolume,
-            InstrumentSymbol = InstrumentSymbol
+            Market = Market,
+            AssociateBrokerId = AssociateBrokerId,
+            BaseAsset = BaseAsset,
+            QuoteAsset = QuoteAsset,
+            Comment = Comment,
+            User = User
         };
         var response = await _externalExchangeTradeService.CreateManualTradeAsync(request);
 
