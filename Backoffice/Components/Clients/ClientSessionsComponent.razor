@@ -59,7 +59,7 @@
                 <td>@session.Passed2FA</td>
                 <td>@session.EmailVerified</td>
                 <td>@session.Description</td>
-                <td>@string.IsNullOrWhiteSpace(session?.PublicKeyBase64)</td>
+                <td>@(!string.IsNullOrWhiteSpace(session?.PublicKeyBase64))</td>
                 <td>@tokenExists
                     @if (tokenExists)
                     {
