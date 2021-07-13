@@ -148,7 +148,7 @@
                 <tr>
                     <td>Asset</td>
                     <select @bind="@Asset">
-                        @foreach (var name in _balanceByAssets.Select(elem => elem.Asset))
+                        @foreach (var name in AllAssets)
                         {
                             <option value="@name">@name</option>
                         }
