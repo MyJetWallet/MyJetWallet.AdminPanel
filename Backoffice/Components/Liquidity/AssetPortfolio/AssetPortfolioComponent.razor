@@ -295,7 +295,7 @@
         Timer.Start();
     }
 
-    private async Task DoTime()
+    private async Task DoTime(object sender, EventArgs e)
     {
         if (_timerIsActive)
         {
@@ -303,7 +303,11 @@
             {
                 _refreshTimeInSec = 1;
             }
-            await Refresh();
+            await InvokeAsync(async () =>
+            {
+                await Refresh();
+                StateHasChanged();
+            });
             Timer.ChangeInterval(TimeSpan.FromSeconds(_refreshTimeInSec));
         }
     }
