@@ -222,8 +222,24 @@
         var response = await _assetPortfolioService.GetTradesAsync(request);
         _trades = response.Trades ?? new List<Trade>();
         _lastSeen = response.IdForNextQuery;
+        
         await SetAssetCollection();
+
+        RoundAllValues(_trades);
+        
         StateHasChanged();
+    }
+
+    private void RoundAllValues(List<Trade> trades)
+    {
+        trades.ForEach(trade =>
+        {
+            trade.Price = Math.Round(trade.Price, 8);
+            trade.BaseVolume = Math.Round(trade.BaseVolume, 8);
+            trade.QuoteVolume = Math.Round(trade.QuoteVolume, 8);
+            trade.BaseVolumeInUsd = Math.Round(trade.BaseVolumeInUsd, 2);
+            trade.QuoteVolumeInUsd = Math.Round(trade.QuoteVolumeInUsd, 2);
+        });
     }
 
     private async Task SetAssetCollection()
