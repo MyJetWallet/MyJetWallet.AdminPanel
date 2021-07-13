@@ -4,6 +4,8 @@
 @using Backoffice.Components.Liquidity.AssetPortfolio
 @using Backoffice.Services.SpotInstruments
 @using DotNetCoreDecorators
+@using Microsoft.Extensions.Logging
+@using MyJetWallet.Sdk.Service.Tools
 @using Service.Liquidity.Portfolio.Grpc.Models.GetBalances
 @using Service.Liquidity.PortfolioHedger.Grpc
 @using Service.Liquidity.PortfolioHedger.Grpc.Models
@@ -22,9 +24,9 @@
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(AssetPortfolioPages.ChangeBalanceHistory)" aria-current="page" @onclick="SetChangeBalanceHistory" >Change Balance History</button>
     </li>
-        <li class="nav-item" style="margin: 10px">
-            <button class="nav-link @CheckActive(AssetPortfolioPages.Settings)" aria-current="page" @onclick="SetSettings" >Settings</button>
-        </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(AssetPortfolioPages.Settings)" aria-current="page" @onclick="SetSettings" >Settings</button>
+    </li>
 </ul>
 
 @if (ActivePage == AssetPortfolioPages.AssetPortfolio)
@@ -33,6 +35,11 @@
         <li><button type="button" class="btn-outline-secondary btn" @onclick="Refresh">Refresh</button></li>
         <li><button type="button" class="btn-outline-warning btn" @onclick="ShowChangeBalanceWindow">Change balance</button></li>
         <li><button type="button" class="btn-outline-warning btn" @onclick="CreateMarketTrade">Create Market Trade</button></li>
+        <li><span style="margin-left: 10px; vertical-align: center">Timer</span><input type="checkbox" style="width: 40px" @bind="_timerIsActive"/></li>
+        @if (_timerIsActive)
+        {
+            <li><span style="margin-left: 10px; vertical-align: center">Refresh Time In Second</span><input type="number" style="width: 40px" @bind="_refreshTimeInSec"/></li>
+        }
     </ul>
     <table class="table" style="width: auto">
         <thead>
@@ -250,6 +257,7 @@
     private AssetPortfolioPages ActivePage { get; set; }
     private List<NetBalanceByWallet> _balanceByWallets = new();
     private List<NetBalanceByAsset> _balanceByAssets = new();
+    private ILogger<AssetPortfolioComponent> _logger;
     private List<string> AllAssets { get; set; }
     
     private bool IsShowEdit { get; set; }
@@ -273,12 +281,37 @@
     private bool MarketTradeWindowException { get; set; }
     private string MarketTradeWindowExceptionText { get; set; }
     
+    private MyTaskTimer Timer { get; set; }
+    private bool _timerIsActive = true;
+    private int _refreshTimeInSec = 5;
+    
     protected override async Task OnInitializedAsync()
     {
         await CacheAllAssets();
         await Refresh();
+
+        InitTimer();
     }
-    
+
+    private void InitTimer()
+    {
+        Timer = new MyTaskTimer(nameof(AssetPortfolioComponent), TimeSpan.FromSeconds(_refreshTimeInSec), _logger, DoTime);
+        Timer.Start();
+    }
+
+    private async Task DoTime()
+    {
+        if (_timerIsActive)
+        {
+            if (_refreshTimeInSec < 1)
+            {
+                _refreshTimeInSec = 1;
+            }
+            await Refresh();
+            Timer.ChangeInterval(TimeSpan.FromSeconds(_refreshTimeInSec));
+        }
+    }
+
     private async Task Refresh()
     {
         var response = await _assetPortfolioService.GetBalancesAsync();
@@ -418,7 +451,7 @@
         ExchangeName = string.Empty;
         Market = string.Empty;
         BaseVolume = 0.0;
-        AssociateBrokerId = string.Empty;
+        AssociateBrokerId = "jetwallet";
         BaseAsset = string.Empty;
         QuoteAsset = string.Empty;
         Comment = string.Empty;
