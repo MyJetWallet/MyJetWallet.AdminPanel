@@ -70,21 +70,25 @@
         
         @foreach (var netBalanceByAsset in _balanceByAssets)
         {
-            <tr>
-                <td><b>@netBalanceByAsset.Asset</b></td>
+            <tr style="background: @GetAssetBackgroundStyle(netBalanceByAsset)">
+                <td>
+                    <b>@netBalanceByAsset.Asset</b>
+                    @if (netBalanceByAsset.BalanceState != AssetBalanceState.Undefined && netBalanceByAsset.BalanceState != AssetBalanceState.Normal)
+                    {
+                        <br>
+                        <span>@netBalanceByAsset.BalanceState</span>
+                    }
+                    <br>
+                    <span>@netBalanceByAsset.BalanceState</span>
+                </td>
                 @foreach (var wallet in _balanceByWallets.OrderBy(elem => elem.WalletName))
                 {
-                    <td style="background: @GetAssetCellBackgroundStyle(netBalanceByAsset)">
+                    <td>
                         @if (netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetVolume != 0)
                         {
                             <span><b>@Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetVolume, 8)</b></span>
                             <br>
                             <span>USD: @Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetUsdVolume, 2)</span>
-                        }
-                        @if (netBalanceByAsset.BalanceState != AssetBalanceState.Normal)
-                        {
-                            <br>
-                            <span>@netBalanceByAsset.BalanceState</span>
                         }
                     </td>
                 }
@@ -412,7 +416,7 @@
         StateHasChanged();
     }
 
-    private string GetAssetCellBackgroundStyle(NetBalanceByAsset netBalanceByAsset)
+    private string GetAssetBackgroundStyle(NetBalanceByAsset netBalanceByAsset)
     {
         return netBalanceByAsset.BalanceState switch
         {
