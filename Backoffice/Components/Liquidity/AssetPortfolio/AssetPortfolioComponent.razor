@@ -5,16 +5,20 @@
 @using Backoffice.Services.SpotInstruments
 @using DotNetCoreDecorators
 @using Microsoft.Extensions.Logging
+@using MyJetWallet.Sdk.Service
 @using MyJetWallet.Sdk.Service.Tools
 @using Service.Liquidity.Portfolio.Grpc.Models.GetBalances
 @using Service.Liquidity.PortfolioHedger.Grpc
 @using Service.Liquidity.PortfolioHedger.Grpc.Models
 @using Syncfusion.Blazor.Diagram
+@using System.Diagnostics
 
 @inject IAssetPortfolioService _assetPortfolioService
 @inject IExternalExchangeTradeService _externalExchangeTradeService;
 @inject ISpotInstrumentManager _spotInstrumentManager;
 @inject ILogger<AssetPortfolioComponent> _logger;
+
+@implements IDisposable;
 
 <ul class="nav nav-tabs nav-pills">
     <li class="nav-item" style="margin: 10px">
@@ -273,14 +277,35 @@
     private bool MarketTradeWindowException { get; set; }
     private string MarketTradeWindowExceptionText { get; set; }
 
+
+    private string _timerId = Guid.NewGuid().ToString();
+    private bool _isAutoUpdate = false;
     
     protected override async Task OnInitializedAsync()
     {
         await CacheAllAssets();
         await Refresh();
+
+        _isAutoUpdate = true;
+        
+        await Refresh();
+        
+        GlobalTimers.RefreshTimer.RegisterCallback(_timerId, DoTime);
+        
     }
 
-    private async Task Refresh()
+    
+
+    private async Task DoTime()
+    {
+        if (!_isAutoUpdate)
+            return;
+
+        await RefreshInternal();
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    private async Task RefreshInternal()
     {
         var response = await _assetPortfolioService.GetBalancesAsync();
         _balanceByWallets = response.BalanceByWallet ?? new List<NetBalanceByWallet>();
@@ -288,6 +313,11 @@
 
         var exchangeCollectionResponse = await _externalExchangeTradeService.GetExternalExchangeCollectionAsync();
         ExchangeList = exchangeCollectionResponse.ExchangeNames;
+    }
+
+    private async Task Refresh()
+    {
+        await RefreshInternal();
 
         StateHasChanged();
     }
@@ -477,6 +507,12 @@
             ? string.Empty
             : "gainsboro";
         return color;
+    }
+
+    public void Dispose()
+    {
+        _isAutoUpdate = false;
+        GlobalTimers.RefreshTimer.RemoveCallback(_timerId);
     }
 
 }

@@ -4,7 +4,7 @@
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
-        "ConsoleOutputLogLevel": "Default",
+        "ConsoleOutputLogLevel": "Information",
         "GRPC_PORT": "87",
         "111x-ssl-user": "alexey.n",
         "APP_COMPILATION_DATE": "2021-01-01 11:10:00",
