@@ -295,6 +295,7 @@
         if (_timerIsActive)
         {
             await Refresh();
+            await InvokeAsync(StateHasChanged);
         }
     }
 
