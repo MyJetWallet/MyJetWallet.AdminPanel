@@ -9,13 +9,12 @@
 @using Service.Liquidity.Portfolio.Grpc.Models.GetBalances
 @using Service.Liquidity.PortfolioHedger.Grpc
 @using Service.Liquidity.PortfolioHedger.Grpc.Models
+@using Syncfusion.Blazor.Diagram
 
 @inject IAssetPortfolioService _assetPortfolioService
 @inject IExternalExchangeTradeService _externalExchangeTradeService;
 @inject ISpotInstrumentManager _spotInstrumentManager;
 @inject ILogger<AssetPortfolioComponent> _logger;
-
-@implements IDisposable
 
 <ul class="nav nav-tabs nav-pills">
     <li class="nav-item" style="margin: 10px">
@@ -38,7 +37,6 @@
         <li><button type="button" class="btn-outline-secondary btn" @onclick="Refresh">Refresh</button></li>
         <li><button type="button" class="btn-outline-warning btn" @onclick="ShowChangeBalanceWindow">Change balance</button></li>
         <li><button type="button" class="btn-outline-warning btn" @onclick="CreateMarketTrade">Create Market Trade</button></li>
-        <li><span style="margin-left: 10px; vertical-align: center">Timer</span><input type="checkbox" style="width: 40px" @bind="_timerIsActive"/></li>
     </ul>
     <table class="table" style="width: auto">
         <thead>
@@ -274,29 +272,12 @@
     private double BaseVolume { get; set; }
     private bool MarketTradeWindowException { get; set; }
     private string MarketTradeWindowExceptionText { get; set; }
-    
-    private bool _timerIsActive = true;
+
     
     protected override async Task OnInitializedAsync()
     {
         await CacheAllAssets();
         await Refresh();
-
-        InitTimer();
-    }
-
-    private void InitTimer()
-    {
-        GlobalTimers.RefreshTimer.RegisterCallback(nameof(AssetPortfolioComponent), DoTime);
-    }
-
-    private async Task DoTime()
-    {
-        if (_timerIsActive)
-        {
-            await Refresh();
-            await InvokeAsync(StateHasChanged);
-        }
     }
 
     private async Task Refresh()
@@ -307,7 +288,7 @@
 
         var exchangeCollectionResponse = await _externalExchangeTradeService.GetExternalExchangeCollectionAsync();
         ExchangeList = exchangeCollectionResponse.ExchangeNames;
-        
+
         StateHasChanged();
     }
 
@@ -315,7 +296,6 @@
     {
         ActivePage = AssetPortfolioPages.AssetPortfolio;
         await Refresh();
-        StateHasChanged();
     }
     private void SetTrades()
     {
@@ -489,11 +469,5 @@
             AssetBalanceState.Critical => "lightcoral",
             _ => string.Empty
             };
-    }
-
-    public void Dispose()
-    {
-        _timerIsActive = false;
-        GlobalTimers.RefreshTimer.RemoveCallback(nameof(AssetPortfolioComponent));
     }
 }
