@@ -90,8 +90,7 @@
     {
         if (_isDispose) return;
         await ReloadData();
-
-
+        
         await InvokeAsync(StateHasChanged);
     }
 
