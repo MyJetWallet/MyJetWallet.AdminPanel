@@ -42,21 +42,21 @@
         <thead>
         <tr>
             <th></th>
-            @foreach (var wallet in _balanceByWallets)
+            @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
             {
-                <th>@wallet.WalletName</th>
+                <th style="background: @GetWalletStyle(wallet)">@wallet.WalletName</th>
             }
-            <th></th>
+            <th style="background: lightgray">NET</th>
         </tr>
         </thead>
         <tbody>
         <tr>
         <td><b>NET USD</b></td>
-        @foreach (var wallet in _balanceByWallets)
+        @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
         {
             <td>@Math.Round(wallet.NetUsdVolume, 2)</td>
         }
-        <td><b>@Math.Round(_balanceByWallets.Sum(elem => elem.NetUsdVolume), 2)</b></td>
+        <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Sum(elem => elem.NetUsdVolume), 2)</b></td>
         </tr>
         </tbody>
     </table>
@@ -67,9 +67,9 @@
         <thead>
         <tr>
             <th>Asset</th>
-            @foreach (var wallet in _balanceByWallets.OrderBy(elem => elem.WalletName))
+            @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
             {
-                <th>@wallet.WalletName</th>
+                <th style="background: @GetWalletStyle(wallet)">@wallet.WalletName</th>
             }
             <th style="background: lightgray">NET</th>
         </tr>
@@ -87,7 +87,7 @@
                         <span>@netBalanceByAsset.BalanceState</span>
                     }
                 </td>
-                @foreach (var wallet in _balanceByWallets.OrderBy(elem => elem.WalletName))
+                @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
                 {
                     <td>
                         @if (netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetVolume != 0)
@@ -470,4 +470,13 @@
             _ => string.Empty
             };
     }
+
+    private string GetWalletStyle(NetBalanceByWallet wallet)
+    {
+        var color = wallet.IsInternal
+            ? string.Empty
+            : "gainsboro";
+        return color;
+    }
+
 }
