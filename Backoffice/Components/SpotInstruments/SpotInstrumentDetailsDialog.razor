@@ -24,6 +24,12 @@
                             @Item.Instrument.KycRequiredForTrade
                         </td>
                     </tr>
+                    <tr><td>IconUrl</td><td class="float-left">
+                        @if (!String.IsNullOrWhiteSpace(Item.Instrument.IconUrl))
+                        {
+                            <img src="@Item.Instrument.IconUrl" width="100px">
+                        }
+                    </td></tr>
                 </table>
 
             </td>

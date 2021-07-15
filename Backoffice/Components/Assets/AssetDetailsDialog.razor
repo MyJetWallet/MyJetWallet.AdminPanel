@@ -25,6 +25,13 @@
                     <td>KYC Withdrawal</td>
                     <td style="background: @(Item.Asset.KycRequiredForWithdrawal ? "orange" : "#28a745")">@Item.Asset.KycRequiredForWithdrawal</td>
                 </tr>
+                <tr><td>IconUrl</td><td class="float-left">
+                    @if (!String.IsNullOrWhiteSpace(Item.Asset.IconUrl))
+                    {
+                        <img src="@Item.Asset.IconUrl" width="100px">
+                    }
+                </td></tr>
+                
                 
             </table>
 

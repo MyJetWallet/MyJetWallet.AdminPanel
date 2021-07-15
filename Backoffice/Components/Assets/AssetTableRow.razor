@@ -26,6 +26,13 @@
         <MyLabel Text="BitGo" Color="lightblue" IsShow="@Item.PaymentSettings?.PaymentSettings?.BitGoCrypto?.IsEnabledWithdrawal" />
     </td>
     <td>
+        @if (!String.IsNullOrWhiteSpace(Item.Asset.IconUrl))
+        {
+            <img src="@Item.Asset.IconUrl" width="25px">
+        }
+    </td>
+    
+    <td>
         @foreach (var brand in Item.Brands)
         {
             <MyLabel Color="lightyellow" Text="@brand" />            

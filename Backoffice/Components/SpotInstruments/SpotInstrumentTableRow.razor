@@ -20,6 +20,13 @@
     </td>
     
     <td>
+        @if (!String.IsNullOrWhiteSpace(Item.Instrument.IconUrl))
+        {
+            <img src="@Item.Instrument.IconUrl" width="25px">
+        }
+    </td>
+    
+    <td>
         @foreach (var brand in Item.Brands)
         {
             <MyLabel Color="lightyellow" Text="@brand" />            
