@@ -1,6 +1,9 @@
 ﻿@using Backoffice.Services.SpotInstruments
 @using Service.AssetsDictionary.Domain.Models
 @using Backoffice.Services.References
+@using Backoffice.Services.Assets
+@inject IAssetItemManager _assetItemManager
+@inject ISpotInstrumentManager _spotInstrumentManager
 
 <BaseTwoButtonsDialog 
     Caption=@(!IsCreate ? $"{Item.Reference.Id} [{Item.Reference.BrokerId}]" : "Create a new reference") 
@@ -43,11 +46,27 @@
                     <tr></tr>
                     <tr>
                         <td>AssociateAsset</td>
-                        <input type="text" class="form-control" @bind="Item.Reference.AssociateAsset"/>
+                        @if (AssetItems.Any())
+                        {
+                            <select @bind="Item.Reference.AssociateAsset">
+                                @foreach (var asset in AssetItems)
+                                {
+                                    <option value=@asset.Asset.Symbol>@asset.Asset.Symbol</option>
+                                }
+                            </select>
+                        }
                     </tr>
                     <tr>
                         <td>AssociateAssetPair</td>
-                        <input type="text" class="form-control" @bind="Item.Reference.AssociateAssetPair"/>
+                        @if (SpotInstrumentItems.Any())
+                        {
+                            <select @bind="Item.Reference.AssociateAssetPair">
+                                @foreach (var spotInstrument in SpotInstrumentItems.Where(i=> i.Instrument.BaseAsset == Item.Reference.AssociateAsset || i.Instrument.QuoteAsset == Item.Reference.AssociateAsset))
+                                {
+                                    <option value=@spotInstrument.Instrument.Symbol>@spotInstrument.Instrument.Symbol</option>
+                                }
+                            </select>
+                        }
                     </tr>
                     <tr>
                         <td>Name</td>
@@ -84,10 +103,11 @@
     [Parameter]
     public EventCallback<MarketReferenceItem> OnUpdateCallback { get; set; }
 
-    
     [Parameter]
     public bool IsCreate { get; set; }
 
+    public List<AssetItem> AssetItems { get; set; } = new();
+    public List<SpotInstrumentItem> SpotInstrumentItems { get; set; } = new();
 
     private void OnClose()
     {
@@ -102,9 +122,9 @@
             await OnUpdateCallback.InvokeAsync(Item);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        base.OnInitialized();
+        await base.OnInitializedAsync();
 
         if (IsCreate)
         {
@@ -119,5 +139,9 @@
         }
 
         Item.Brands ??= new List<string>();
+
+        AssetItems = await _assetItemManager.GetAll();
+        SpotInstrumentItems = await _spotInstrumentManager.GetAll();
+        StateHasChanged();
     }
 }
