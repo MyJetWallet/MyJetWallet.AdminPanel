@@ -1,0 +1,131 @@
+﻿@using Service.Bitgo.DepositDetector.Grpc
+@using Service.Bitgo.DepositDetector.Grpc.Models
+@using Service.Bitgo.DepositDetector.Domain.Models
+@using Backoffice.Abstractions.Models
+@using Backoffice.Services.Assets
+
+@inject IBitgoDepositService _bitgoDepositService
+@inject IToaster ToastService;
+
+<tr>
+    <td>@Item.Id</td>
+    <td>@Item.ClientId</td>
+    <td>@Item.WalletId</td>
+    <td>@Item.TransactionId</td>
+    <td>@Item.Amount</td>
+    <td>@Item.AssetSymbol</td>
+    <td>@Item.Integration</td>
+    <td>@Item.Comment</td>
+    <td>@Item.Txid</td>
+    <td>@Item.Status</td>
+    <td>@Item.MatchingEngineId</td>
+    <td>@Item.LastError</td>
+    <td>@Item.RetriesCount</td>
+    <td>@Item.EventDate</td>
+    <td>
+        <ul class="nav">
+            @if (Item.Status != DepositStatus.Processed)
+            {
+                <li><button type="button" class="btn-outline-info btn" @onclick="ShowRetry">Retry</button></li>
+            }
+            @if (Item.Status == DepositStatus.New)
+            {
+                <li><button type="button" class="btn-outline-danger btn" @onclick="ShowCancel">Cancel</button></li>
+            }
+        </ul>
+    </td>
+</tr>
+
+
+@if (IsShowRetry)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption=@($"Retry deposit {Item.Id}]")
+            OnClose="OnCloseRetryDialog"
+            YesButtonCaption="Retry"
+            NoButtonCaption="Cancel"
+            OnSubmit="OnRetryDeposit">
+            
+            <h3 class="alert-warning">Are you sure you want to retry deposit?</h3>
+            
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+@if (IsShowCancel)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption=@($"Cancel deposit {Item.Id}]")
+            OnClose="OnCloseCancelDialog"
+            YesButtonCaption="Cancel deposit"
+            NoButtonCaption="Cancel"
+            OnSubmit="CancelDeposit">
+            
+            <h3 class="alert-warning">Are you sure you want to cancel deposit?</h3>
+            
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+
+
+@code {
+    
+    [Parameter]
+    public Deposit Item { get; set; }
+    
+    [Parameter]
+    public EventCallback<Deposit> OnCancelCallback { get; set; }
+
+    private bool IsShowRetry { get; set; }
+    private bool IsShowCancel { get; set; }
+
+    private void ShowRetry()
+    {
+        IsShowRetry = true;
+        StateHasChanged();
+    }
+
+    private void ShowCancel()
+    {
+        IsShowCancel = true;
+        StateHasChanged();
+    }
+
+    private async void OnRetryDeposit()
+    {
+        try
+        {
+            await _bitgoDepositService.RetryDeposit(new RetryDepositRequest() {DepositId = Item.Id});
+
+            IsShowRetry = false;
+
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Edit asset");
+        }
+    }
+
+    private async Task CancelDeposit()
+    {
+        IsShowCancel = false;
+        await OnCancelCallback.InvokeAsync(Item);
+    }
+    
+    private void OnCloseRetryDialog()
+    {
+        IsShowRetry = false;
+        StateHasChanged();
+    }
+    
+    private void OnCloseCancelDialog()
+    {
+        IsShowCancel = false;
+        StateHasChanged();
+    }
+
+}

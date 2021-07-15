@@ -100,5 +100,8 @@ namespace Backoffice
 
         [YamlProperty("AdminPanel.PortfolioHedgerGrpcUrl")]
         public string PortfolioHedgerGrpcUrl { get; set; }
+
+        [YamlProperty("AdminPanel.BitgoDepositServiceGrpcUrl")]
+        public string BitgoDepositServiceGrpcUrl { get; set; }
     }
 }

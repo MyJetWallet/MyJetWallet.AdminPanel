@@ -1,0 +1,47 @@
+﻿@page "/CashOperations"
+
+@using Backoffice.Components.CashOperations.Deposits;
+
+
+<ul class="nav nav-tabs nav-pills">
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.Deposits)" aria-current="page" @onclick="SetDeposits" >Deposits</button>
+    </li>
+</ul>
+
+<div style="margin: 10px">
+    
+    @if (ActivePage == Menus.Deposits)
+    {
+        <DepositsComponent />
+    }
+</div>
+
+@code {
+
+    private Menus ActivePage { get; set; } = Menus.Deposits;
+
+    private string CheckActive(Menus target)
+    {
+        if (ActivePage == target)
+            return "active";
+
+        return "";
+    }
+
+    private void SetDeposits()
+    {
+        SetActive(Menus.Deposits);
+    }
+
+    private void SetActive(Menus page)
+    {
+        ActivePage = page;
+        StateHasChanged();
+    }
+    
+    public enum Menus
+    {
+        Deposits
+    }
+}

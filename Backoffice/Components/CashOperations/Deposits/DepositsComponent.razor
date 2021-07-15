@@ -1,0 +1,102 @@
+﻿@using Service.Bitgo.DepositDetector.Grpc
+@using Service.Bitgo.DepositDetector.Grpc.Models
+@using Service.Bitgo.DepositDetector.Domain.Models
+
+@inject IToaster ToastService;
+@inject IBitgoDepositService _bitgoDepositService
+
+<h3>DepositsComponent</h3>
+
+<ul class="nav">
+    @if ((_deposits)?.Any() == true)
+    {
+        <li>
+            <button type="button" class="btn-outline-info btn" @onclick="NextPage">>>> Next >>></button>
+        </li>
+    }
+    <li>
+        <button type="button" class="btn-outline-secondary btn" @onclick="RefreshDeposits">Refresh</button>
+    </li>
+    <li>
+        <span style="margin-left: 10px; vertical-align: center">Count in page: </span><input type="number" style="width: 40px" @bind="CountInPage"/>
+    </li>
+</ul>
+
+<table class="table" style="width: auto">
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>ClientId</th>
+        <th>WalletId</th>
+        <th>TransactionId</th>
+        <th>Amount</th>
+        <th>AssetSymbol</th>
+        <th>Integration</th>
+        <th>Comment</th>
+        <th>Txid</th>
+        <th>Status</th>
+        <th>MatchingEngineId</th>
+        <th>LastError</th>
+        <th>RetriesCount</th>
+        <th>EventDate</th>
+        <th/>
+    </tr>
+    </thead>
+    <tbody>
+        @foreach (var deposit in _deposits)
+        {
+            <DepositTableRow Item="@deposit" OnCancelCallback="CancelDeposit"/>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<Deposit> _deposits = new();
+    private int CountInPage { get; set; } = 20;
+    private long _lastId = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshDeposits();
+    }
+
+    private async Task RefreshDeposits()
+    {
+        var depositsResponse = await _bitgoDepositService.GetDeposits(new GetDepositsRequest {BatchSize = CountInPage});
+
+        _deposits = depositsResponse.DepositCollection ?? new List<Deposit>();
+
+        StateHasChanged();
+    }
+
+    private async Task NextPage()
+    {
+        if (_deposits?.Any() != true)
+            return;
+
+        var depositsResponse = await _bitgoDepositService.GetDeposits(new GetDepositsRequest {BatchSize = CountInPage, LastId = _lastId});
+
+        if (!depositsResponse.Success || depositsResponse.DepositCollection == null || depositsResponse.DepositCollection.Count == 0)
+            return;
+
+        _deposits = depositsResponse.DepositCollection;
+
+        StateHasChanged();
+    }
+
+    private async void CancelDeposit(Deposit deposit)
+    {
+        try
+        {
+            await _bitgoDepositService.CancelDeposit(new CancelDepositRequest {DepositId = deposit.Id});
+            
+            ToastService.Info($"Deposit {deposit.Id} is cancelled", "Cancel deposit");
+            
+            await RefreshDeposits();    
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Asset deletion");
+        }
+    }
+}
