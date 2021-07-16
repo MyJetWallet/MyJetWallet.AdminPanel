@@ -6,7 +6,7 @@
 @inject ISpotInstrumentManager _spotInstrumentManager
 
 <BaseTwoButtonsDialog 
-    Caption=@(!IsCreate ? $"{Item.Reference.Id} [{Item.Reference.BrokerId}]" : "Create a new reference") 
+    Caption=@(!IsCreate ? $"{Item.Reference.Id} [{Item.Reference.BrokerId}]" : "Create a new market") 
     OnClose="OnClose" 
     YesButtonCaption="@(IsCreate ? "Create" : "Save")"
     NoButtonCaption="Close"
@@ -139,9 +139,13 @@
         }
 
         Item.Brands ??= new List<string>();
-
+        
         AssetItems = await _assetItemManager.GetAll();
         SpotInstrumentItems = await _spotInstrumentManager.GetAll();
+        if (IsCreate)
+        {
+            Item.Reference.AssociateAsset = AssetItems.FirstOrDefault()?.Asset.Symbol;
+        }
         StateHasChanged();
     }
 }

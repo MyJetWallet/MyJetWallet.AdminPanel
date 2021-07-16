@@ -61,6 +61,7 @@ namespace Backoffice
         {
             NavsItem.Create("Assets", "Assets", "list-rich", Menu.Assets),
             NavsItem.Create("Spot Instruments", "SpotInstruments", "list-rich", Menu.SpotInstruments),
+            NavsItem.Create("Market References", "References","list-rich",Menu.References),
             NavsItem.Create("Liquidity", "LiquidityEngine", "list-rich", Menu.Liquidity),
             NavsItem.Create("Prices", "Prices", "list-rich", Menu.Prices),
             NavsItem.Create("Simulations", "Simulations", "list-rich", Menu.Simulations),
@@ -73,7 +74,6 @@ namespace Backoffice
             NavsItem.Create("Notifications", "Notifications","list-rich",Menu.Notifications),
             NavsItem.Create("Monitor", "Monitor","list-rich",Menu.Monitor),
             NavsItem.Create("Social Network Auth", "AuthTest","list-rich",Menu.SocialNetworkAuth),
-            NavsItem.Create("Market References", "References","list-rich",Menu.References),
             NavsItem.Create("Cash Operations", "CashOperations","list-rich",Menu.CashOperations),
 
         };
