@@ -35,7 +35,7 @@
       <PackageReference Include="MyJetWallet.Sdk.Grpc" Version="1.0.2" />
       <PackageReference Include="MyJetWallet.Sdk.NoSql" Version="1.2.0" />
       <PackageReference Include="MyJetWallet.Service.ActiveOrders.Client" Version="3.0.2" />
-      <PackageReference Include="MyJetWallet.Service.AssetsDictionary.Client" Version="1.6.2" />
+      <PackageReference Include="MyJetWallet.Service.AssetsDictionary.Client" Version="1.6.3" />
       <PackageReference Include="MyJetWallet.Service.BalanceHistory.Client" Version="2.0.2" />
       <PackageReference Include="MyJetWallet.Service.Balances.Client" Version="1.0.7" />
       <PackageReference Include="MyJetWallet.Service.Bitgo.DepositDetector.Client" Version="1.1.7" />
@@ -43,7 +43,7 @@
       <PackageReference Include="MyJetWallet.Service.ClientWallets.Client" Version="1.2.0" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Converter.Client" Version="1.1.1" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Engine.Client" Version="1.4.2" />
-      <PackageReference Include="MyJetWallet.Service.Liquidity.Portfolio.Client" Version="1.3.6" />
+      <PackageReference Include="MyJetWallet.Service.Liquidity.Portfolio.Client" Version="1.4.1" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.PortfolioHedger.Client" Version="1.0.5" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Reports.Client" Version="1.0.9" />
       <PackageReference Include="MyJetWallet.Service.MatchingEngine.PriceSource.Client" Version="1.2.1" />
@@ -64,7 +64,7 @@
       <PackageReference Include="SimpleTrading.ServiceStatusReporterConnector" Version="1.0.9" />
       <PackageReference Include="Sotsera.Blazor.Toaster" Version="3.0.0" />
       <PackageReference Include="Syncfusion.Blazor" Version="19.2.0.47" />
-      <PackageReference Include="MySettingsReader" Version="1.2.0" />
+      <PackageReference Include="MySettingsReader" Version="1.2.1" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0-preview.6.21352.12" />
       <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0-preview.6.21352.12" />
       <PackageReference Include="MyJetWallet.Sdk.Service" Version="1.5.5" />
