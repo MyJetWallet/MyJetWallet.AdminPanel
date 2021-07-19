@@ -7,7 +7,7 @@
     <thead>
     <tr>
         <th>#</th>
-        <th>Asset</th>
+        <th>Instrument</th>
         <th>CurrentPrice</th>
         <th>H24P</th>
         <th>H24A</th>
@@ -26,7 +26,7 @@
         rowNumber++;
         <tr>
             <td>@rowNumber</td>
-            <td>@price.AssetId</td>
+            <td>@price.InstrumentId</td>
             <td>@price.CurrentPrice</td>
             <td>@price.H24P</td>
             <td>@price.H24A</td>
@@ -65,7 +65,7 @@
     {
         BasePrice = new BasePriceEditRequest()
         {
-            AssetId = basePrice.AssetId,
+            InstrumentId = basePrice.InstrumentId,
             BrokerId = basePrice.BrokerId,
             CurrentPrice = basePrice.CurrentPrice,
             D7 = basePrice.D7,
