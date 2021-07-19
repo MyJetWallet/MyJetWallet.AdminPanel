@@ -64,7 +64,7 @@
         {
             <td>@Math.Round(wallet.NetUsdVolume, 2)</td>
         }
-        <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Where(elem => elem.IsInternal).Sum(elem => elem.NetUsdVolume) - _balanceByWallets.Where(elem => !elem.IsInternal).Sum(elem => elem.NetUsdVolume), 2)</b></td>
+        <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Sum(elem => elem.NetUsdVolume), 2)</b></td>
         </tr>
         </tbody>
     </table>
