@@ -106,5 +106,8 @@ namespace Backoffice
 
         [YamlProperty("AdminPanel.LiquidityPortfolioMonitoringServiceUrl")]
         public string LiquidityPortfolioMonitoringServiceUrl { get; set; }
+        
+        [YamlProperty("AdminPanel.BasePriceServiceGrpcUrl")]
+        public string BasePriceServiceGrpcUrl { get; set; }
     }
 }
