@@ -103,5 +103,8 @@ namespace Backoffice
 
         [YamlProperty("AdminPanel.BitgoDepositServiceGrpcUrl")]
         public string BitgoDepositServiceGrpcUrl { get; set; }
+        
+        [YamlProperty("AdminPanel.BasePriceServiceGrpcUrl")]
+        public string BasePriceServiceGrpcUrl { get; set; }
     }
 }
