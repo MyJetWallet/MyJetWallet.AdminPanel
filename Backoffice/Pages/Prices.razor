@@ -1,144 +1,61 @@
 ﻿@page "/Prices"
-@using Service.MatchingEngine.PriceSource.Client
-@using MyJetWallet.Domain.Prices
-@using MyJetWallet.Sdk.Service.Tools
-@using Microsoft.Extensions.Logging
-@using Service.Liquidity.Engine.Grpc
-@using Syncfusion.Blazor.Diagrams
 
-@inject ICurrentPricesCache PriceService
-@inject ILoggerFactory LoggerFactory
-@inject IMarketMakerSettingsManagerGrpc SettingsManagerGrpc;
+<ul class="nav nav-tabs nav-pills">
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.Prices)" aria-current="page" @onclick="SetPrices" >Prices</button>
+    </li>
 
-@implements IDisposable
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.BasePrices)" @onclick="SetBasePrices" >BasePrices</button>
+    </li>
 
-<h3>Prices</h3>
+</ul>
 
-<table class="table" style="width: auto; font-size: 10px;">
-    <thead>
-    <tr>
-        <th>Symbol</th>
-        <th>Price</th>
-        <th>Spread</th>
-        <th>Time</th>
-        <th>Delay</th>
-        <th>Source</th>
-        <th>Source Price</th>
-        <th>Source Spread</th>
-        <th></th>
-    </tr>
-    </thead>
-    <tbody>
-        @foreach (var price in _prices)
-        {
-            <tr style="background: @(GetRowBackground(price.Price))">
-                <td>@price.Symbol</td>
-                <td>
-                    <div>
-                        <div class="row">
-                            <div class="col-md-1">ask:</div>
-                            <div class="col-md-1">@price.Price.Ask</div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-1">bid:</div>
-                            <div class="col-md-1">@price.Price.Bid</div>
-                        </div>
-                    </div>
-                </td>
-                <td>@(Math.Round(price.Price.Ask-price.Price.Bid, 8))<br>@(Math.Round((price.Price.Ask-price.Price.Bid)/((price.Price.Ask+price.Price.Bid)/2)*100, 3))%</td>
-                <td>@price.Price.DateTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
-                <td>@((DateTime.UtcNow - @price.Price.DateTime).ToString())</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td>
-                    <ul class="nav">
-                        <li><button type="button" class="btn-outline-info btn" style="height: 20px; font-size: 10px" @onclick="@(() => ClickDetails(price.Symbol))" >book</button></li>
-                    </ul>                    
-                </td>
-            </tr>
-            @if (price.Symbol == SelectedSymbol)
-            {
-                <tr>
-                    <td colspan="9">
-                        <OrderBookComponent Symbol="@price.Symbol" />
-                    </td>
-                </tr>
-            }
-        }
-    </tbody>
+<div style="margin: 10px">
     
-</table>
+    @if (ActivePage == Menus.Prices)
+    {
+        <PricesComponent/>
+    }
 
-
-
+    @if (ActivePage == Menus.BasePrices)
+    {
+        <BasePriceComponent />
+    }
+</div>
 
 @code {
 
-    private bool _isDispose = false;
-    
-    private string SelectedSymbol { get; set; }
-    
-    protected override async Task OnInitializedAsync()
-    {
-        await ReloadData();
+    private Menus ActivePage { get; set; } = Menus.Prices;
 
-        GlobalTimers.RefreshTimer.RegisterCallback(nameof(Prices), DoTime);
+    private string CheckActive(Menus target)
+    {
+        if (ActivePage == target)
+            return "active";
+
+        return "";
     }
 
-    private async Task DoTime()
+    private void SetPrices()
     {
-        if (_isDispose) return;
-        await ReloadData();
-        
-        await InvokeAsync(StateHasChanged);
+        SetActive(Menus.Prices);
     }
 
-    private async Task ReloadData()
+    private void SetBasePrices()
     {
-        var prices = PriceService.GetPrices();
-        var lpSettings = await SettingsManagerGrpc.GetMarketMakerSettingsAsync();
-
-        _prices.Clear();
-        foreach (var price in prices)
-        {
-            var item = new PriceItem()
-            {
-                Symbol = price.Id,
-                Price = price
-            };
-            _prices.Add(item);
-        }
+        SetActive(Menus.BasePrices);
     }
 
-    public void Dispose()
+    private void SetActive(Menus page)
     {
-        _isDispose = true;
-        GlobalTimers.RefreshTimer.RemoveCallback(nameof(Prices));
-    }
-
-    private List<PriceItem> _prices = new ();
-
-    private string GetRowBackground(BidAsk price)
-    {
-        if ((DateTime.UtcNow - price.DateTime).TotalMilliseconds > 5000)
-            return "lightgoldenrodyellow";
-
-        return "white";
-    }
-
-
-    private class PriceItem
-    {
-        public string Symbol { get; set; }
-        public BidAsk Price { get; set; }
-    }
-
-    private void ClickDetails(string symbol)
-    {
-        SelectedSymbol = SelectedSymbol == symbol ? "" : symbol;
-
+        ActivePage = page;
         StateHasChanged();
     }
-
+    
+    public enum Menus
+    {
+        Prices,
+        BasePrices
+    }
+ 
 }
