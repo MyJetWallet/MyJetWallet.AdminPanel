@@ -18,6 +18,7 @@ using Service.ClientWallets.Client;
 using Service.Fees.Client.Grpc;
 using Service.Liquidity.Converter.Client;
 using Service.Liquidity.Engine.Client;
+using Service.Liquidity.Monitoring.Client;
 using Service.Liquidity.Monitoring.Domain.Models;
 using Service.Liquidity.Portfolio.Client;
 using Service.Liquidity.Portfolio.Domain.Models;
@@ -80,6 +81,8 @@ namespace Backoffice.Modules
             builder.RegisterMatchingEngineOrderBookClient(_myNoSqlClient);
             builder.RegisterMatchingEngineDetailOrderBookClient(_myNoSqlClient);
             
+            builder.RegisterPortfolioClient(Program.Settings.LiquidityPortfolioServiceUrl);
+            builder.RegisterAssetPortfolioSettingsClient(Program.Settings.LiquidityPortfolioMonitoringServiceUrl);
 
             builder.RegisterMyNoSqlReader<AssetPortfolioBalanceNoSql>(_myNoSqlClient, AssetPortfolioBalanceNoSql.TableName);
             builder.RegisterMyNoSqlReader<AssetPortfolioStatusNoSql>(_myNoSqlClient, AssetPortfolioStatusNoSql.TableName);

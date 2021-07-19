@@ -84,19 +84,19 @@
         </thead>
         <tbody>
 
-
-        
-    
         @foreach (var netBalanceByAsset in _balanceByAssets)
         {
-            @_portfolioStatuses.TryGetValue(netBalanceByAsset.Asset, out var status)
+            AssetStatus status;
+            {
+                _portfolioStatuses.TryGetValue(netBalanceByAsset.Asset, out status);
+            }
             <tr style="background: @GetAssetBackgroundStyle(status)">
                 <td>
                     <b>@netBalanceByAsset.Asset</b>
                     @if (status != AssetStatus.Normal)
                     {
                         <br>
-                        <span>@status</span>
+                        <span>@status.ToString()</span>
                     }
                 </td>
                 @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
