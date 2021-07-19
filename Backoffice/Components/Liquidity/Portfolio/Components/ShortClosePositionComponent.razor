@@ -3,8 +3,10 @@
 @using Service.Liquidity.Engine.Grpc
 @using MyJetWallet.Domain.Orders
 @using Service.Liquidity.Reports.Grpc.Models
+@using Microsoft.Extensions.Logging
 
 @inject ILiquidityReportService LiquidityReportService
+@inject ILogger<ShortClosePositionComponent> _logger
 
 <h3>Closed</h3>
 
@@ -47,25 +49,32 @@
     {
         if (_isDispose) return;
 
-        var minTime = DateTime.UtcNow.AddHours(-24);
-
-        var request = new GetClosedPositionsRequest()
+        try
         {
-            Take = 30,
-            LastSeenDateTime = DateTime.UtcNow
-        };
-        
-        _closedPositions = (await LiquidityReportService.GetClosedPositions(request))
-            ?.List
-            ?.OrderByDescending(e => e.CloseTime)
-            .Where(e => e.CloseTime.HasValue && e.CloseTime > minTime)
-            .Take(40)
-            .ToList()
-            ?? new List<PositionPortfolio>();
-        
-        #pragma warning disable 4014
-        InvokeAsync(StateHasChanged);
-        #pragma warning restore 4014
+            var minTime = DateTime.UtcNow.AddHours(-24);
+
+            var request = new GetClosedPositionsRequest()
+            {
+                Take = 30,
+                LastSeenDateTime = DateTime.UtcNow
+            };
+
+            _closedPositions = (await LiquidityReportService.GetClosedPositions(request))
+                ?.List
+                ?.OrderByDescending(e => e.CloseTime)
+                .Where(e => e.CloseTime.HasValue && e.CloseTime > minTime)
+                .Take(40)
+                .ToList()
+                               ?? new List<PositionPortfolio>();
+
+#pragma warning disable 4014
+            InvokeAsync(StateHasChanged);
+#pragma warning restore 4014
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Cannot refresh ShortClosePositionComponent");
+        }
     }
     
     protected override async Task OnInitializedAsync()
