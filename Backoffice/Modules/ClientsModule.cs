@@ -25,7 +25,6 @@ using Service.Liquidity.Portfolio.Domain.Models;
 using Service.Liquidity.PortfolioHedger.Client;
 using Service.Liquidity.Reports.Client;
 using Service.MatchingEngine.PriceSource.Client;
-using Service.PriceHistory.Client;
 using Service.PushNotification.Client;
 using Service.Service.KYC.Client;
 using Service.SmsProviderMock.Client;
@@ -129,8 +128,6 @@ namespace Backoffice.Modules
             builder.RegisterFeesSettingsClients(Program.Settings.FeesServiceUrl);
             builder.RegisterPortfolioHedgerClient(Program.Settings.PortfolioHedgerGrpcUrl);
             builder.RegisterBitgoDepositServiceClient(Program.Settings.BitgoDepositServiceGrpcUrl);
-            
-            builder.RegisterPriceHistoryClient(Program.Settings.BasePriceServiceGrpcUrl);
         }
         
         private void RegisterMyNoSqlTcpClient(ContainerBuilder builder)
