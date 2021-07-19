@@ -2,9 +2,15 @@
 @using Service.Liquidity.Portfolio.Domain.Models
 @using Service.Liquidity.Portfolio.Grpc.Models
 @using Backoffice.Services.SpotInstruments
+@using Service.Liquidity.PortfolioHedger.Grpc
+@using Service.Liquidity.PortfolioHedger.Grpc.Models
+@using Service.Liquidity.Reports.Grpc
+@using Service.Liquidity.Reports.Grpc.Models
+@using GetTradesRequest = Service.Liquidity.Portfolio.Grpc.Models.GetTradesRequest
 
-@inject IAssetPortfolioService _assetPortfolioService
+@inject ILiquidityReportService _liquidityReportService;
 @inject ISpotInstrumentManager _spotInstrumentManager;
+@inject IManualTradeService _manualTradeService;
 
 <ul class="nav">
     @if (_trades?.Any() == true)
@@ -139,12 +145,12 @@
 
 @code {
     
-    private List<Trade> _trades = new();
+    private List<AssetPortfolioTrade> _trades = new();
     private int CountInPage { get; set; } = 20;
     private long _lastSeen = 0;
     
     private bool IsCreateDialogOpen { get; set; }
-    private CreateTradeManualRequest NewTrade { get; set; }
+    private ReportManualTradeRequest NewTrade { get; set; }
     private bool ShowError { get; set; }
     private string ErrorText { get; set; }
     
@@ -182,11 +188,10 @@
             StateHasChanged();
             return;
         }
-        
-        var response = await _assetPortfolioService.CreateManualTradeAsync(NewTrade);
+
+        var response = await _manualTradeService.ReportManualTradeAsync(NewTrade);
         if (response.Success)
         {
-            _trades.Add(response.Trade);
             await Refresh();
             OnCloseCreateDialog();
         } else 
@@ -207,21 +212,21 @@
 
     private void ReportTrade()
     {
-        NewTrade = new CreateTradeManualRequest();
+        NewTrade = new ReportManualTradeRequest();
         IsCreateDialogOpen = true;
     }
 
     private async Task Refresh()
     {
-        var request = new GetTradesRequest() {BatchSize = CountInPage};
+        var request = new GetAssetPortfolioTradesRequest() {BatchSize = CountInPage};
 
         if (AssetFilerActive && !string.IsNullOrEmpty(FilterAsset))
         {
             request.AssetFilter = FilterAsset;
         }
         
-        var response = await _assetPortfolioService.GetTradesAsync(request);
-        _trades = response.Trades ?? new List<Trade>();
+        var response = await _liquidityReportService.GetAssetPortfolioTradesAsync(request);
+        _trades = response.Trades ?? new List<AssetPortfolioTrade>();
         _lastSeen = response.IdForNextQuery;
         
         await SetAssetCollection();
@@ -236,7 +241,7 @@
         AllInstruments = await _spotInstrumentManager.GetAll();
     }
 
-    private void RoundAllValues(List<Trade> trades)
+    private void RoundAllValues(List<AssetPortfolioTrade> trades)
     {
         trades.ForEach(trade =>
         {
@@ -266,14 +271,14 @@
         if (_trades?.Any() != true)
             return;
 
-        var request = new GetTradesRequest() {BatchSize = CountInPage, LastId = _lastSeen};
+        var request = new GetAssetPortfolioTradesRequest() {BatchSize = CountInPage, LastId = _lastSeen};
         
         if (AssetFilerActive && !string.IsNullOrEmpty(FilterAsset))
         {
             request.AssetFilter = FilterAsset;
         }
         
-        var response = await _assetPortfolioService.GetTradesAsync(request);
+        var response = await _liquidityReportService.GetAssetPortfolioTradesAsync(request);
         
         if (!response.Success || response.Trades == null || response.Trades.Count == 0)
             return;

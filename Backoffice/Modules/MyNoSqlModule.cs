@@ -1,8 +1,10 @@
 using Autofac;
 using MyJetWallet.BitGo.Settings.NoSql;
 using MyJetWallet.Sdk.Authorization.NoSql;
+using MyJetWallet.Sdk.NoSql;
 using MyNoSqlServer.Abstractions;
 using Service.AssetsDictionary.MyNoSql;
+using Service.Liquidity.Portfolio.Domain.Models;
 
 namespace Backoffice.Modules
 {
@@ -13,7 +15,6 @@ namespace Backoffice.Modules
             RegisterMyNoSqlWriter<BitgoAssetMapEntity>(builder, BitgoAssetMapEntity.TableName);
             RegisterMyNoSqlWriter<BitgoCoinEntity>(builder, BitgoAssetMapEntity.TableName);
             RegisterMyNoSqlWriter<AssetPaymentSettingsNoSqlEntity>(builder, AssetPaymentSettingsNoSqlEntity.TableName);
-            
             RegisterAuthMyNoSqlWriter<RootSessionNoSqlEntity>(builder,RootSessionNoSqlEntity.TableName);
             RegisterAuthMyNoSqlWriter<ShortRootSessionNoSqlEntity>(builder,ShortRootSessionNoSqlEntity.TableName);
         }

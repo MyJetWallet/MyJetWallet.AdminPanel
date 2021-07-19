@@ -4,6 +4,7 @@ using Backoffice.Services.Simulations;
 using MyCrm.PersonalData.Grpc;
 using MyJetWallet.BitGo.Settings.Ioc;
 using MyJetWallet.Sdk.Grpc;
+using MyJetWallet.Sdk.NoSql;
 using MyJetWallet.Sdk.Service;
 using MyNoSqlServer.DataReader;
 using Service.ActiveOrders.Client;
@@ -17,7 +18,9 @@ using Service.ClientWallets.Client;
 using Service.Fees.Client.Grpc;
 using Service.Liquidity.Converter.Client;
 using Service.Liquidity.Engine.Client;
+using Service.Liquidity.Monitoring.Domain.Models;
 using Service.Liquidity.Portfolio.Client;
+using Service.Liquidity.Portfolio.Domain.Models;
 using Service.Liquidity.PortfolioHedger.Client;
 using Service.Liquidity.Reports.Client;
 using Service.MatchingEngine.PriceSource.Client;
@@ -77,6 +80,13 @@ namespace Backoffice.Modules
             builder.RegisterMatchingEngineOrderBookClient(_myNoSqlClient);
             builder.RegisterMatchingEngineDetailOrderBookClient(_myNoSqlClient);
             
+
+            builder.RegisterMyNoSqlReader<AssetPortfolioBalanceNoSql>(_myNoSqlClient, AssetPortfolioBalanceNoSql.TableName);
+            builder.RegisterMyNoSqlReader<AssetPortfolioStatusNoSql>(_myNoSqlClient, AssetPortfolioStatusNoSql.TableName);
+            builder.RegisterMyNoSqlReader<AssetPortfolioSettingsNoSql>(_myNoSqlClient, AssetPortfolioSettingsNoSql.TableName);
+            
+
+
             builder.RegisterClientWalletsClientsWithoutCache(Program.Settings.ClientWalletsGrpcServiceUrl);
             
             builder.RegisterBalancesClientsWithoutCache(Program.Settings.BalancesGrpcServiceUrl);
@@ -109,9 +119,6 @@ namespace Backoffice.Modules
                 .As<IMyCrmPersonalDataGrpcService>()
                 .SingleInstance();
             
-            builder.RegisterPortfolioClient(Program.Settings.LiquidityPortfolioServiceUrl);
-            builder.RegisterAssetPortfolioSettingsClient(Program.Settings.LiquidityPortfolioServiceUrl);
-            
             var externalSettingsManager = new ExternalMarketsSettingsManager(Program.Settings.ExternalMarketsSettings);
             builder.RegisterInstance(externalSettingsManager).As<IExternalMarketsSettingsManager>().SingleInstance();
             
@@ -129,6 +136,6 @@ namespace Backoffice.Modules
                 .RegisterInstance(_myNoSqlClient)
                 .AsSelf()
                 .SingleInstance();
-        }
+            }
     }
 }

@@ -7,16 +7,20 @@
 @using Microsoft.Extensions.Logging
 @using MyJetWallet.Sdk.Service
 @using MyJetWallet.Sdk.Service.Tools
-@using Service.Liquidity.Portfolio.Grpc.Models.GetBalances
+@using Service.Liquidity.Portfolio.Grpc.Models
 @using Service.Liquidity.PortfolioHedger.Grpc
 @using Service.Liquidity.PortfolioHedger.Grpc.Models
 @using Syncfusion.Blazor.Diagram
 @using System.Diagnostics
+@using MyNoSqlServer.Abstractions
+@using Service.Liquidity.Monitoring.Domain.Models
 
 @inject IAssetPortfolioService _assetPortfolioService
-@inject IExternalExchangeTradeService _externalExchangeTradeService;
+@inject IManualTradeService _manualTradeService;
 @inject ISpotInstrumentManager _spotInstrumentManager;
 @inject ILogger<AssetPortfolioComponent> _logger;
+@inject IMyNoSqlServerDataReader<AssetPortfolioBalanceNoSql> _portfolioBalanceNoSql;
+@inject IMyNoSqlServerDataReader<AssetPortfolioStatusNoSql> _portfolioStatusNoSql;
 
 @implements IDisposable;
 
@@ -79,16 +83,20 @@
         </tr>
         </thead>
         <tbody>
+
+
         
+    
         @foreach (var netBalanceByAsset in _balanceByAssets)
         {
-            <tr style="background: @GetAssetBackgroundStyle(netBalanceByAsset)">
+            @_portfolioStatuses.TryGetValue(netBalanceByAsset.Asset, out var status)
+            <tr style="background: @GetAssetBackgroundStyle(status)">
                 <td>
                     <b>@netBalanceByAsset.Asset</b>
-                    @if (netBalanceByAsset.BalanceState != AssetBalanceState.Undefined && netBalanceByAsset.BalanceState != AssetBalanceState.Normal)
+                    @if (status != AssetStatus.Normal)
                     {
                         <br>
-                        <span>@netBalanceByAsset.BalanceState</span>
+                        <span>@status</span>
                     }
                 </td>
                 @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
@@ -254,6 +262,7 @@
     private AssetPortfolioPages ActivePage { get; set; }
     private List<NetBalanceByWallet> _balanceByWallets = new();
     private List<NetBalanceByAsset> _balanceByAssets = new();
+    private Dictionary<string, AssetStatus> _portfolioStatuses = new();
     private List<string> AllAssets { get; set; }
     
     private bool IsShowEdit { get; set; }
@@ -294,8 +303,6 @@
         
     }
 
-    
-
     private async Task DoTime()
     {
         if (!_isAutoUpdate)
@@ -307,11 +314,17 @@
     
     private async Task RefreshInternal()
     {
-        var response = await _assetPortfolioService.GetBalancesAsync();
-        _balanceByWallets = response.BalanceByWallet ?? new List<NetBalanceByWallet>();
-        _balanceByAssets = response.BalanceByAsset ?? new List<NetBalanceByAsset>();
+        var balanceResponse = _portfolioBalanceNoSql.Get().FirstOrDefault()?.Balance;
+        _balanceByWallets = balanceResponse?.BalanceByWallet ?? new List<NetBalanceByWallet>();
+        _balanceByAssets = balanceResponse?.BalanceByAsset ?? new List<NetBalanceByAsset>();
 
-        var exchangeCollectionResponse = await _externalExchangeTradeService.GetExternalExchangeCollectionAsync();
+        var statusResponse = _portfolioStatusNoSql.Get();
+        foreach (var status in statusResponse)
+        {
+            _portfolioStatuses[status.AssetStatus.Asset] = status.AssetStatus.Status;
+        }
+        
+        var exchangeCollectionResponse = await _manualTradeService.GetExternalExchangeCollectionAsync();
         ExchangeList = exchangeCollectionResponse.ExchangeNames;
     }
 
@@ -473,7 +486,7 @@
             Comment = Comment,
             User = User
         };
-        var response = await _externalExchangeTradeService.CreateManualTradeAsync(request);
+        var response = await _manualTradeService.CreateManualTradeAsync(request);
 
         if (!response.Success)
         {
@@ -490,13 +503,13 @@
         StateHasChanged();
     }
 
-    private string GetAssetBackgroundStyle(NetBalanceByAsset netBalanceByAsset)
+    private string GetAssetBackgroundStyle(AssetStatus status)
     {
-        return netBalanceByAsset.BalanceState switch
+        return status switch
         {
-            AssetBalanceState.Warning => "lightyellow",
-            AssetBalanceState.Danger => "lightsalmon",
-            AssetBalanceState.Critical => "lightcoral",
+            AssetStatus.Warning => "lightyellow",
+            AssetStatus.Danger => "lightsalmon",
+            AssetStatus.Critical => "lightcoral",
             _ => string.Empty
             };
     }

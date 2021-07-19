@@ -1,6 +1,11 @@
 @using Service.Liquidity.Portfolio.Grpc
 @using Service.Liquidity.Portfolio.Domain.Models
+@using Service.Liquidity.Monitoring.Grpc
+@using Service.Liquidity.Monitoring.Domain.Models
+@using MyNoSqlServer.Abstractions
+
 @inject IAssetPortfolioSettingsManager _assetPortfolioSettingsManager
+@inject IMyNoSqlServerDataReader<AssetPortfolioSettingsNoSql> _myNoSqlServerDataReader;
 
 @foreach (var elem in Settings)
 {
@@ -90,21 +95,15 @@
     {
         try
         {
-            var response = await _assetPortfolioSettingsManager
-                .GetAssetPortfolioSettingsAsync();
-            if (!response.Success)
+            var response = _myNoSqlServerDataReader
+                .Get()
+                .ToList();
+            Settings = new();
+            response.ForEach(elem =>
             {
-                ShowErrorText(response.ErrorMessage);
-            }
-            else
-            {
-                Settings = new();
-                response.Settings.ForEach(elem =>
-                {
-                    Settings.Add(elem);
-                });
-                ShowError = false;
-            }
+                Settings.Add(elem.Settings);
+            });
+            ShowError = false;
         }
         catch (Exception exception)
         {
