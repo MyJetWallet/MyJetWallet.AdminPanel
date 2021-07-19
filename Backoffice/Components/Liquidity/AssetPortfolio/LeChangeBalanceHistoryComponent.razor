@@ -1,6 +1,8 @@
 @using Service.Liquidity.Portfolio.Grpc
 @using Service.Liquidity.Portfolio.Domain.Models
-@inject IAssetPortfolioService _assetPortfolioService
+@using Service.Liquidity.Reports.Grpc
+
+@inject ILiquidityReportService _liquidityReportService;
 
 <ul class="nav">
     <li><button type="button" class="btn-outline-secondary btn" @onclick="Refresh">Refresh</button></li>
@@ -44,7 +46,7 @@
 
     private async Task Refresh()
     {
-        var response = await _assetPortfolioService.GetChangeBalanceHistoryAsync();
+        var response = await _liquidityReportService.GetChangeBalanceHistoryAsync();
         _histories = response.Histories ?? new List<ChangeBalanceHistory>();
         StateHasChanged();
     }

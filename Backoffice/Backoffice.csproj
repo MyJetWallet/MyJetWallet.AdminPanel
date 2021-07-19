@@ -44,9 +44,9 @@
       <PackageReference Include="MyJetWallet.Service.Liquidity.Converter.Client" Version="1.1.1" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Engine.Client" Version="1.4.2" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Monitoring.Client" Version="1.0.1" />
-      <PackageReference Include="MyJetWallet.Service.Liquidity.Portfolio.Client" Version="1.4.4" />
+      <PackageReference Include="MyJetWallet.Service.Liquidity.Portfolio.Client" Version="1.4.7" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.PortfolioHedger.Client" Version="1.0.7" />
-      <PackageReference Include="MyJetWallet.Service.Liquidity.Reports.Client" Version="1.1.1" />
+      <PackageReference Include="MyJetWallet.Service.Liquidity.Reports.Client" Version="1.1.2" />
       <PackageReference Include="MyJetWallet.Service.MatchingEngine.PriceSource.Client" Version="1.2.1" />
       <PackageReference Include="MyJetWallet.Service.PriceHistory.Client" Version="1.0.0" />
       <PackageReference Include="MyJetWallet.Service.PushNotification.Client" Version="1.2.4.1" />
