@@ -146,6 +146,8 @@
         {
             Item.Reference.AssociateAsset = AssetItems.FirstOrDefault()?.Asset.Symbol;
         }
+        Item.Reference.AssociateAssetPair = SpotInstrumentItems.FirstOrDefault(i => i.Instrument.BaseAsset == Item.Reference.AssociateAsset || i.Instrument.QuoteAsset == Item.Reference.AssociateAsset).Instrument.Symbol;
+
         StateHasChanged();
     }
 }
