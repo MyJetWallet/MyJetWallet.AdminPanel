@@ -13,6 +13,7 @@ using Service.AssetsDictionary.Grpc;
 using Service.BalanceHistory.Client;
 using Service.Balances.Client;
 using Service.Bitgo.DepositDetector.Client;
+using Service.Bitgo.WithdrawalProcessor.Client;
 using Service.ChangeBalanceGateway.Client;
 using Service.ClientWallets.Client;
 using Service.Fees.Client.Grpc;
@@ -129,6 +130,7 @@ namespace Backoffice.Modules
             builder.RegisterFeesSettingsClients(Program.Settings.FeesServiceUrl);
             builder.RegisterPortfolioHedgerClient(Program.Settings.PortfolioHedgerGrpcUrl);
             builder.RegisterBitgoDepositServiceClient(Program.Settings.BitgoDepositServiceGrpcUrl);
+            builder.RegisterBitgoWithdrawalClient(Program.Settings.BitgoWithdrawalServiceGrpcUrl);
             
             builder.RegisterPriceHistoryClient(Program.Settings.BasePriceServiceGrpcUrl);
         }
