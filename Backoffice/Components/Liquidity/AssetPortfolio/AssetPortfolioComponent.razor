@@ -266,7 +266,7 @@
     private List<string> AllAssets { get; set; }
     
     private bool IsShowEdit { get; set; }
-    private double BalanceDiff { get; set; }
+    private decimal BalanceDiff { get; set; }
     private string Comment { get; set; }
     private string User { get; set; }
     private string BrokerId { get; set; }
@@ -460,7 +460,7 @@
         
         ExchangeName = string.Empty;
         Market = string.Empty;
-        BaseVolume = 0.0;
+        BaseVolume = 0;
         AssociateBrokerId = "jetwallet";
         BaseAsset = string.Empty;
         QuoteAsset = string.Empty;
