@@ -1,0 +1,132 @@
+﻿@using Service.Bitgo.WithdrawalProcessor.Grpc
+@using Service.Bitgo.WithdrawalProcessor.Grpc.Models
+@using Service.Bitgo.WithdrawalProcessor.Domain.Models
+@using Backoffice.Abstractions.Models
+@using Backoffice.Services.Assets
+
+@inject IBitgoWithdrawalService _bitgoWithdrawalService
+@inject IToaster ToastService;
+
+<tr>
+    <td>@Item.Id</td>
+    <td>@Item.ClientId</td>
+    <td>@Item.WalletId</td>
+    <td>@Item.TransactionId</td>
+    <td>@Item.Amount</td>
+    <td>@Item.AssetSymbol</td>
+    <td>@Item.ToAddress</td>
+    <td>@Item.Integration</td>
+    <td>@Item.Comment</td>
+    <td>@Item.Txid</td>
+    <td>@Item.Status</td>
+    <td>@Item.MatchingEngineId</td>
+    <td>@Item.LastError</td>
+    <td>@Item.RetriesCount</td>
+    <td>@Item.EventDate</td>
+    <td>
+        <ul class="nav">
+            @if (Item.Status != WithdrawalStatus.Success)
+            {
+                <li><button type="button" class="btn-outline-info btn" @onclick="ShowRetry">Retry</button></li>
+            }
+            @if (Item.Status != WithdrawalStatus.Success)
+            {
+                <li><button type="button" class="btn-outline-danger btn" @onclick="ShowCancel">Cancel</button></li>
+            }
+        </ul>
+    </td>
+</tr>
+
+
+@if (IsShowRetry)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption=@($"Retry withdrawal {Item.Id}]")
+            OnClose="OnCloseRetryDialog"
+            YesButtonCaption="Retry"
+            NoButtonCaption="Cancel"
+            OnSubmit="OnRetryWithdrawal">
+            
+            <h3 class="alert-warning">Are you sure you want to retry withdrawal?</h3>
+            
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+@if (IsShowCancel)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption=@($"Cancel withdrawal {Item.Id}]")
+            OnClose="OnCloseCancelDialog"
+            YesButtonCaption="Cancel withdrawal"
+            NoButtonCaption="Cancel"
+            OnSubmit="CancelWithdrawal">
+            
+            <h3 class="alert-warning">Are you sure you want to cancel withdrawal?</h3>
+            
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+
+
+@code {
+    
+    [Parameter]
+    public Withdrawal Item { get; set; }
+    
+    [Parameter]
+    public EventCallback<Withdrawal> OnCancelCallback { get; set; }
+
+    private bool IsShowRetry { get; set; }
+    private bool IsShowCancel { get; set; }
+
+    private void ShowRetry()
+    {
+        IsShowRetry = true;
+        StateHasChanged();
+    }
+
+    private void ShowCancel()
+    {
+        IsShowCancel = true;
+        StateHasChanged();
+    }
+
+    private async void OnRetryWithdrawal()
+    {
+        try
+        {
+            await _bitgoWithdrawalService.RetryWithdrawal(new RetryWithdrawalRequest() {WithdrawalId = Item.Id});
+
+            IsShowRetry = false;
+
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Edit asset");
+        }
+    }
+
+    private async Task CancelWithdrawal()
+    {
+        IsShowCancel = false;
+        await OnCancelCallback.InvokeAsync(Item);
+    }
+    
+    private void OnCloseRetryDialog()
+    {
+        IsShowRetry = false;
+        StateHasChanged();
+    }
+    
+    private void OnCloseCancelDialog()
+    {
+        IsShowCancel = false;
+        StateHasChanged();
+    }
+
+}

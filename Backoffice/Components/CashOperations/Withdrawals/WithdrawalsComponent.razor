@@ -1,0 +1,103 @@
+﻿@using Service.Bitgo.WithdrawalProcessor.Grpc
+@using Service.Bitgo.WithdrawalProcessor.Grpc.Models
+@using Service.Bitgo.WithdrawalProcessor.Domain.Models
+
+@inject IToaster ToastService;
+@inject IBitgoWithdrawalService _bitgoWithdrawalService
+
+<h3>WithdrawalsComponent</h3>
+
+<ul class="nav">
+    @if ((_withdrawals)?.Any() == true)
+    {
+        <li>
+            <button type="button" class="btn-outline-info btn" @onclick="NextPage">>>> Next >>></button>
+        </li>
+    }
+    <li>
+        <button type="button" class="btn-outline-secondary btn" @onclick="RefreshWithdrawals">Refresh</button>
+    </li>
+    <li>
+        <span style="margin-left: 10px; vertical-align: center">Count in page: </span><input type="number" style="width: 40px" @bind="CountInPage"/>
+    </li>
+</ul>
+
+<table class="table" style="width: auto">
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>ClientId</th>
+        <th>WalletId</th>
+        <th>TransactionId</th>
+        <th>Amount</th>
+        <th>AssetSymbol</th>
+        <th>Destination address</th>
+        <th>Integration</th>
+        <th>Comment</th>
+        <th>Txid</th>
+        <th>Status</th>
+        <th>MatchingEngineId</th>
+        <th>LastError</th>
+        <th>RetriesCount</th>
+        <th>EventDate</th>
+        <th/>
+    </tr>
+    </thead>
+    <tbody>
+        @foreach (var withdrawal in _withdrawals)
+        {
+            <WithdrawalTableRow Item="@withdrawal" OnCancelCallback="CancelWithdrawal"/>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<Withdrawal> _withdrawals = new();
+    private int CountInPage { get; set; } = 20;
+    private long _lastId = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshWithdrawals();
+    }
+
+    private async Task RefreshWithdrawals()
+    {
+        var withdrawalsResponse = await _bitgoWithdrawalService.GetWithdrawals(new GetWithdrawalsRequest {BatchSize = CountInPage});
+
+        _withdrawals = withdrawalsResponse.WithdrawalCollection ?? new List<Withdrawal>();
+
+        StateHasChanged();
+    }
+
+    private async Task NextPage()
+    {
+        if (_withdrawals?.Any() != true)
+            return;
+
+        var withdrawalsResponse = await _bitgoWithdrawalService.GetWithdrawals(new GetWithdrawalsRequest {BatchSize = CountInPage, LastId = _lastId});
+
+        if (!withdrawalsResponse.Success || withdrawalsResponse.WithdrawalCollection == null || withdrawalsResponse.WithdrawalCollection.Count == 0)
+            return;
+
+        _withdrawals = withdrawalsResponse.WithdrawalCollection;
+
+        StateHasChanged();
+    }
+
+    private async void CancelWithdrawal(Withdrawal withdrawal)
+    {
+        try
+        {
+            await _bitgoWithdrawalService.CancelWithdrawal(new CancelWithdrawalRequest {WithdrawalId = withdrawal.Id});
+            
+            ToastService.Info($"Withdrawal {withdrawal.Id} is cancelled", "Cancel withdrawal");
+            
+            await RefreshWithdrawals();    
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Asset deletion");
+        }
+    }
+}

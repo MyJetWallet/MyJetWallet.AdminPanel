@@ -1,11 +1,12 @@
 ﻿@page "/CashOperations"
 
 @using Backoffice.Components.CashOperations.Deposits;
-
+@using Backoffice.Components.CashOperations.Withdrawals;
 
 <ul class="nav nav-tabs nav-pills">
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(Menus.Deposits)" aria-current="page" @onclick="SetDeposits" >Deposits</button>
+        <button class="nav-link @CheckActive(Menus.Withdrawals)" aria-current="page" @onclick="SetWithdrawals" >Withdrawals</button>
     </li>
 </ul>
 
@@ -14,6 +15,11 @@
     @if (ActivePage == Menus.Deposits)
     {
         <DepositsComponent />
+    }
+    
+    @if (ActivePage == Menus.Withdrawals)
+    {
+        <WithdrawalsComponent />
     }
 </div>
 
@@ -34,6 +40,11 @@
         SetActive(Menus.Deposits);
     }
 
+    private void SetWithdrawals()
+    {
+        SetActive(Menus.Withdrawals);
+    }
+
     private void SetActive(Menus page)
     {
         ActivePage = page;
@@ -42,6 +53,7 @@
     
     public enum Menus
     {
-        Deposits
+        Deposits,
+        Withdrawals
     }
 }
