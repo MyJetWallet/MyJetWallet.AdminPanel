@@ -431,7 +431,7 @@
             !string.IsNullOrWhiteSpace(BrokerId) &&
             !string.IsNullOrWhiteSpace(WalletName))
         {
-            var response = await _assetPortfolioService.UpdateBalance(new UpdateBalanceRequest()
+            var response = await _assetPortfolioService.SetBalance(new SetBalanceRequest()
             {
                 BrokerId = BrokerId,
                 WalletName = WalletName,
