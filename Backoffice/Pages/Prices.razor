@@ -1,12 +1,16 @@
-﻿@page "/Prices"
+﻿@using Backoffice.Components.Prices
+
+@page "/Prices"
 
 <ul class="nav nav-tabs nav-pills">
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(Menus.Prices)" aria-current="page" @onclick="SetPrices" >Prices</button>
     </li>
-
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(Menus.BasePrices)" @onclick="SetBasePrices" >BasePrices</button>
+    </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.IndexPrices)" @onclick="SetIndexPrices" >IndexPrices</button>
     </li>
 
 </ul>
@@ -21,6 +25,10 @@
     @if (ActivePage == Menus.BasePrices)
     {
         <BasePriceComponent />
+    }
+    @if (ActivePage == Menus.IndexPrices)
+    {
+        <IndexPricesComponent />
     }
 </div>
 
@@ -46,6 +54,11 @@
         SetActive(Menus.BasePrices);
     }
 
+    private void SetIndexPrices()
+    {
+        SetActive(Menus.IndexPrices);
+    }
+
     private void SetActive(Menus page)
     {
         ActivePage = page;
@@ -55,7 +68,8 @@
     public enum Menus
     {
         Prices,
-        BasePrices
+        BasePrices,
+        IndexPrices
     }
  
 }

@@ -1,0 +1,154 @@
+@using Service.MatchingEngine.PriceSource.Client
+@using MyJetWallet.Domain.Prices
+@using MyJetWallet.Sdk.Service.Tools
+@using Microsoft.Extensions.Logging
+@using Service.IndexPrices.Client
+@using Service.IndexPrices.Domain.Models
+@using Service.Liquidity.Engine.Grpc
+@using Syncfusion.Blazor.Diagrams
+
+@inject IIndexPricesClient _indexPricesClient
+@inject IIndexPriceManager _indexPriceManager;
+
+@implements IDisposable
+
+<h3>Index Prices</h3>
+<ul class="nav">
+    <li><button type="button" class="btn-outline-info btn" style="height: 20px; font-size: 10px" @onclick="@(() => OpenUpdateWindow(null))" >Create new</button></li>
+</ul>    
+
+<table class="table" style="width: auto; font-size: 10px;">
+    <thead>
+    <tr>
+        <th>Asset</th>
+        <th>UsdPrice</th>
+        <th>UpdateDate</th>
+        <th>Delay</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var price in _prices)
+    {
+        <tr style="background: @(GetRowBackground(price))">
+            <td>@price.Asset</td>
+            <td>@price.UsdPrice</td>
+            <td>@price.UpdateDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
+            <td>@((DateTime.UtcNow - @price.UpdateDate).ToString())</td>
+            <td>
+                <ul class="nav">
+                    <li><button type="button" class="btn-outline-info btn" style="height: 20px; font-size: 10px" @onclick="@(() => OpenUpdateWindow(price))">update</button></li>
+                </ul>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@if (UpdateWindowOpen)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption="Index Price"
+            OnClose="@OnCloseUpdateWindow"
+            YesButtonCaption="Save"
+            NoButtonCaption="Cancel"
+            OnSubmit="@InsertOrReplaceIndexPrice">
+            <table>
+                <tr>
+                    <td>Asset</td>
+                    <select @bind="@IndexPriceInUpdateWindow.Asset">
+                        @foreach (var name in _prices.Select(elem => elem.Asset))
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
+                    <td>Index Price In USD</td>
+                    <td><input type="number" class="form-control" @bind=IndexPriceInUpdateWindow.UsdPrice /></td>
+                </tr>
+            </table>
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+
+@code {
+
+    private bool _isDispose = false;
+    
+    private string SelectedSymbol { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await ReloadData();
+
+        GlobalTimers.RefreshTimer.RegisterCallback(nameof(IndexPricesComponent), DoTime);
+    }
+
+    private async Task DoTime()
+    {
+        if (_isDispose) return;
+        await ReloadData();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ReloadData()
+    {
+        var prices = _indexPricesClient.GetIndexPricesAsync();
+
+        _prices.Clear();
+        _prices.AddRange(prices);
+    }
+
+    public void Dispose()
+    {
+        _isDispose = true;
+        GlobalTimers.RefreshTimer.RemoveCallback(nameof(Prices));
+    }
+
+    private List<IndexPrice> _prices = new ();
+
+    private string GetRowBackground(IndexPrice indexPrice)
+    {
+        return (DateTime.UtcNow - indexPrice.UpdateDate).TotalMilliseconds > 5000 
+            ? "lightgoldenrodyellow" 
+            : "white";
+    }
+
+    private bool UpdateWindowOpen = false;
+    private IndexPrice IndexPriceInUpdateWindow = new IndexPrice();
+
+    private void OpenUpdateWindow(IndexPrice price)
+    {
+        UpdateWindowOpen = true;
+
+        if (price != null)
+        {
+            IndexPriceInUpdateWindow.Asset = price.Asset;
+            IndexPriceInUpdateWindow.UsdPrice = price.UsdPrice;
+        }
+        
+        StateHasChanged();
+    }
+
+    private void OnCloseUpdateWindow()
+    {
+        UpdateWindowOpen = false;
+        IndexPriceInUpdateWindow = new IndexPrice();
+        
+        StateHasChanged();
+    }
+
+    private void InsertOrReplaceIndexPrice()
+    {
+        if (IndexPriceInUpdateWindow.Asset == string.Empty)
+            return;
+        
+        _indexPriceManager.ChangeIndexPrice(IndexPriceInUpdateWindow.Asset, IndexPriceInUpdateWindow.UsdPrice);
+
+        OnCloseUpdateWindow();
+    }
+
+}
