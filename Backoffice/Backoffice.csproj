@@ -29,9 +29,9 @@
       <PackageReference Include="MyCrm.MyCrmTradersUtmParametersGrpcContracts" Version="1.0.3" />
       <PackageReference Include="MyCrm.TradersDocuments.Grpc" Version="1.0.4" />
       <PackageReference Include="MyJetWallet.BitGo.Settings" Version="1.0.6" />
-      <PackageReference Include="MyJetWallet.Domain.ExternalMarketApi" Version="1.1.4" />
+      <PackageReference Include="MyJetWallet.Domain.ExternalMarketApi" Version="1.1.5" />
       <PackageReference Include="MyJetWallet.Sdk.Authorization" Version="1.1.2" />
-      <PackageReference Include="MyJetWallet.Sdk.ExternalMarketsSettings" Version="1.0.0" />
+      <PackageReference Include="MyJetWallet.Sdk.ExternalMarketsSettings" Version="1.0.1" />
       <PackageReference Include="MyJetWallet.Sdk.Grpc" Version="1.0.2" />
       <PackageReference Include="MyJetWallet.Sdk.NoSql" Version="1.2.0" />
       <PackageReference Include="MyJetWallet.Service.ActiveOrders.Client" Version="3.0.2" />
