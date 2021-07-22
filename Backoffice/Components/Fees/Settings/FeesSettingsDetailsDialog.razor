@@ -1,0 +1,29 @@
+﻿@using Service.Fees.Domain.Models
+<BaseOneButtonsDialog Caption=@($"Fees settings for {Item.BrokerId}") OnClose="OnClose" ButtonCaption="Close">
+    <table>
+    <tr>
+        <td>
+            <table>
+                <tr><td>Broker</td><td class="float-left">@Item.BrokerId</td></tr>
+                <tr><td>Account</td><td class="float-left">@Item.AccountId</td></tr>
+                <tr><td>Wallet</td><td class="float-left">@Item.WalletId</td></tr>
+            </table>
+        </td>
+    </tr>
+    
+  </table>
+</BaseOneButtonsDialog>
+
+@code {
+    
+    [Parameter]
+    public FeesSettings Item { get; set; }
+    
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+
+    private void OnClose()
+    {
+        OnCloseCallback.InvokeAsync();
+    }
+}
