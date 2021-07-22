@@ -1,0 +1,98 @@
+@using Service.CoinMarketCapReader.Domain.Models.NoSql
+@using MyNoSqlServer.Abstractions
+@using Service.CoinMarketCapReader.Domain.Models
+@inject IMyNoSqlServerDataWriter<MarketInfoNoSqlEntity> _infoWriter;
+
+<table class="table" style="width: auto">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Asset</th>
+        <th>BrokerId</th>
+        <th>Supply</th>
+        <th>Volume24</th>
+        <th>MarketCap</th>
+        <th>Price</th>
+        <th>OfficialWebsiteUrl</th>
+        <th>WhitepaperUrl</th>
+    </tr>
+    </thead>
+    <tbody>
+    @{
+        var rowNumber = 0;
+    }
+
+    @foreach (var info in _infos)
+    {
+        rowNumber++;
+        <tr>
+            <td>@rowNumber</td>
+            <td>@info.Asset</td>
+            <td>@info.BrokerId</td>
+            <td>@info.Supply</td>
+            <td>@info.Volume24</td>
+            <td>@info.MarketCap</td>
+            <td>@info.Price</td>
+            <td>@info.OfficialWebsiteUrl</td>
+            <td>@info.WhitepaperUrl</td>
+
+            <td>
+                <ul class="nav nav-tabs">
+                    <li>
+                        <button type="button" class="btn-outline-info btn" @onclick="@(() => { ShowEdit(info); })">Edit</button>
+                    </li>
+                </ul>
+            </td>
+        </tr>
+    }
+    </tbody>
+
+</table>
+
+@if (IsShowEdit)
+{
+    <div>
+        <MarketInfoEditDialog Item="@EditedEntity" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="async () => { await OnUpdateTemplateBody(); }"/>
+    </div>
+}
+
+
+@code {
+    
+    private List<MarketInfo> _infos = new();
+    private bool IsShowEdit { get; set; }
+    private MarketInfo EditedEntity { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshInfo();
+    }
+
+    private async Task RefreshInfo()
+    {
+        _infos = (await _infoWriter.GetAsync()).Select(entity => entity.MarketInfo).ToList();
+        StateHasChanged();
+    }
+
+    
+    private void ShowEdit(MarketInfo info)
+    {
+        EditedEntity = info;
+        IsShowEdit = true;
+        StateHasChanged();
+    }
+    
+
+    private void OnCloseEditDialog()
+    {
+        IsShowEdit = false;
+        StateHasChanged();
+    }
+
+    private async Task OnUpdateTemplateBody()
+    {
+        IsShowEdit = false;
+        await _infoWriter.InsertOrReplaceAsync(MarketInfoNoSqlEntity.Create(EditedEntity));
+        await RefreshInfo();
+    }
+}

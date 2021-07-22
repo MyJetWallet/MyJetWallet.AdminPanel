@@ -4,6 +4,7 @@ using MyJetWallet.Sdk.Authorization.NoSql;
 using MyJetWallet.Sdk.NoSql;
 using MyNoSqlServer.Abstractions;
 using Service.AssetsDictionary.MyNoSql;
+using Service.CoinMarketCapReader.Domain.Models.NoSql;
 using Service.Liquidity.Portfolio.Domain.Models;
 
 namespace Backoffice.Modules
@@ -15,6 +16,9 @@ namespace Backoffice.Modules
             RegisterMyNoSqlWriter<BitgoAssetMapEntity>(builder, BitgoAssetMapEntity.TableName);
             RegisterMyNoSqlWriter<BitgoCoinEntity>(builder, BitgoAssetMapEntity.TableName);
             RegisterMyNoSqlWriter<AssetPaymentSettingsNoSqlEntity>(builder, AssetPaymentSettingsNoSqlEntity.TableName);
+            RegisterMyNoSqlWriter<MarketInfoNoSqlEntity>(builder, MarketInfoNoSqlEntity.TableName);
+            RegisterMyNoSqlWriter<CMCApiKeyNoSqlEntity>(builder, CMCApiKeyNoSqlEntity.TableName);
+
             RegisterAuthMyNoSqlWriter<RootSessionNoSqlEntity>(builder,RootSessionNoSqlEntity.TableName);
             RegisterAuthMyNoSqlWriter<ShortRootSessionNoSqlEntity>(builder,ShortRootSessionNoSqlEntity.TableName);
         }

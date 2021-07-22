@@ -16,6 +16,7 @@ using Service.Bitgo.DepositDetector.Client;
 using Service.Bitgo.WithdrawalProcessor.Client;
 using Service.ChangeBalanceGateway.Client;
 using Service.ClientWallets.Client;
+using Service.CoinMarketCapReader.Client;
 using Service.Fees.Client.Grpc;
 using Service.IndexPrices.Client;
 using Service.Liquidity.Converter.Client;
@@ -94,7 +95,6 @@ namespace Backoffice.Modules
             builder.RegisterMyNoSqlReader<AssetPortfolioBalanceNoSql>(_myNoSqlClient, AssetPortfolioBalanceNoSql.TableName);
             builder.RegisterMyNoSqlReader<AssetPortfolioStatusNoSql>(_myNoSqlClient, AssetPortfolioStatusNoSql.TableName);
             builder.RegisterMyNoSqlReader<AssetPortfolioSettingsNoSql>(_myNoSqlClient, AssetPortfolioSettingsNoSql.TableName);
-            
 
 
             builder.RegisterClientWalletsClientsWithoutCache(Program.Settings.ClientWalletsGrpcServiceUrl);

@@ -1,0 +1,64 @@
+@using Service.CoinMarketCapReader.Domain.Models
+
+<BaseTwoButtonsDialog 
+    Caption=@($"{Item.Asset} [{Item.BrokerId}") 
+    OnClose="OnClose" 
+    YesButtonCaption="Save"
+    NoButtonCaption="Close"
+    OnSubmit="OnSubmit">
+
+    <table>
+        <tr>
+            <td>
+                <table>
+                    <tr>
+                        <td>Price</td>
+                        <input type="number" class="form-control" @bind="Item.Price"/>
+                    </tr>
+                    <tr>
+                        <td>Supply</td>
+                        <input type="number" class="form-control" @bind="Item.Supply"/>
+                    </tr>  
+                    <tr>
+                        <td>Volume24</td>
+                        <input type="number" class="form-control" @bind="Item.Volume24"/>
+                    </tr>
+                    <tr>
+                        <td>MarketCap</td>
+                        <input type="number" class="form-control" @bind="Item.MarketCap"/>
+                    </tr>
+                    <tr>
+                        <td>OfficialWebsiteUrl</td>
+                        <input type="text" class="form-control" @bind="Item.OfficialWebsiteUrl"/>
+                    </tr>
+                    <tr>
+                        <td>WhitepaperUrl</td>
+                        <input type="text" class="form-control" @bind="Item.WhitepaperUrl"/>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</BaseTwoButtonsDialog>
+
+@code {
+    [Parameter]
+    public MarketInfo Item { get; set; }
+    
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+    
+    [Parameter]
+    public EventCallback<MarketInfo> OnUpdateCallback { get; set; }
+    
+    
+    private void OnClose()
+    {
+        OnCloseCallback.InvokeAsync();
+    }
+
+    private async Task OnSubmit()
+    {
+        await OnUpdateCallback.InvokeAsync(Item);
+    }
+}
