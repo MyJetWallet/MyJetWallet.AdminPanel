@@ -59,12 +59,20 @@
         </thead>
         <tbody>
         <tr>
-        <td><b>NET USD</b></td>
-        @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
-        {
-            <td>@Math.Round(wallet.NetUsdVolume, 2)</td>
-        }
-        <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Sum(elem => elem.NetUsdVolume), 2)</b></td>
+            <td><b>NET USD</b></td>
+            @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
+            {
+                <td>@Math.Round(wallet.NetUsdVolume, 2)</td>
+            }
+            <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Sum(elem => elem.NetUsdVolume), 2)</b></td>
+        </tr>
+        <tr>
+            <td><b>UNRELEASED PNL</b></td>
+            @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
+            {
+                <td>@Math.Round(wallet.UnreleasedPnlUsd, 2)</td>
+            }
+            <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Sum(elem => elem.UnreleasedPnlUsd), 2)</b></td>
         </tr>
         </tbody>
     </table>
@@ -83,7 +91,6 @@
         </tr>
         </thead>
         <tbody>
-
         @foreach (var netBalanceByAsset in _balanceByAssets)
         {
             AssetStatus status;
@@ -107,6 +114,10 @@
                             <span><b>@Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetVolume, 8)</b></span>
                             <br>
                             <span>USD: @Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetUsdVolume, 2)</span>
+                            <br>
+                            <span>Open Price: @Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).OpenPrice, 2)</span>
+                            <br>
+                            <span>Unreleased Pnl: @Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).UnreleasedPnlUsd, 2)</span>
                         }
                     </td>
                 }
@@ -114,6 +125,10 @@
                     <span><b>@Math.Round(netBalanceByAsset.NetVolume, 8)</b></span>
                     <br>
                     <span>USD: @Math.Round(netBalanceByAsset.NetUsdVolume, 2)</span>
+                    <br>
+                    <span>Open Price Avg: @Math.Round(netBalanceByAsset.OpenPriceAvg, 2)</span>
+                    <br>
+                    <span>Unreleased Pnl: @Math.Round(netBalanceByAsset.UnrealisedPnl, 2)</span>
                 </td>
             </tr>
         }

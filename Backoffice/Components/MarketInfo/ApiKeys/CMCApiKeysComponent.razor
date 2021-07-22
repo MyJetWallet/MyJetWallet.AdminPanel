@@ -1,0 +1,70 @@
+@using Service.CoinMarketCapReader.Domain.Models.NoSql
+@using MyNoSqlServer.Abstractions
+@inject IMyNoSqlServerDataWriter<CMCApiKeyNoSqlEntity> _keysWriter;
+
+<table class="table" style="width: auto">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Api key</th>
+    </tr>
+    </thead>
+    <tbody>
+    @{
+        var rowNumber = 0;
+    }
+
+    @foreach (var key in _keys)
+    {
+        rowNumber++;
+        <tr>
+            <td>@rowNumber</td>
+            <td>@key</td>
+            <td>
+                <ul class="nav nav-tabs">
+                    <li>
+                        <button type="button" class="btn-outline-danger btn" @onclick="@(async () => { await RemoveKey(key); })">Delete</button>
+                    </li>
+                </ul>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<div>
+    <p>Add key: </p>
+    <input type="text" class="form-control" @bind="NewKey"/>
+    <button type="button" class="btn-outline-info btn" @onclick="@(async () => { await AddKey(); })">AddKey</button>
+</div>
+
+
+
+@code {
+    private List<string> _keys = new();
+    private string NewKey { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshKeys();
+    }
+
+    private async Task RefreshKeys()
+    {
+        _keys = (await _keysWriter.GetAsync()).Select(entity => entity.ApiKey).ToList();
+        StateHasChanged();
+    }
+
+    private async Task RemoveKey(string key)
+    {
+        await _keysWriter.DeleteAsync(CMCApiKeyNoSqlEntity.GeneratePartitionKey(), CMCApiKeyNoSqlEntity.GenerateRowKey(key));
+        await RefreshKeys();
+    }
+    
+    private async Task AddKey()
+    {
+        await _keysWriter.InsertOrReplaceAsync(CMCApiKeyNoSqlEntity.Create(NewKey));
+        NewKey = "";
+        await RefreshKeys();
+    }
+}

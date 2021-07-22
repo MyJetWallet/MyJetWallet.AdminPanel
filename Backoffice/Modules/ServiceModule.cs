@@ -9,6 +9,7 @@ using Backoffice.Services.BitGo.Assets;
 using Backoffice.Services.BitGo.Coins;
 using Backoffice.Services.Fees.Assets;
 using Backoffice.Services.Fees.Instruments;
+using Backoffice.Services.Fees.Settings;
 using Backoffice.Services.References;
 using Backoffice.Services.SpotInstruments;
 using Backoffice.TableStorage;
@@ -68,6 +69,11 @@ namespace Backoffice.Modules
             builder
                 .RegisterType<InstrumentFeesManager>()
                 .As<IInstrumentFeesManager>()
+                .SingleInstance();
+            
+            builder
+                .RegisterType<FeesSettingsManager>()
+                .As<IFeesSettingsManager>()
                 .SingleInstance();
 
             RegisterGrpcService(builder);

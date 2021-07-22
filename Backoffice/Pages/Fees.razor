@@ -1,10 +1,14 @@
 ﻿@using Backoffice.Components.Fees.Assets
 @using Backoffice.Components.Fees.Instruments
 @using Backoffice.Components.Fees.Balance
+@using Backoffice.Components.Fees.Settings
 
 @page "/Fees"
 
 <ul class="nav nav-tabs nav-pills">
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.Settings)" aria-current="page" @onclick="SetSettings">Default settings</button>
+    </li>
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(Menus.Assets)" aria-current="page" @onclick="SetAssets">Assets</button>
     </li>
@@ -17,6 +21,10 @@
 </ul>
 
 <div style="margin: 10px">
+    @if (ActivePage == Menus.Settings)
+    {
+        <FeesSettingsListComponent/>
+    }
     @if (ActivePage == Menus.Assets)
     {
         <AssetFeesListComponent/>
@@ -32,7 +40,7 @@
 </div>
 
 @code {
-    private Menus ActivePage { get; set; } = Menus.Assets;
+    private Menus ActivePage { get; set; } = Menus.Settings;
 
     private string CheckActive(Menus target)
     {
@@ -51,9 +59,16 @@
     public enum Menus
     {
         None,
+        Settings,
         Assets,
         Instruments,
         Balance
+    }
+
+    private void SetSettings()
+    {
+        SetActive(Menus.Settings);
+        StateHasChanged();
     }
 
     private void SetAssets()

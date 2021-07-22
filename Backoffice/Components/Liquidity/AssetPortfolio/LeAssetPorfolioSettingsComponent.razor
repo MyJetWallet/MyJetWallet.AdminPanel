@@ -10,34 +10,40 @@
 @foreach (var elem in Settings)
 {
     <div class="col">
-        <h2>
-            @elem.Asset
-        </h2>
-        <table>  
+        <table>
+            <thead>
             <tr>
-                <td class="align-middle">Asset</td>
+                <th></th>
+                <th></th>
+                <th>Asset</th>
+                <th>NetWarningLevel</th>
+                <th>NetDangerLevel</th>
+                <th>NetCriticalLevel</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>
+                    <h2>
+                        @elem.Asset
+                    </h2>
+                </td>
+                <td></td>
                 <td class="align-middle">
                     <input type="text" class="form-control" @bind="elem.Asset"/>
                 </td>
-            </tr>
-            <tr>
-                <td class="align-middle">NetWarningLevel</td>
                 <td class="align-middle">
                     <input type="number" class="form-control" @bind="elem.NetWarningLevel"/>
                 </td>
-            </tr>
-            <tr>
-                <td class="align-middle">NetDangerLevel</td>
                 <td class="align-middle">
                     <input type="number" class="form-control" @bind="elem.NetDangerLevel"/>
                 </td>
-            </tr>
-            <tr>
-                <td class="align-middle">NetCriticalLevel</td>
                 <td class="align-middle">
                     <input type="number" class="form-control" @bind="elem.NetCriticalLevel"/>
                 </td>
             </tr>
+            </tbody>
         </table>
     </div>
     <br>
@@ -104,6 +110,7 @@
                 Settings.Add(elem.Settings);
             });
             ShowError = false;
+            StateHasChanged();
         }
         catch (Exception exception)
         {

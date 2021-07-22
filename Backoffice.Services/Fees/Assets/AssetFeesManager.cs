@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -26,7 +27,7 @@ namespace Backoffice.Services.Fees.Assets
 
         public async Task<List<AssetFees>> GetAll()
         {
-            return await _assetFeesSettingsService.GetAssetFeesSettingsList();
+            return (await _assetFeesSettingsService.GetAssetFeesSettingsList()).OrderBy(e => e.BrokerId).ToList();
         }
 
         public async Task CreateAssetFeesSettings(AssetFees item)
