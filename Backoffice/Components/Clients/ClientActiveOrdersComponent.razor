@@ -15,6 +15,9 @@
     <ul class="nav">
         <li><button type="button" class="btn-outline-secondary btn" @onclick="Refresh">Refresh</button></li>
     </ul>
+    <div>
+        max create datetime: <input type="text" @bind="MaxCreateDateTime"/>
+    </div>
     <table class="table" style="font-size: 12px; width: auto">
         <thead>
         <tr>
@@ -32,7 +35,7 @@
         </thead>
         <tbody>
         
-        @foreach (var order in Orders)
+        @foreach (var order in Orders.Where(e => e.CreatedTime <= MaxTime).OrderByDescending(e => e.CreatedTime))
         {
             <tr>
                 <td>@order.OrderId</td>
@@ -66,6 +69,11 @@
 
     private List<SpotOrder> Orders { get; set; } = new();
     
+    private string MaxCreateDateTime { get; set; }
+
+    private DateTime MaxTime => !string.IsNullOrEmpty(MaxCreateDateTime) && DateTime.TryParse(MaxCreateDateTime, out var dt)
+        ? dt : DateTime.MaxValue;
+
     protected override async Task OnInitializedAsync()
     {
         if (Wallet == null)
