@@ -11,7 +11,6 @@
     <td>@Item.VolumeAccuracy</td>
     <td>@Item.MinVolume</td>
     <td>@Item.Levels</td>
-
     <td>
         <ul class="nav">
             <li><button type="button" class="btn-outline-info btn" @onclick="ShowDetails" >Details</button></li>
@@ -19,6 +18,7 @@
             <li><button type="button" class="btn-outline-danger btn" @onclick="ShowDelete" >Delete</button></li>
         </ul>
     </td>
+    <td>@IsAssociate</td>
 </tr>
 
 @if (IsShowDetails)
@@ -57,6 +57,8 @@
     
     [Parameter]
     public ExternalMarketSettings Item { get; set; }
+    
+    private bool IsAssociate { get; set; }
 
     [Parameter]
     public ILoaderConfiguration LoaderConfig { get; set; }
@@ -69,6 +71,16 @@
     private bool IsShowEdit { get; set; }
     
     private bool IsShowDelete { get; set; }
+    
+    protected override void OnInitialized()
+    {
+        IsAssociate = !string.IsNullOrWhiteSpace(Item.AssociateInstrument) && 
+                      !string.IsNullOrWhiteSpace(Item.AssociateBaseAsset) &&
+                      !string.IsNullOrWhiteSpace(Item.AssociateQuoteAsset);
+        
+        
+        base.OnInitialized();
+    }
 
     private void OnCloseAssetDialog()
     {
