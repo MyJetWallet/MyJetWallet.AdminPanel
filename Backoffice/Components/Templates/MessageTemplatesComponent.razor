@@ -33,7 +33,11 @@
             <td>@template.TemplateId</td>
             <td>@template.DefaultBrand</td>
             <td>@template.DefaultLang</td>
-            <td>@string.Join(" ", template.Params.ToArray())</td>
+            <td>@if(template.Params !=null)
+            {
+                @string.Join(" ", template.Params.ToArray())
+            }
+            </td>
             <td>
                 <ul class="nav nav-tabs">
                     <li>
