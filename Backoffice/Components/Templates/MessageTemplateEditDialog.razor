@@ -20,13 +20,15 @@
             <div>
                 <textarea type="text" class="form-control" placeholder="Body" @bind="Request.TemplateBody"></textarea>
             </div>
-            <ul>
-                Template params:
-                @foreach (var param in TemplateParams)
-                {
-                    <li>@param</li>
-                }
-            </ul>
+            @if(TemplateParams!=null && TemplateParams.Any())
+            {<ul>
+                 Template params:
+                 @foreach (var param in TemplateParams)
+                 {
+                     <li>@param</li>
+                 }
+             </ul>
+            }
 
 </BaseTwoButtonsDialog>
 
