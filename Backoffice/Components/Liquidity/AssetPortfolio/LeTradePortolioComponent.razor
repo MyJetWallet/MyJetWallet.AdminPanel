@@ -168,7 +168,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await CacheAllInstruments();
         await Refresh();
     }
 
@@ -235,7 +234,7 @@
 
         await SetBrokersAndWallets();
         
-        await SetAssetCollection();
+        await CacheInstrumentsAndAssets();
 
         RoundAllValues(_trades);
         
@@ -252,11 +251,6 @@
         WalletList.AddRange(extWallets.ExchangeNames);
     }
 
-    private async Task CacheAllInstruments()
-    {
-        AllInstruments = await _spotInstrumentManager.GetAll();
-    }
-
     private void RoundAllValues(List<AssetPortfolioTrade> trades)
     {
         trades.ForEach(trade =>
@@ -269,10 +263,11 @@
         });
     }
 
-    private async Task SetAssetCollection()
+    private async Task CacheInstrumentsAndAssets()
     {
         AssetCollection = new List<string>();
-
+        
+        AllInstruments = await _spotInstrumentManager.GetAll();
         AllInstruments.ForEach(instrument =>
         {
             AssetCollection.Add(instrument.Instrument.BaseAsset);
