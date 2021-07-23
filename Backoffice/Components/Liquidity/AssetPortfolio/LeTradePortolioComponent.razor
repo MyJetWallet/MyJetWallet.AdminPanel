@@ -2,6 +2,8 @@
 @using Service.Liquidity.Portfolio.Domain.Models
 @using Service.Liquidity.Portfolio.Grpc.Models
 @using Backoffice.Services.SpotInstruments
+@using Service.Liquidity.Engine.Domain.Models.Wallets
+@using Service.Liquidity.Engine.Grpc
 @using Service.Liquidity.PortfolioHedger.Grpc
 @using Service.Liquidity.PortfolioHedger.Grpc.Models
 @using Service.Liquidity.Reports.Grpc
@@ -10,6 +12,7 @@
 @inject ILiquidityReportService _liquidityReportService;
 @inject ISpotInstrumentManager _spotInstrumentManager;
 @inject IManualTradeService _manualTradeService;
+@inject ILpWalletManagerGrpc _lpWalletManagerGrpc
 
 <ul class="nav">
     @if (_trades?.Any() == true)
@@ -94,7 +97,7 @@
                 <tr>
                     <td>Broker Id</td>
                     <select @bind="@NewTrade.BrokerId">
-                        @foreach (var name in _trades.Select(elem => elem.AssociateBrokerId).Distinct())
+                        @foreach (var name in BrokerList)
                         {
                             <option value="@name">@name</option>
                         }
@@ -103,7 +106,7 @@
                 <tr>
                     <td>Wallet Name</td>
                     <select @bind="@NewTrade.WalletName">
-                        @foreach (var name in _trades.Select(elem => elem.WalletName).Distinct())
+                        @foreach (var name in WalletList)
                         {
                             <option value="@name">@name</option>
                         }
@@ -145,6 +148,10 @@
 @code {
     
     private List<AssetPortfolioTrade> _trades = new();
+
+    private List<string> BrokerList { get; set; } = new();
+    private List<string> WalletList { get; set; } = new();
+    
     private int CountInPage { get; set; } = 20;
     private long _lastSeen = 0;
     
@@ -218,7 +225,7 @@
     private async Task Refresh()
     {
         var request = new GetAssetPortfolioTradesRequest() {BatchSize = CountInPage};
-
+        
         if (AssetFilerActive && !string.IsNullOrEmpty(FilterAsset))
         {
             request.AssetFilter = FilterAsset;
@@ -227,12 +234,24 @@
         var response = await _liquidityReportService.GetAssetPortfolioTradesAsync(request);
         _trades = response.Trades ?? new List<AssetPortfolioTrade>();
         _lastSeen = response.IdForNextQuery;
+
+        await SetBrokersAndWallets();
         
         await SetAssetCollection();
 
         RoundAllValues(_trades);
         
         StateHasChanged();
+    }
+
+    private async Task SetBrokersAndWallets()
+    {
+        var lpWallets = await _lpWalletManagerGrpc.GetAllAsync();
+        BrokerList = lpWallets.Data.List.Select(elem => elem.BrokerId).Distinct().ToList();
+        WalletList = lpWallets.Data.List.Select(elem => elem.Name).Distinct().ToList();
+
+        var extWallets = await _manualTradeService.GetExternalExchangeCollectionAsync();
+        WalletList.AddRange(extWallets.ExchangeNames);
     }
 
     private async Task CacheAllInstruments()
@@ -287,4 +306,5 @@
         
         StateHasChanged();
     }
+
 }

@@ -13,8 +13,10 @@
 @using Syncfusion.Blazor.Diagram
 @using System.Diagnostics
 @using MyNoSqlServer.Abstractions
+@using Service.Liquidity.Engine.Grpc
 @using Service.Liquidity.Monitoring.Domain.Models
 
+@inject ILpWalletManagerGrpc _lpWalletManagerGrpc
 @inject IAssetPortfolioService _assetPortfolioService
 @inject IManualTradeService _manualTradeService;
 @inject ISpotInstrumentManager _spotInstrumentManager;
@@ -161,7 +163,7 @@
                 <tr>
                     <td>BrokerId</td>
                     <select @bind="@BrokerId">
-                        @foreach (var name in _balanceByWallets.Select(elem => elem.BrokerId).Distinct())
+                        @foreach (var name in BrokerList)
                         {
                             <option value="@name">@name</option>
                         }
@@ -170,7 +172,7 @@
                 <tr>
                     <td>Wallet Name</td>
                     <select @bind="@WalletName">
-                        @foreach (var name in _balanceByWallets.Select(elem => elem.WalletName))
+                        @foreach (var name in ExchangeList)
                         {
                             <option value="@name">@name</option>
                         }
@@ -219,7 +221,7 @@
                 <tr>
                     <td>Wallet Name</td>
                     <select @bind="@ExchangeName">
-                        @foreach (var name in ExchangeList)
+                        @foreach (var name in WalletList)
                         {
                             <option value="@name">@name</option>
                         }
@@ -279,6 +281,8 @@
     private List<NetBalanceByAsset> _balanceByAssets = new();
     private Dictionary<string, AssetStatus> _portfolioStatuses = new();
     private List<string> AllAssets { get; set; }
+    private List<string> BrokerList { get; set; } = new();
+    private List<string> WalletList { get; set; } = new();
     
     private bool IsShowEdit { get; set; }
     private decimal BalanceDiff { get; set; }
@@ -327,6 +331,13 @@
         await InvokeAsync(StateHasChanged);
     }
     
+    private async Task Refresh()
+    {
+        await RefreshInternal();
+
+        StateHasChanged();
+    }
+    
     private async Task RefreshInternal()
     {
         var balanceResponse = _portfolioBalanceNoSql.Get().FirstOrDefault()?.Balance;
@@ -339,15 +350,20 @@
             _portfolioStatuses[status.AssetStatus.Asset] = status.AssetStatus.Status;
         }
         
-        var exchangeCollectionResponse = await _manualTradeService.GetExternalExchangeCollectionAsync();
-        ExchangeList = exchangeCollectionResponse.ExchangeNames;
+        await SetBrokersAndWallets();
     }
 
-    private async Task Refresh()
+    private async Task SetBrokersAndWallets()
     {
-        await RefreshInternal();
+        var lpWallets = await _lpWalletManagerGrpc.GetAllAsync();
+        BrokerList = lpWallets.Data.List.Select(elem => elem.BrokerId).Distinct().ToList();
+        WalletList = lpWallets.Data.List.Select(elem => elem.Name).Distinct().ToList();
 
-        StateHasChanged();
+        var extWallets = await _manualTradeService.GetExternalExchangeCollectionAsync();
+        
+        ExchangeList = extWallets.ExchangeNames;
+        
+        WalletList.AddRange(extWallets.ExchangeNames);
     }
 
     private async Task SetAssetPortfolio()
