@@ -174,15 +174,13 @@
 
     private async void OnSaveNewTrade()
     {
-        if (string.IsNullOrEmpty(NewTrade.BrokerId) && 
-            _trades.Select(elem => elem.AssociateBrokerId).Distinct().Count() == 1)
+        if (string.IsNullOrEmpty(NewTrade.BrokerId) && BrokerList.Count() == 1)
         {
-            NewTrade.BrokerId = _trades.First().AssociateBrokerId;
+            NewTrade.BrokerId = BrokerList.First();
         }
-        if (string.IsNullOrEmpty(NewTrade.WalletName) && 
-            _trades.Select(elem => elem.WalletName).Distinct().Count() == 1)
+        if (string.IsNullOrEmpty(NewTrade.WalletName) && WalletList.Count() == 1)
         {
-            NewTrade.WalletName = _trades.First().WalletName;
+            NewTrade.WalletName = WalletList.First();
         }
         
         var instrumentExist = AllInstruments.Any(elem => elem.Instrument.Symbol == NewTrade.Symbol);
