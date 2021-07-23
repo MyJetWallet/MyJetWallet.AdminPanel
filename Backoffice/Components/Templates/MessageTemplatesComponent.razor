@@ -1,0 +1,287 @@
+@using Service.MessageTemplates.Client
+@using Service.MessageTemplates.Domain.Models
+@using Service.MessageTemplates.Grpc
+@using Service.MessageTemplates.Grpc.Models
+@inject ITemplateClient _templateClient
+@inject ITemplateService _templateService
+@inject IToaster ToastService;
+
+<h3>Templates</h3>
+
+
+<table class="table" style="width: auto">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Type</th>
+        <th>Default Brand</th>
+        <th>Default Language</th>
+        <th>Params</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    @{
+        var rowNumber = _index;
+    }
+
+    @foreach (var template in _templates)
+    {
+        rowNumber++;
+        <tr>
+            <td>@rowNumber</td>
+            <td>@template.TemplateId</td>
+            <td>@template.DefaultBrand</td>
+            <td>@template.DefaultLang</td>
+            <td>@if(template.Params !=null)
+            {
+                @string.Join(" ", template.Params.ToArray())
+            }
+            </td>
+            <td>
+                <ul class="nav nav-tabs">
+                    <li>
+                        <button type="button" class="btn-outline-info btn" @onclick="@(() => { ShowBodies(template, template.TemplateId); })">Show Bodies</button>
+                    </li>
+                    <li>
+                        <button type="button" class="btn-outline-info btn" @onclick="@(() => { ShowDefaultsEdit(template); })">Edit defaults</button>
+                    </li>
+                </ul>
+            </td>
+        </tr>
+        @if (SelectedPosition == template.TemplateId)
+        {
+            SelectedTemplateId = template.TemplateId;
+            SelectedTemplateParams = template.Params;
+
+            <tr>
+                <td colspan="9">
+                    <div class="border" style="margin-left: 20px; width: auto">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Brand</th>
+                                <th>Language</th>
+                                <th>Body</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var body in _bodies)
+                            {
+                                <tr style="background: @(GetTemplateBackground(template.DefaultBrand, body.Key.brand))">
+                                    <td>@body.Key.brand</td>
+                                    <td>@body.Key.lang</td>
+                                    <td>@body.Value</td>
+                                    <td>
+                                        <ul class="nav nav-tabs nav-pills">
+                                            <li class="nav-item"> 
+                                                <button type="button" class="btn-outline-info btn" @onclick="() => { ShowBodyEdit(body); }">Edit</button>
+                                            </li>
+                                            @if (body.Key.brand != template.DefaultBrand || body.Key.lang != template.DefaultLang)
+                                            {
+                                                <li class="nav-item">
+                                                    <button type="button" class="btn-outline-danger btn" @onclick="async () => { await DeleteBody(body.Key.brand, body.Key.lang); }">Delete</button>
+                                                </li>
+                                            }
+                                        </ul>
+
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                            <div>
+                                <ul class="nav">
+                                    <li>
+                                        <button type="button" class="btn-outline-info btn" @onclick="ShowCreate">Add body</button>
+                                    </li>
+                                </ul>
+                            </div>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+        }
+    }
+    </tbody>
+    <div>
+        <ul class="nav">
+            <li>
+                <button type="button" class="btn-outline-info btn" @onclick="ShowTemplateCreate">Add template</button>
+            </li>
+        </ul>
+    </div>
+    
+</table>
+
+
+
+@if (IsShowBodyEdit)
+{
+    <div>
+        <MessageTemplateEditDialog Request="@EditRequest" IsCreate="@IsCreate" TemplateParams="@SelectedTemplateParams" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="async () => { await OnUpdateTemplateBody(); }"/>
+    </div>
+}
+
+@if (IsShowDefaultsEdit)
+{
+    <div>
+        <MessageTemplateEditDialog Request="@EditRequest" IsCreate="@true" TemplateParams="@SelectedTemplateParams" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="async () => { await OnUpdateTemplateDefaults(); }"/>
+    </div>
+}
+
+@if (IsShowCreateTemplate)
+{
+    <div>
+        <MessageTemplateCreateDialog Request="@CreateTemplateRequest" OnCloseCallback="OnCloseEditDialog" OnCreateCallback="async () => { await CreateTemplate(); }"/>
+    </div>
+}
+
+@code {
+    private SortedDictionary<(string brand, string lang), string> _bodies = new();
+
+    private List<Template> _templates = new();
+    private long _index = 0;
+    private string SelectedPosition { get; set; }
+    private bool IsShowBodyEdit { get; set; }
+    private bool IsShowDefaultsEdit { get; set; }
+    private bool IsShowCreateTemplate { get; set; }
+
+    private TemplateEditRequest EditRequest { get; set; }
+    private Template CreateTemplateRequest { get; set; } = new ();
+    private bool IsCreate { get; set; }
+    private List<string> SelectedTemplateParams { get; set; }
+    private string SelectedTemplateId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshTemplates();
+    }
+
+    private async Task RefreshTemplates()
+    {
+        _templates = (await _templateService.GetAllTemplates()).Templates;
+        StateHasChanged();
+    }
+
+    private async void ShowBodies(Template template, string positionId)
+    {
+        if (SelectedPosition == positionId)
+        {
+            _bodies = new SortedDictionary<(string brand, string lang), string>();
+            SelectedPosition = null;
+        }
+        else
+        {
+            _bodies = new SortedDictionary<(string brand, string lang), string>(template.Bodies);
+            SelectedPosition = positionId;
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void ShowDefaultsEdit(Template template)
+    {
+        SelectedTemplateParams = template.Params;
+        var body = template.Bodies[(template.DefaultBrand, template.DefaultLang)];
+        EditRequest = new TemplateEditRequest
+        {
+            TemplateId = template.TemplateId,
+            Brand = template.DefaultBrand,
+            Lang = template.DefaultLang,
+            TemplateBody = body
+        };
+        IsShowDefaultsEdit = true;
+        StateHasChanged();
+    }
+
+    private void ShowBodyEdit(KeyValuePair<(string brand,string lang),string> body)
+    {
+        IsCreate = false;
+        EditRequest = new TemplateEditRequest
+        {
+            TemplateId = SelectedTemplateId,
+            Brand = body.Key.brand,
+            Lang = body.Key.lang,
+            TemplateBody = body.Value
+        };
+        IsShowBodyEdit = true;
+        StateHasChanged();
+    }
+
+    private void ShowCreate()
+    {
+        IsCreate = true;
+        EditRequest = new TemplateEditRequest
+        {
+            TemplateId = SelectedTemplateId
+        };
+        IsShowBodyEdit = true;
+        StateHasChanged();
+    }
+
+    private void ShowTemplateCreate()
+    {
+        IsShowCreateTemplate = true;
+        StateHasChanged();
+    }
+
+    private void OnCloseEditDialog()
+    {
+        IsShowBodyEdit = false;
+        IsShowDefaultsEdit = false;
+        IsShowCreateTemplate = false;
+        StateHasChanged();
+    }
+
+    private async Task OnUpdateTemplateBody()
+    {
+        IsShowBodyEdit = false;
+        await _templateService.EditTemplate(EditRequest);
+        _bodies[(EditRequest.Brand,EditRequest.Lang)] = EditRequest.TemplateBody;
+        await RefreshTemplates();
+    }
+    
+    private async Task OnUpdateTemplateDefaults()
+    {
+        IsShowDefaultsEdit = false;
+        await _templateService.EditDefaultValues(EditRequest);
+        _bodies[(EditRequest.Brand,EditRequest.Lang)] = EditRequest.TemplateBody;
+        await RefreshTemplates();
+    }
+
+    private string GetTemplateBackground(string defaultBrand, string brand)
+    {
+        if (brand == defaultBrand)
+        {
+            return "lightgray";
+        }
+        return "white";
+    }
+
+    private async Task DeleteBody(string brand, string lang)
+    {
+        EditRequest = new TemplateEditRequest
+        {
+            TemplateId = SelectedTemplateId,
+            Brand = brand,
+            Lang = lang
+        };
+        await _templateService.DeleteBody(EditRequest);
+        _bodies.Remove((brand,lang));
+        await RefreshTemplates();
+    }
+
+    private async Task CreateTemplate()
+    {
+        IsShowCreateTemplate = false;
+        if(_templates.Any(t=>t.TemplateId == CreateTemplateRequest.TemplateId))
+            ToastService.Error($"Template with Id {CreateTemplateRequest.TemplateId} already exists");
+        else
+        {
+            await _templateService.CreateNewTemplate(CreateTemplateRequest);
+            await RefreshTemplates();
+        }
+    }
+
+}

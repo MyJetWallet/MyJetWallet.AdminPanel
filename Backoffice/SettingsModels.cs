@@ -112,5 +112,8 @@ namespace Backoffice
         
         [YamlProperty("AdminPanel.BasePriceServiceGrpcUrl")]
         public string BasePriceServiceGrpcUrl { get; set; }
+
+        [YamlProperty("AdminPanel.MessageTemplatesGrpcServiceUrl")]
+        public string MessageTemplatesGrpcServiceUrl { get; set; }
     }
 }

@@ -42,7 +42,7 @@
       <PackageReference Include="MyJetWallet.Service.Bitgo.WithdrawalProcessor.Client" Version="1.0.3" />
       <PackageReference Include="MyJetWallet.Service.ChangeBalanceGateway.Client" Version="1.7.1" />
       <PackageReference Include="MyJetWallet.Service.ClientWallets.Client" Version="1.2.0" />
-      <PackageReference Include="MyJetWallet.Service.CoinMarketCapReader.Client" Version="1.0.0" />
+      <PackageReference Include="MyJetWallet.Service.CoinMarketCapReader.Client" Version="1.0.1" />
       <PackageReference Include="MyJetWallet.Service.IndexPrices.Client" Version="1.0.6" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Converter.Client" Version="1.1.1" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Engine.Client" Version="1.4.2" />
@@ -51,6 +51,7 @@
       <PackageReference Include="MyJetWallet.Service.Liquidity.PortfolioHedger.Client" Version="1.0.7" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Reports.Client" Version="1.1.2" />
       <PackageReference Include="MyJetWallet.Service.MatchingEngine.PriceSource.Client" Version="2.1.0" />
+      <PackageReference Include="MyJetWallet.Service.MessageTemplates.Client" Version="1.0.0" />
       <PackageReference Include="MyJetWallet.Service.PriceHistory.Client" Version="1.1.4" />
       <PackageReference Include="MyJetWallet.Service.PushNotification.Client" Version="1.2.4.1" />
       <PackageReference Include="MyJetWallet.Service.Service.KYC.Client" Version="1.0.6" />
@@ -83,6 +84,8 @@
       <_ContentIncludedByDefault Remove="Components\Liquidity\Market\LiquidityEngineComponent.razor" />
       <_ContentIncludedByDefault Remove="Components\Liquidity\Market\LpOrderBookComponent.razor" />
       <_ContentIncludedByDefault Remove="Components\Liquidity\Market\MarketMakerRowComponent.razor" />
+      <_ContentIncludedByDefault Remove="Components\Templates\TemplateDetailsDialogEdit.razor" />
+      <_ContentIncludedByDefault Remove="Components\Templates\TemplatesComponent.razor" />
     </ItemGroup>
 
     <ItemGroup>

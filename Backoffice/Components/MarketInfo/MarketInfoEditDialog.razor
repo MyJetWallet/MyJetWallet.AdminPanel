@@ -1,4 +1,7 @@
 @using Service.CoinMarketCapReader.Domain.Models
+@using Service.MessageTemplates.Grpc
+@inject ITemplateService _templateService
+@inject IToaster _toastService
 
 <BaseTwoButtonsDialog 
     Caption=@($"{Item.Asset} [{Item.BrokerId}") 
@@ -35,6 +38,14 @@
                         <td>WhitepaperUrl</td>
                         <input type="text" class="form-control" @bind="Item.WhitepaperUrl"/>
                     </tr>
+                    <tr>
+                        <td>AboutMore Template Id</td>
+                        <input type="text" class="form-control" @bind="Item.AboutMoreTemplateId"/>
+                    </tr>
+                    <tr>
+                        <td>AboutLess Template Id</td>
+                        <input type="text" class="form-control" @bind="Item.AboutLessTemplateId"/>
+                    </tr>
                 </table>
             </td>
         </tr>
@@ -59,6 +70,17 @@
 
     private async Task OnSubmit()
     {
-        await OnUpdateCallback.InvokeAsync(Item);
+        var template = await _templateService.GetAllTemplates();
+        var templateLessExists = template.Templates.Any(t => t.TemplateId == Item.AboutLessTemplateId);
+        var templateMoreExists = template.Templates.Any(t => t.TemplateId == Item.AboutMoreTemplateId);
+        
+        if(!templateLessExists)
+            _toastService.Error($"No template found with ID {Item.AboutLessTemplateId}");
+
+        if(!templateMoreExists)
+            _toastService.Error($"No template found with ID {Item.AboutMoreTemplateId}");
+
+        if(templateLessExists && templateMoreExists)
+            await OnUpdateCallback.InvokeAsync(Item);
     }
 }

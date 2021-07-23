@@ -1,0 +1,62 @@
+@using Service.MessageTemplates.Grpc.Models
+@using Microsoft.AspNetCore.Components
+@using Service.MessageTemplates.Domain.Models
+@inject IToaster ToastService;
+
+<BaseTwoButtonsDialog Caption="@(Request.TemplateId)"
+                      OnClose="OnClose"
+                      YesButtonCaption="Save"
+                      NoButtonCaption="Cancel"
+                      OnSubmit="OnSubmit">
+
+
+    <div>
+        <input type="text" class="form-control" placeholder="TemplateId" @bind="Request.TemplateId"/>
+    </div>
+    <div>
+                <input type="text" class="form-control" placeholder="Default Brand" @bind="Request.DefaultBrand"/>
+            </div>
+            <div>
+                <input type="text" class="form-control" placeholder="Default Language" @bind="Request.DefaultLang"/>
+            </div>
+    <div>
+        <p>Input params in this format: ${PARAM}</p>
+        <p>Split params with ; </p>
+        <input type="text" class="form-control" placeholder="Template parameters" @bind="_templateParams"/>
+    </div>
+
+</BaseTwoButtonsDialog>
+@code {
+
+    [Parameter]
+    public Template Request { get; set; } = new();
+
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+
+    [Parameter]
+    public EventCallback<Template> OnCreateCallback { get; set; }
+
+    private string _templateParams;
+    
+    private void OnClose()
+    {
+        OnCloseCallback.InvokeAsync();
+    }
+
+    private async Task OnSubmit()
+    {
+        if (String.IsNullOrWhiteSpace(Request.TemplateId))
+        {
+            ToastService.Error($"Template Id couldn't be empty");
+        }
+        else
+        {
+            if (!string.IsNullOrWhiteSpace(_templateParams))
+                Request.Params = _templateParams.Split(';').ToList();
+            
+            await OnCreateCallback.InvokeAsync(Request);
+        }    
+    }
+
+}
