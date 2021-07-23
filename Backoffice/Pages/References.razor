@@ -1,8 +1,74 @@
 @page "/References"
 <h3>References</h3>
 
-<MarketReferenceComponent />
+
+<ul class="nav nav-tabs nav-pills">
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.MarketReferences)" aria-current="page" @onclick="SetReferences" >Markets</button>
+    </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.MarketInfo)" aria-current="page" @onclick="SetMarketInfo">Infos</button>
+    </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.CmcApiKeys)" @onclick="SetApiKeys">CMC Api Keys</button>
+    </li>
+</ul>
+
+<div style="margin: 10px">
+    @if (ActivePage == Menus.MarketReferences)
+    {
+        <MarketReferenceComponent />
+    }
+        
+    @if (ActivePage == Menus.MarketInfo)
+    {
+        <MarketInfoComponent />
+    }
+
+    @if (ActivePage == Menus.CmcApiKeys)
+    {
+        <CMCApiKeysComponent />
+    }
+</div>
 
 @code {
+
+    private Menus ActivePage { get; set; } = Menus.MarketReferences;
+
+    private string CheckActive(Menus target)
+    {
+        if (ActivePage == target)
+            return "active";
+
+        return "";
+    }
     
+    private void SetReferences()
+    {
+        SetActive(Menus.MarketReferences);
+    }
+    
+    private void SetMarketInfo()
+    {
+        SetActive(Menus.MarketInfo);
+    }
+
+    private void SetApiKeys()
+    {
+        SetActive(Menus.CmcApiKeys);
+    }
+
+    private void SetActive(Menus page)
+    {
+        ActivePage = page;
+        StateHasChanged();
+    }
+    
+    public enum Menus
+    {
+        MarketReferences,
+        MarketInfo,
+        CmcApiKeys,
+    }
+ 
 }
