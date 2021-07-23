@@ -21,6 +21,7 @@ namespace Backoffice
         public const string References = "References";
         public const string CashOperations = "CashOperations";
         public const string MarketInfo = "MarketInfo";
+        public const string Templates = "Templates";
     }
     
     public static class Actions
@@ -77,6 +78,7 @@ namespace Backoffice
             NavsItem.Create("Social Network Auth", "AuthTest","list-rich",Menu.SocialNetworkAuth),
             NavsItem.Create("Cash Operations", "CashOperations","list-rich",Menu.CashOperations),
             NavsItem.Create("Markets Info", "MarketInfo","list-rich",Menu.MarketInfo),
+            NavsItem.Create("Templates", "Templates","list-rich",Menu.Templates),
 
         };
         
