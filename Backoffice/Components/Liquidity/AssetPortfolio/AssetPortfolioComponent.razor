@@ -172,7 +172,7 @@
                 <tr>
                     <td>Wallet Name</td>
                     <select @bind="@WalletName">
-                        @foreach (var name in ExchangeList)
+                        @foreach (var name in WalletList)
                         {
                             <option value="@name">@name</option>
                         }
@@ -221,7 +221,7 @@
                 <tr>
                     <td>Wallet Name</td>
                     <select @bind="@ExchangeName">
-                        @foreach (var name in WalletList)
+                        @foreach (var name in ExchangeList)
                         {
                             <option value="@name">@name</option>
                         }
