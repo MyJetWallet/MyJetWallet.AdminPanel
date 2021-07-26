@@ -1,0 +1,175 @@
+@using Service.MatchingEngine.PriceSource.Client
+@using MyJetWallet.Domain.Prices
+@using MyJetWallet.Sdk.Service.Tools
+@using Microsoft.Extensions.Logging
+@using Service.IndexPrices.Client
+@using Service.IndexPrices.Domain.Models
+@using Service.Liquidity.Engine.Grpc
+@using Syncfusion.Blazor.Diagrams
+
+@inject IConvertIndexPricesClient _convertIndexPricesClient
+@inject IConvertIndexPriceManager _convertIndexPriceManager;
+@inject IToaster _toaster;
+@implements IDisposable
+
+<h3>Conversion Index Prices</h3>
+<ul class="nav">
+    <li><button type="button" class="btn-outline-info btn" style="height: 20px; font-size: 10px" @onclick="@(() => OpenUpdateWindow(null))" >Create new</button></li>
+</ul>    
+
+<table class="table" style="width: auto; font-size: 10px;">
+    <thead>
+    <tr>
+        <th>BaseAsset</th>
+        <th>QuotedAsset</th>
+        <th>Price</th>
+        <th>UpdateDate</th>
+        <th>Delay</th>
+        <th>Error</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var price in _prices)
+    {
+        <tr style="background: @(GetRowBackground(price))">
+            <td>@price.BaseAsset</td>
+            <td>@price.QuotedAsset</td>
+            <td>@price.Price</td>
+            <td>@price.UpdateDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
+            <td>@((DateTime.UtcNow - @price.UpdateDate).ToString())</td>
+            <td>
+                <ul class="nav">
+                    <li><button type="button" class="btn-outline-info btn" style="height: 20px; font-size: 10px" @onclick="@(() => OpenUpdateWindow(price))">update</button></li>
+                </ul>
+            </td>
+            <td>@price.Error</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@if (UpdateWindowOpen)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption="Index Price"
+            OnClose="@OnCloseUpdateWindow"
+            YesButtonCaption="Save"
+            NoButtonCaption="Cancel"
+            OnSubmit="@InsertOrReplaceIndexPrice">
+            <table>
+                <tr>
+                    <td>Base Asset</td>
+                    <select @bind="@IndexPriceInUpdateWindow.BaseAsset">
+                        @foreach (var name in _prices.Select(elem => elem.BaseAsset))
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
+                    <td>Quoted Asset</td>
+                    <select @bind="@IndexPriceInUpdateWindow.QuotedAsset">
+                        @foreach (var name in _prices.Select(elem => elem.QuotedAsset))
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
+                    <td>Conversion Index Price</td>
+                    <td><input type="number" class="form-control" @bind=IndexPriceInUpdateWindow.Price /></td>
+                </tr>
+            </table>
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+
+@code {
+
+    private bool _isDispose = false;
+    
+    private string SelectedSymbol { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await ReloadData();
+
+        GlobalTimers.RefreshTimer.RegisterCallback(nameof(IndexPricesComponent), DoTime);
+    }
+
+    private async Task DoTime()
+    {
+        if (_isDispose) return;
+        await ReloadData();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ReloadData()
+    {
+        var prices = _convertIndexPricesClient.GetConvertIndexPricesAsync();
+
+        _prices.Clear();
+        _prices.AddRange(prices);
+    }
+
+    public void Dispose()
+    {
+        _isDispose = true;
+        GlobalTimers.RefreshTimer.RemoveCallback(nameof(Prices));
+    }
+
+    private List<ConvertIndexPrice> _prices = new ();
+
+    private string GetRowBackground(ConvertIndexPrice indexPrice)
+    {
+        if (!string.IsNullOrWhiteSpace(indexPrice.Error))
+            return "lightpink";
+        
+        return (DateTime.UtcNow - indexPrice.UpdateDate).TotalMilliseconds > 5000 
+            ? "lightgoldenrodyellow" 
+            : "white";
+    }
+
+    private bool UpdateWindowOpen = false;
+    private ConvertIndexPrice IndexPriceInUpdateWindow = new ConvertIndexPrice();
+
+    private void OpenUpdateWindow(ConvertIndexPrice price)
+    {
+        UpdateWindowOpen = true;
+
+        if (price != null)
+        {
+            IndexPriceInUpdateWindow.BaseAsset = price.BaseAsset;
+            IndexPriceInUpdateWindow.QuotedAsset = price.QuotedAsset;
+            IndexPriceInUpdateWindow.Price = price.Price;
+        }
+        
+        StateHasChanged();
+    }
+
+    private void OnCloseUpdateWindow()
+    {
+        UpdateWindowOpen = false;
+        IndexPriceInUpdateWindow = new ConvertIndexPrice();
+        
+        StateHasChanged();
+    }
+
+    private void InsertOrReplaceIndexPrice()
+    {
+        if (IndexPriceInUpdateWindow.BaseAsset == string.Empty)
+            return;
+        
+        if (IndexPriceInUpdateWindow.QuotedAsset == string.Empty)
+            return;
+        
+        if(!_convertIndexPriceManager.ChangeIndexPrice(IndexPriceInUpdateWindow.BaseAsset, IndexPriceInUpdateWindow.QuotedAsset, IndexPriceInUpdateWindow.Price))
+            _toaster.Error($"Unable to change convert price for pair {IndexPriceInUpdateWindow.BaseAsset} {IndexPriceInUpdateWindow.QuotedAsset}");
+
+        OnCloseUpdateWindow();
+    }
+
+}

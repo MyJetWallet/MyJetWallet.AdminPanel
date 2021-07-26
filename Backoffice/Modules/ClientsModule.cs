@@ -92,6 +92,9 @@ namespace Backoffice.Modules
             builder.RegisterIndexPricesClient(_myNoSqlClient);
             builder.RegisterIndexPricesManager(Program.Settings.MyNoSqlWriterUrl);
             
+            builder.RegisterConvertIndexPricesClient(_myNoSqlClient);
+            builder.RegisterConvertIndexPricesManager(Program.Settings.MyNoSqlWriterUrl);
+            
 
             builder.RegisterMyNoSqlReader<AssetPortfolioBalanceNoSql>(_myNoSqlClient, AssetPortfolioBalanceNoSql.TableName);
             builder.RegisterMyNoSqlReader<AssetPortfolioStatusNoSql>(_myNoSqlClient, AssetPortfolioStatusNoSql.TableName);
