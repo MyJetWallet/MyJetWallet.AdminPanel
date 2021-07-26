@@ -55,6 +55,7 @@
         <th>Source</th>
         <th>Comment</th>
         <th>User</th>
+        <th>TotalReleasePnl</th>
         <th>#</th>
     </tr>
     </thead>
@@ -80,6 +81,7 @@
             <td>@trade.Source</td>
             <td>@trade.Comment</td>
             <td>@trade.User</td>
+            <td>@trade.TotalReleasePnl</td>
             <td>
                 <ul class="nav">
                     <li><button type="button" class="btn-outline-info btn" @onclick="@(() => { ShowPnl(trade.TradeId); })">Pnl</button></li>
