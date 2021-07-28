@@ -56,7 +56,6 @@
         <th>Comment</th>
         <th>User</th>
         <th>TotalReleasePnl</th>
-        <th>#</th>
     </tr>
     </thead>
     <tbody>
@@ -82,38 +81,7 @@
             <td>@trade.Comment</td>
             <td>@trade.User</td>
             <td>@trade.TotalReleasePnl</td>
-            <td>
-                <ul class="nav">
-                    <li><button type="button" class="btn-outline-info btn" @onclick="@(() => { ShowPnl(trade.TradeId); })">Pnl</button></li>
-                </ul>
-            </td>
         </tr>
-        if (SelectedPosition == trade.TradeId)
-            {
-                <tr>
-                    <td colspan="9">
-                        <div class="border" style="margin-left: 20px; width: auto">
-                            <table class="table">
-                                <thead>
-                                <tr>
-                                        <th>Asset</th>
-                                        <th>Pnl</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                @foreach (var pnl in _pnl)
-                                {
-                                    <tr>
-                                        <td>@pnl.Asset</td>
-                                        <td>@pnl.Pnl</td>
-                                    </tr>
-                                }
-                                </tbody>
-                            </table>
-                        </div>
-                    </td>
-                </tr>
-            }
     }
     </tbody>
 </table>
@@ -199,10 +167,6 @@
     private string FilterAsset { get; set; }
     
     private List<SpotInstrumentItem> AllInstruments { get; set; }
-
-    private string SelectedPosition { get; set; }
-    private List<PnlByAsset> _pnl = new List<PnlByAsset>();
-
     
     protected override async Task OnInitializedAsync()
     {
@@ -336,39 +300,5 @@
         _lastSeen = response.IdForNextQuery;
         
         StateHasChanged();
-    }
-
-    private async Task ShowPnl(string tradeId)
-    {
-        if (SelectedPosition == tradeId)
-        {
-            _pnl = new List<PnlByAsset>();
-            SelectedPosition = null;
-        }
-        else
-        {
-            var request = new GetPnlByTradeRequest()
-            {
-                TradeId = tradeId
-            };
-            var response = await _liquidityReportService.GetPnlByTradeAsync(request);
-            if (response.Success && response.PnlCollection != null && response.PnlCollection.Count != 0)
-            {
-                _pnl = response.PnlCollection;
-                SelectedPosition = tradeId;
-            }
-            else
-            {
-                _pnl = new List<PnlByAsset>
-                {
-                    new PnlByAsset()
-                    {
-                        Asset = "Empty"
-                    }
-                };
-                SelectedPosition = tradeId;
-            }
-        }
-        await InvokeAsync(StateHasChanged);
     }
 }
