@@ -306,6 +306,8 @@
     {
         _tradeRequest = new ReportSimulationTradeRequest();
         _tradeRequest.WalletName = "testWallet";
+        TradeWindowException = false;
+        TradeWindowExceptionText = string.Empty;
         TradeWindowOpen = true;
         StateHasChanged();
     }
@@ -338,6 +340,8 @@
     private void OnCloseTradeWindow()
     {
         TradeWindowOpen = false;
+        TradeWindowException = false;
+        TradeWindowExceptionText = string.Empty;
         StateHasChanged();
     }
     
