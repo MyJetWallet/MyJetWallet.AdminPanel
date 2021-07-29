@@ -227,7 +227,7 @@
         _selectedSimulationId = 0;
         
         var simulationListResponse = await _assetPortfolioSimulationService.GetSimulationList();
-        _simulationList = simulationListResponse.SimulationList;
+        _simulationList = simulationListResponse.SimulationList ?? new List<PortfolioSimulation>();
         
         StateHasChanged();
     }
