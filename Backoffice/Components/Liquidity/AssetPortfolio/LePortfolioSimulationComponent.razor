@@ -31,117 +31,167 @@
 @if (_selectedSimulationId != 0)
 {
     <br/>
-    <ul class="nav">
-        <li><button type="button" class="btn-outline-secondary btn" @onclick="RefreshCurrentSimulation">Refresh current</button></li>
-        <li><button type="button" class="btn-outline-secondary btn" @onclick="CreateTrade">Create trade</button></li>
-    </ul>
-    
     <table class="table" style="width: auto">
-    <thead>
-    <tr>
-        <th></th>
-        @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
-        {
-            <th>@wallet.WalletName</th>
-        }
-        <th style="background: lightgray">NET</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-        <td><b>NET USD</b></td>
-        @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
-        {
-            <td>@Math.Round(wallet.NetUsdVolume, 2)</td>
-        }
-        <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Sum(elem => elem.NetUsdVolume), 2)</b></td>
-    </tr>
-    <tr>
-        <td><b>UNRELEASED PNL</b></td>
-        @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
-        {
-            <td>@Math.Round(wallet.UnreleasedPnlUsd, 2)</td>
-        }
-        <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Sum(elem => elem.UnreleasedPnlUsd), 2)</b></td>
-    </tr>
-    </tbody>
-</table>
-<br>
-<br>
-<br>
-    <table class="table" style="width: auto">
-        <thead>
-        <tr>
-            <th>Asset</th>
-            @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
-            {
-                <th>@wallet.WalletName</th>
-            }
-            <th style="background: lightgray">NET</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var netBalanceByAsset in _balanceByAssets)
-        {
-            <tr>
-                <td>
-                    <b>@netBalanceByAsset.Asset</b>
-                </td>
-                @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
+        <th>
+            <ul class="nav">
+                <li><button type="button" class="btn-outline-secondary btn" @onclick="RefreshCurrentSimulation">Refresh current</button></li>
+                <li><button type="button" class="btn-outline-secondary btn" @onclick="CreateTrade">Create trade</button></li>
+                <li><button type="button" class="btn-outline-secondary btn" @onclick="DeleteSimulation">Delete simulation</button></li>
+            </ul>
+            <table class="table" style="width: auto">
+                <thead>
+                <tr>
+                    <th></th>
+                    @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
+                    {
+                        <th>@wallet.WalletName</th>
+                    }
+                    <th style="background: lightgray">NET</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><b>NET USD</b></td>
+                    @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
+                    {
+                        <td>@Math.Round(wallet.NetUsdVolume, 2)</td>
+                    }
+                    <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Sum(elem => elem.NetUsdVolume), 2)</b></td>
+                </tr>
+                <tr>
+                    <td><b>UNRELEASED PNL</b></td>
+                    @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
+                    {
+                        <td>@Math.Round(wallet.UnreleasedPnlUsd, 2)</td>
+                    }
+                    <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Sum(elem => elem.UnreleasedPnlUsd), 2)</b></td>
+                </tr>
+                <tr>
+                    <td><b>RELEASED PNL</b></td>
+                    @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
+                    {
+                        <td>0</td>
+                    }
+                    <td style="background: lightgray"><b>@Math.Round(_trades.Sum(elem => elem.TotalReleasePnl), 2)</b></td>
+                </tr>
+                </tbody>
+            </table>
+            <br>
+            <br>
+            <br>
+            <table class="table" style="width: auto">
+                <thead>
+                <tr>
+                    <th>Asset</th>
+                    @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
+                    {
+                        <th>@wallet.WalletName</th>
+                    }
+                    <th style="background: lightgray">NET</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var netBalanceByAsset in _balanceByAssets)
                 {
-                    <td>
-                        @if (netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetVolume != 0)
+                    <tr>
+                        <td>
+                            <b>@netBalanceByAsset.Asset</b>
+                        </td>
+                        @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
                         {
-                            <span><b>@Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetVolume, 8)</b></span>
-                            <br>
-                            <span>USD: @Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetUsdVolume, 2)</span>
-                            <br>
-                            <span>Open Price: @Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).OpenPrice, 2)</span>
-                            <br>
-                            <span>Unreleased Pnl: @Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).UnreleasedPnlUsd, 2)</span>
+                            <td>
+                                @if (netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetVolume != 0)
+                                {
+                                    <span><b>@Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetVolume, 8)</b></span>
+                                    <br>
+                                    <span>USD: @Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetUsdVolume, 2)</span>
+                                    <br>
+                                    <span>Open Price: @Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).OpenPrice, 2)</span>
+                                    <br>
+                                    <span>Unreleased Pnl: @Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).UnreleasedPnlUsd, 2)</span>
+                                }
+                            </td>
                         }
-                    </td>
+                        <td style="background: lightgray">
+                            <span><b>@Math.Round(netBalanceByAsset.NetVolume, 8)</b></span>
+                            <br>
+                            <span>USD: @Math.Round(netBalanceByAsset.NetUsdVolume, 2)</span>
+                            <br>
+                            <span>Open Price Avg: @Math.Round(netBalanceByAsset.OpenPriceAvg, 2)</span>
+                            <br>
+                            <span>Unreleased Pnl: @Math.Round(netBalanceByAsset.UnrealisedPnl, 2)</span>
+                        </td>
+                    </tr>
                 }
-                <td style="background: lightgray">
-                    <span><b>@Math.Round(netBalanceByAsset.NetVolume, 8)</b></span>
-                    <br>
-                    <span>USD: @Math.Round(netBalanceByAsset.NetUsdVolume, 2)</span>
-                    <br>
-                    <span>Open Price Avg: @Math.Round(netBalanceByAsset.OpenPriceAvg, 2)</span>
-                    <br>
-                    <span>Unreleased Pnl: @Math.Round(netBalanceByAsset.UnrealisedPnl, 2)</span>
-                </td>
-            </tr>
-        }
-        </tbody>
-    </table>
-    <table class="table" style="width: auto">
-        <thead>
-        <tr>
-            <th>Date Time</th>
-            <th>Wallet Name</th>
-            <th>Base Asset</th>
-            <th>Quote Asset</th>
-            <th>Base Volume</th>
-            <th>Quote Volume</th>
-            <th>TotalReleasePnl</th>
-        </tr>
-        </thead>
-        <tbody>
+                </tbody>
+            </table>
+            <table class="table" style="width: auto">
+                <thead>
+                <tr>
+                    <th>Date Time</th>
+                    <th>Wallet Name</th>
+                    <th>Base Asset</th>
+                    <th>Quote Asset</th>
+                    <th>Base Volume</th>
+                    <th>Quote Volume</th>
+                    <th>Base Asset Price In Usd</th>
+                    <th>Quote Asset Price In Usd</th>
+                    <th>TotalReleasePnl</th>
+                </tr>
+                </thead>
+                <tbody>
 
-        @foreach (var trade in _trades.OrderByDescending(elem => elem.DateTime))
-        {
-            <tr>
-                <td>@trade.DateTime</td>
-                <td>@trade.WalletName</td>
-                <td>@trade.BaseAsset</td>
-                <td>@trade.QuoteAsset</td>
-                <td>@trade.BaseVolume</td>
-                <td>@trade.QuoteVolume</td>
-                <td>@trade.TotalReleasePnl</td>
+                @foreach (var trade in _trades.OrderByDescending(elem => elem.DateTime))
+                {
+                    <tr>
+                        <td>@trade.DateTime</td>
+                        <td>@trade.WalletName</td>
+                        <td>@trade.BaseAsset</td>
+                        <td>@trade.QuoteAsset</td>
+                        <td>@trade.BaseVolume</td>
+                        <td>@trade.QuoteVolume</td>
+                        <td>@trade.BaseAssetPriceInUsd</td>
+                        <td>@trade.QuoteAssetPriceInUsd</td>
+                        <td>@trade.TotalReleasePnl</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </th>
+        <th>
+
+                <div class="col">
+                    <table class="table" style="width: auto">
+                        <thead>
+                        <tr>
+                            <th>Asset</th>
+                            <th>Index Price in USD</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var priceMap in _priceMapCollection)
+                        {
+                            <tr>
+                                <td class="align-middle">
+                                    <input type="text" class="form-control" @bind="priceMap.Asset"/>
+                                </td>
+                                <td class="align-middle">
+                                    <input type="number" class="form-control" @bind="priceMap.Price"/>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+                <br>
+                <tr>
+                <ul class="nav">
+                    <li><button type="button" class="btn-outline-secondary btn" @onclick="AddNewPrice">New</button></li>
+                    <li><button type="button" class="btn-outline-secondary btn" @onclick="SavePrices">Save</button></li>
+                </ul>
             </tr>
-        }
-        </tbody>
+        </th>
     </table>
 }
 @if (TradeWindowOpen)
@@ -184,14 +234,6 @@
                     <td>Quote Volume</td>
                     <td><input type="number" class="form-control" @bind=_tradeRequest.QuoteVolume/></td>
                 </tr>
-                <tr>
-                    <td>Base Asset Price</td>
-                    <td><input type="number" class="form-control" @bind=_tradeRequest.BaseAssetIndexPrice/></td>
-                </tr>
-                <tr>
-                    <td>Quote Asset Price</td>
-                    <td><input type="number" class="form-control" @bind=_tradeRequest.QuoteAssetIndexPrice/></td>
-                </tr>
             </table>
            @if (TradeWindowException)
            {
@@ -208,6 +250,7 @@
     private List<NetBalanceByWallet> _balanceByWallets = new();
     private List<NetBalanceByAsset> _balanceByAssets = new();
     private List<AssetPortfolioTrade> _trades = new();
+    private List<PriceMap> _priceMapCollection = new();
     
     private List<string> AllAssets { get; set; }
     
@@ -254,6 +297,7 @@
         _balanceByWallets = response.Portfolio.Portfolio.BalanceByWallet ?? new List<NetBalanceByWallet>();
         _balanceByAssets = response.Portfolio.Portfolio.BalanceByAsset ?? new List<NetBalanceByAsset>();
         _trades = response.Portfolio.Trades ?? new List<AssetPortfolioTrade>();
+        _priceMapCollection = response.Portfolio.PriceMap.Select(e => new PriceMap(){Asset = e.Key, Price = e.Value}).ToList();
 
         StateHasChanged();
     }
@@ -261,8 +305,18 @@
     private void CreateTrade()
     {
         _tradeRequest = new ReportSimulationTradeRequest();
+        _tradeRequest.WalletName = "testWallet";
         TradeWindowOpen = true;
         StateHasChanged();
+    }
+
+    private async Task DeleteSimulation()
+    {
+        await _assetPortfolioSimulationService.DeleteSimulation(new DeleteSimulationRequest()
+        {
+            SimulationId = _selectedSimulationId
+        });
+        await RefreshAllSimulations();
     }
     
     private async Task PushTrade()
@@ -309,6 +363,7 @@
         _balanceByWallets = simulation.Portfolio.BalanceByWallet ?? new List<NetBalanceByWallet>();
         _balanceByAssets = simulation.Portfolio.BalanceByAsset ?? new List<NetBalanceByAsset>();
         _trades = simulation.Trades ?? new List<AssetPortfolioTrade>();
+        _priceMapCollection = simulation.PriceMap.Select(e => new PriceMap(){Asset = e.Key, Price = e.Value}).ToList();
 
         StateHasChanged();
     }
@@ -318,4 +373,28 @@
         await _assetPortfolioSimulationService.CreateNewSimulation();
         await RefreshAllSimulations();
     }
+
+    private class PriceMap
+    {
+        public string Asset { get; set; }
+        public decimal Price { get; set; }
+    }
+
+    private void AddNewPrice()
+    {
+        _priceMapCollection.Add(new PriceMap());
+        StateHasChanged();
+    }
+
+    private void SavePrices()
+    {
+        var pricesDictionary = _priceMapCollection.ToDictionary(map => map.Asset, map => map.Price);
+
+        _assetPortfolioSimulationService.SetSimulationPrices(new SetSimulationPricesRequest()
+        {
+            SimulationId = _selectedSimulationId,
+            PriceMap = pricesDictionary
+        });
+    }
+
 }
