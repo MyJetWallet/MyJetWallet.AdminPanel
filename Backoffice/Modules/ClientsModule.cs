@@ -88,6 +88,7 @@ namespace Backoffice.Modules
             
             builder.RegisterPortfolioClient(Program.Settings.LiquidityPortfolioServiceUrl);
             builder.RegisterAssetPortfolioSettingsClient(Program.Settings.LiquidityPortfolioMonitoringServiceUrl);
+            builder.RegisterPortfolioSimulationClient(Program.Settings.LiquidityPortfolioSimulationServiceUrl);
             
             builder.RegisterIndexPricesClient(_myNoSqlClient);
             builder.RegisterIndexPricesManager(Program.Settings.MyNoSqlWriterUrl);

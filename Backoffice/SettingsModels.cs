@@ -115,5 +115,8 @@ namespace Backoffice
 
         [YamlProperty("AdminPanel.MessageTemplatesGrpcServiceUrl")]
         public string MessageTemplatesGrpcServiceUrl { get; set; }
+
+        [YamlProperty("AdminPanel.LiquidityPortfolioSimulationServiceUrl")]
+        public string LiquidityPortfolioSimulationServiceUrl { get; set; }
     }
 }

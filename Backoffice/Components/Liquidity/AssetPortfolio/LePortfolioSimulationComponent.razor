@@ -1,0 +1,318 @@
+@using Service.Liquidity.Portfolio.Grpc
+@using Service.Liquidity.Portfolio.Domain.Models
+@using Service.Liquidity.Portfolio.Grpc.Models
+@using Backoffice.Services.SpotInstruments
+@using Microsoft.Extensions.Logging
+@using Service.Liquidity.PortfolioHedger.Grpc
+@using Service.Liquidity.PortfolioHedger.Grpc.Models
+@using MyNoSqlServer.Abstractions
+@using Service.Liquidity.Engine.Grpc
+@using Service.Liquidity.Monitoring.Domain.Models
+@using Service.Liquidity.Portfolio.Grpc.Simulation
+@using Service.Liquidity.Portfolio.Grpc.Simulation.Models
+@using Syncfusion.Blazor.Diagram
+
+@inject ISpotInstrumentManager _spotInstrumentManager;
+@inject ILogger<AssetPortfolioComponent> _logger;
+@inject IAssetPortfolioSimulationService _assetPortfolioSimulationService;
+
+<ul class="nav">
+    <li><button type="button" class="btn-outline-secondary btn" @onclick="RefreshAllSimulations">Refresh all</button></li>
+</ul>
+<br/>
+
+<ul class="nav">
+    @foreach (var simulation in _simulationList.OrderBy(e => e.SimulationId))
+    {
+        <li><button type="button" class="btn-outline-info btn" @onclick="@(async () => { await OpenSimulation(simulation); })">@simulation.SimulationId</button></li>
+    }
+    <li><button type="button" class="btn-outline-secondary btn" @onclick="CreateNew">New</button></li>
+</ul>
+@if (_selectedSimulationId != 0)
+{
+    <br/>
+    <ul class="nav">
+        <li><button type="button" class="btn-outline-secondary btn" @onclick="RefreshCurrentSimulation">Refresh current</button></li>
+        <li><button type="button" class="btn-outline-secondary btn" @onclick="CreateTrade">Create trade</button></li>
+    </ul>
+    
+    <table class="table" style="width: auto">
+    <thead>
+    <tr>
+        <th></th>
+        @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
+        {
+            <th>@wallet.WalletName</th>
+        }
+        <th style="background: lightgray">NET</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td><b>NET USD</b></td>
+        @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
+        {
+            <td>@Math.Round(wallet.NetUsdVolume, 2)</td>
+        }
+        <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Sum(elem => elem.NetUsdVolume), 2)</b></td>
+    </tr>
+    <tr>
+        <td><b>UNRELEASED PNL</b></td>
+        @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
+        {
+            <td>@Math.Round(wallet.UnreleasedPnlUsd, 2)</td>
+        }
+        <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Sum(elem => elem.UnreleasedPnlUsd), 2)</b></td>
+    </tr>
+    </tbody>
+</table>
+<br>
+<br>
+<br>
+    <table class="table" style="width: auto">
+        <thead>
+        <tr>
+            <th>Asset</th>
+            @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
+            {
+                <th>@wallet.WalletName</th>
+            }
+            <th style="background: lightgray">NET</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var netBalanceByAsset in _balanceByAssets)
+        {
+            <tr>
+                <td>
+                    <b>@netBalanceByAsset.Asset</b>
+                </td>
+                @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
+                {
+                    <td>
+                        @if (netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetVolume != 0)
+                        {
+                            <span><b>@Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetVolume, 8)</b></span>
+                            <br>
+                            <span>USD: @Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetUsdVolume, 2)</span>
+                            <br>
+                            <span>Open Price: @Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).OpenPrice, 2)</span>
+                            <br>
+                            <span>Unreleased Pnl: @Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).UnreleasedPnlUsd, 2)</span>
+                        }
+                    </td>
+                }
+                <td style="background: lightgray">
+                    <span><b>@Math.Round(netBalanceByAsset.NetVolume, 8)</b></span>
+                    <br>
+                    <span>USD: @Math.Round(netBalanceByAsset.NetUsdVolume, 2)</span>
+                    <br>
+                    <span>Open Price Avg: @Math.Round(netBalanceByAsset.OpenPriceAvg, 2)</span>
+                    <br>
+                    <span>Unreleased Pnl: @Math.Round(netBalanceByAsset.UnrealisedPnl, 2)</span>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    <table class="table" style="width: auto">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Wallet Name</th>
+            <th>Base Asset</th>
+            <th>Quote Asset</th>
+            <th>Base Volume</th>
+            <th>Quote Volume</th>
+            <th>TotalReleasePnl</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        @foreach (var trade in _trades.OrderByDescending(elem => elem.Id))
+        {
+            <tr>
+                <td>@trade.Id</td>
+                <td>@trade.WalletName</td>
+                <td>@trade.BaseAsset</td>
+                <td>@trade.QuoteAsset</td>
+                <td>@trade.BaseVolume</td>
+                <td>@trade.QuoteVolume</td>
+                <td>@trade.TotalReleasePnl</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+@if (TradeWindowOpen)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption="New Trade"
+            OnClose="@OnCloseTradeWindow"
+            YesButtonCaption="Save"
+            NoButtonCaption="Cancel"
+            OnSubmit="@PushTrade">
+            <table>
+                <tr>
+                    <td>Wallet Name</td>
+                    <td><input type="text" class="form-control" @bind=_tradeRequest.WalletName /></td>
+                </tr>
+                <tr>
+                    <td>Base Asset</td>
+                    <select @bind="@_tradeRequest.BaseAsset">
+                        @foreach (var name in AllAssets)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
+                    <td>Quote Asset</td>
+                    <select @bind="@_tradeRequest.QuoteAsset">
+                        @foreach (var name in AllAssets)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
+                    <td>Base Volume</td>
+                    <td><input type="number" class="form-control" @bind=_tradeRequest.BaseVolume/></td>
+                </tr>
+                <tr>
+                    <td>Quote Volume</td>
+                    <td><input type="number" class="form-control" @bind=_tradeRequest.QuoteVolume/></td>
+                </tr>
+                <tr>
+                    <td>Base Asset Price</td>
+                    <td><input type="number" class="form-control" @bind=_tradeRequest.BaseAssetIndexPrice/></td>
+                </tr>
+                <tr>
+                    <td>Quote Asset Price</td>
+                    <td><input type="number" class="form-control" @bind=_tradeRequest.QuoteAssetIndexPrice/></td>
+                </tr>
+            </table>
+           @if (TradeWindowException)
+           {
+               <H3>@TradeWindowExceptionText</H3>
+           }
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+@code {
+    private List<PortfolioSimulation> _simulationList = new();
+    private long _selectedSimulationId = 0;
+    
+    private List<NetBalanceByWallet> _balanceByWallets = new();
+    private List<NetBalanceByAsset> _balanceByAssets = new();
+    private List<AssetPortfolioTrade> _trades = new();
+    
+    private List<string> AllAssets { get; set; }
+    
+    private bool TradeWindowOpen { get; set; }
+    private bool TradeWindowException { get; set; }
+    private string TradeWindowExceptionText { get; set; }
+    private ReportSimulationTradeRequest _tradeRequest = new();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await CacheAllAssets();
+        await RefreshAllSimulations();
+    }
+    
+    private async Task RefreshAllSimulations()
+    {
+        _selectedSimulationId = 0;
+        
+        var simulationListResponse = await _assetPortfolioSimulationService.GetSimulationList();
+        _simulationList = simulationListResponse.SimulationList;
+        
+        StateHasChanged();
+    }
+
+    private async Task RefreshCurrentSimulation()
+    {
+        var response = await _assetPortfolioSimulationService.GetSimulation(new GetSimulationRequest()
+        {
+            SimulationId = _selectedSimulationId
+        });
+
+        if (!response.Success)
+        {
+            await RefreshAllSimulations();
+            return;
+        }
+
+        var oldSimulation = _simulationList.First(e => e.SimulationId == _selectedSimulationId);
+
+        oldSimulation.Portfolio = response.Portfolio.Portfolio;
+        oldSimulation.Trades = response.Portfolio.Trades;
+        oldSimulation.AssetBalances = response.Portfolio.AssetBalances;
+
+        StateHasChanged();
+    }
+    
+    private async Task CreateTrade()
+    {
+        _tradeRequest = new ReportSimulationTradeRequest();
+        TradeWindowOpen = true;
+        StateHasChanged();
+    }
+    
+    private async Task PushTrade()
+    {
+        _tradeRequest.SimulationId = _selectedSimulationId;
+
+        var response = await _assetPortfolioSimulationService.ReportSimulationTrade(_tradeRequest);
+
+        if (!response.Success)
+        {
+            TradeWindowException = true;
+            TradeWindowExceptionText = response.ErrorText;
+            return;
+        }
+        await RefreshCurrentSimulation();
+        await OnCloseTradeWindow();
+    }
+
+    private async Task OnCloseTradeWindow()
+    {
+        TradeWindowOpen = false;
+        StateHasChanged();
+    }
+    
+    private async Task CacheAllAssets()
+    {
+        var instruments = await _spotInstrumentManager.GetAll();
+
+        AllAssets = new List<string>();
+        
+        instruments.ForEach(instrument =>
+        {
+            AllAssets.Add(instrument.Instrument.BaseAsset);
+            AllAssets.Add(instrument.Instrument.QuoteAsset);
+        });
+
+        AllAssets = AllAssets.Distinct().ToList();
+    }
+
+    private async Task OpenSimulation(PortfolioSimulation simulation)
+    {
+        _selectedSimulationId = simulation.SimulationId;
+        
+        _balanceByWallets = simulation.Portfolio.BalanceByWallet ?? new List<NetBalanceByWallet>();
+        _balanceByAssets = simulation.Portfolio.BalanceByAsset ?? new List<NetBalanceByAsset>();
+        _trades = simulation.Trades ?? new List<AssetPortfolioTrade>();
+
+        StateHasChanged();
+    }
+
+    private async Task CreateNew()
+    {
+        await _assetPortfolioSimulationService.CreateNewSimulation();
+        await RefreshAllSimulations();
+    }
+
+}

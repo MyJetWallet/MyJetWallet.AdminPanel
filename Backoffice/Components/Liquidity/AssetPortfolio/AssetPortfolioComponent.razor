@@ -39,6 +39,9 @@
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(AssetPortfolioPages.Settings)" aria-current="page" @onclick="SetSettings" >Settings</button>
     </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(AssetPortfolioPages.Simulation)" aria-current="page" @onclick="SetSimulation" >Simulation</button>
+    </li>
 </ul>
 
 @if (ActivePage == AssetPortfolioPages.AssetPortfolio)
@@ -148,6 +151,10 @@
 @if (ActivePage == AssetPortfolioPages.Settings)
 {
     <LeAssetPorfolioSettingsComponent />
+}
+@if (ActivePage == AssetPortfolioPages.Simulation)
+{
+    <LePortfolioSimulationComponent />
 }
 
 @if (IsShowEdit)
@@ -388,7 +395,8 @@
         AssetPortfolio,
         Trades,
         ChangeBalanceHistory,
-        Settings
+        Settings,
+        Simulation
     }
     
     private async Task CacheAllAssets()
@@ -484,6 +492,11 @@
         ActivePage = AssetPortfolioPages.Settings;
         StateHasChanged();
     }
+    private void SetSimulation()
+    {
+        ActivePage = AssetPortfolioPages.Simulation;
+        StateHasChanged();
+    }
 
     private async Task CreateMarketTrade()
     {
@@ -558,5 +571,4 @@
         _isAutoUpdate = false;
         GlobalTimers.RefreshTimer.RemoveCallback(_timerId);
     }
-
 }
