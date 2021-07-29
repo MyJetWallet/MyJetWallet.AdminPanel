@@ -24,7 +24,7 @@
 <ul class="nav">
     @foreach (var simulation in _simulationList.OrderBy(e => e.SimulationId))
     {
-        <li><button type="button" class="btn-outline-info btn" @onclick="@(async () => { await OpenSimulation(simulation); })">@simulation.SimulationId</button></li>
+        <li><button type="button" class="btn-outline-info btn" @onclick="@(() => { OpenSimulation(simulation); })">@simulation.SimulationId</button></li>
     }
     <li><button type="button" class="btn-outline-secondary btn" @onclick="CreateNew">New</button></li>
 </ul>
@@ -118,7 +118,7 @@
     <table class="table" style="width: auto">
         <thead>
         <tr>
-            <th>Id</th>
+            <th>Date Time</th>
             <th>Wallet Name</th>
             <th>Base Asset</th>
             <th>Quote Asset</th>
@@ -129,11 +129,10 @@
         </thead>
         <tbody>
 
-        @foreach (var trade in _trades.OrderByDescending(elem => elem.Id))
+        @foreach (var trade in _trades.OrderByDescending(elem => elem.DateTime))
         {
             <tr>
-                <td>@trade.Id</td>
-                <td>@trade.WalletName</td>
+                <td>@trade.DateTime</td>
                 <td>@trade.BaseAsset</td>
                 <td>@trade.QuoteAsset</td>
                 <td>@trade.BaseVolume</td>
@@ -250,11 +249,15 @@
         oldSimulation.Portfolio = response.Portfolio.Portfolio;
         oldSimulation.Trades = response.Portfolio.Trades;
         oldSimulation.AssetBalances = response.Portfolio.AssetBalances;
+        
+        _balanceByWallets = response.Portfolio.Portfolio.BalanceByWallet ?? new List<NetBalanceByWallet>();
+        _balanceByAssets = response.Portfolio.Portfolio.BalanceByAsset ?? new List<NetBalanceByAsset>();
+        _trades = response.Portfolio.Trades ?? new List<AssetPortfolioTrade>();
 
         StateHasChanged();
     }
     
-    private async Task CreateTrade()
+    private void CreateTrade()
     {
         _tradeRequest = new ReportSimulationTradeRequest();
         TradeWindowOpen = true;
@@ -274,10 +277,10 @@
             return;
         }
         await RefreshCurrentSimulation();
-        await OnCloseTradeWindow();
+        OnCloseTradeWindow();
     }
 
-    private async Task OnCloseTradeWindow()
+    private void OnCloseTradeWindow()
     {
         TradeWindowOpen = false;
         StateHasChanged();
@@ -298,7 +301,7 @@
         AllAssets = AllAssets.Distinct().ToList();
     }
 
-    private async Task OpenSimulation(PortfolioSimulation simulation)
+    private void OpenSimulation(PortfolioSimulation simulation)
     {
         _selectedSimulationId = simulation.SimulationId;
         
@@ -314,5 +317,4 @@
         await _assetPortfolioSimulationService.CreateNewSimulation();
         await RefreshAllSimulations();
     }
-
 }
