@@ -36,7 +36,7 @@
       <PackageReference Include="MyJetWallet.Sdk.NoSql" Version="1.2.0" />
       <PackageReference Include="MyJetWallet.Service.ActiveOrders.Client" Version="3.0.2" />
       <PackageReference Include="MyJetWallet.Service.AssetsDictionary.Client" Version="1.6.3" />
-      <PackageReference Include="MyJetWallet.Service.BalanceHistory.Client" Version="2.0.2" />
+      <PackageReference Include="MyJetWallet.Service.BalanceHistory.Client" Version="2.0.3" />
       <PackageReference Include="MyJetWallet.Service.Balances.Client" Version="1.0.7" />
       <PackageReference Include="MyJetWallet.Service.Bitgo.DepositDetector.Client" Version="1.1.7" />
       <PackageReference Include="MyJetWallet.Service.Bitgo.WithdrawalProcessor.Client" Version="1.0.3" />
@@ -64,7 +64,7 @@
       <PackageReference Include="MyTokenGeneratorUtils" Version="1.0.1" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
       <PackageReference Include="protobuf-net.Grpc" Version="1.0.152" />
-      <PackageReference Include="Radzen.Blazor" Version="3.7.3" />
+      <PackageReference Include="Radzen.Blazor" Version="3.8.0" />
       <PackageReference Include="SimpleTrading.BaseMetrics" Version="1.0.3" />
       <PackageReference Include="SimpleTrading.Deposit.Grpc" Version="1.2.14" />
       <PackageReference Include="SimpleTrading.ServiceStatusReporterConnector" Version="1.0.9" />
