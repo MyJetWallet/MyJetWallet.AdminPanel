@@ -136,17 +136,17 @@
                 .OrderByDescending(e => e.Price)
                 .Where(e => e.WalletId == WalletId)
                 .Take(limit)
-                .Select(e => new Level(e.Price, 0, e.Volume, $"local {WalletName}")));
+                .Select(e => new Level(e.Price, e.Volume, 0, $"local {WalletName}")));
 
             var bestAsk = book
-                .Where(e => e.Volume > 0)
+                .Where(e => e.Volume < 0)
                 .OrderBy(e => e.Price)
-                .FirstOrDefault(e => e.WalletId == WalletId);
+                .FirstOrDefault(e => e.WalletId != WalletId);
             
             var bestBid = book
-                .Where(e => e.Volume < 0)
+                .Where(e => e.Volume > 0)
                 .OrderByDescending(e => e.Price)
-                .FirstOrDefault(e => e.WalletId == WalletId);
+                .FirstOrDefault(e => e.WalletId != WalletId);
             
             if (bestAsk != null)
             {
