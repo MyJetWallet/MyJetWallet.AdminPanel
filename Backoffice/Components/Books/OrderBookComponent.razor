@@ -1,7 +1,7 @@
 ﻿@using Service.MatchingEngine.PriceSource.Client
 @using Service.MatchingEngine.PriceSource.MyNoSql
 
-@inject IDetailOrderBookService DetailOrderBookService
+@inject IOrderBookService OrderBookService
 
 <table style="font-size: 8px;">
     <tr>
@@ -84,25 +84,26 @@
         Refresh();
     }
     
-    private List<OrderBookLevel> Levels { get; set; }
+    private List<OrderBookLevelNoSql> Levels { get; set; }
     
     private void Refresh()
     {
-        Levels = new List<OrderBookLevel>();
+        Levels = new List<OrderBookLevelNoSql>();
         
         if (string.IsNullOrEmpty(BrokerId) || string.IsNullOrEmpty(Symbol))
         {
             return;
         }
-        var orderBook = DetailOrderBookService.GetOrderBook(BrokerId, Symbol);
+        var orderBook = OrderBookService.GetOrderBook(BrokerId, Symbol);
 
         if (orderBook == null)
         {
+            Levels = new List<OrderBookLevelNoSql>();
             return;
         }
 
-        Levels.AddRange(orderBook.SellLevels);
-        Levels.AddRange(orderBook.BuyLevels);
+        Levels = orderBook.ToList();
+        
         Levels = Levels.OrderByDescending(e => e.Price).ToList();
         
 

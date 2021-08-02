@@ -5,7 +5,7 @@
 @using Service.Liquidity.Engine.Grpc
 @using Service.Liquidity.Engine.Grpc.Models
 
-@inject IDetailOrderBookService DetailOrderBookService
+@inject IOrderBookService OrderBookService
 @inject IOrderBookManagerGrpc OrderBookManagerGrpc
 
 <div style="width: auto">
@@ -119,28 +119,35 @@
     {
         var limit = MaxLevelCount > 0 ? MaxLevelCount : 1000;
         
-        var book = DetailOrderBookService.GetOrderBook(BrokerId, Symbol); 
+        var book = OrderBookService.GetOrderBook(BrokerId, Symbol); 
         var list = new List<Level>();
 
         if (book != null)
         {
-            list.AddRange(book.SellLevels.OrderBy(e => e.Price)
+            list.AddRange(book
+                .Where(e => e.Volume < 0)
+                .OrderBy(e => e.Price)
                 .Where(e => e.WalletId == WalletId)
                 .Take(limit)
                 .Select(e => new Level(e.Price, 0, e.Volume, $"local {WalletName}")));
-            list.AddRange(book.BuyLevels.OrderByDescending(e => e.Price)
+            
+            list.AddRange(book
+                .Where(e => e.Volume > 0)
+                .OrderByDescending(e => e.Price)
                 .Where(e => e.WalletId == WalletId)
                 .Take(limit)
-                .Select(e => new Level(e.Price, e.Volume, 0, $"local {WalletName}")));
-            
-            var bestAsk = book.SellLevels
-                .OrderBy(e => e.Price)
-                .FirstOrDefault(e => e.WalletId != WalletId);
-            
-            var bestBid = book.BuyLevels
-                .OrderByDescending(e => e.Price)
-                .FirstOrDefault(e => e.WalletId != WalletId);
+                .Select(e => new Level(e.Price, 0, e.Volume, $"local {WalletName}")));
 
+            var bestAsk = book
+                .Where(e => e.Volume > 0)
+                .OrderBy(e => e.Price)
+                .FirstOrDefault(e => e.WalletId == WalletId);
+            
+            var bestBid = book
+                .Where(e => e.Volume < 0)
+                .OrderByDescending(e => e.Price)
+                .FirstOrDefault(e => e.WalletId == WalletId);
+            
             if (bestAsk != null)
             {
                 list.Add(new Level(bestAsk.Price, 0, bestAsk.Volume, bestAsk.WalletId)

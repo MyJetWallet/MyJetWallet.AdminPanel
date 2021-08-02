@@ -84,8 +84,7 @@ namespace Backoffice.Modules
 
             builder.RegisterMatchingEnginePriceSourceClient(_myNoSqlClient);
             builder.RegisterMatchingEngineOrderBookClient(_myNoSqlClient);
-            builder.RegisterMatchingEngineDetailOrderBookClient(_myNoSqlClient);
-            
+
             builder.RegisterPortfolioClient(Program.Settings.LiquidityPortfolioServiceUrl);
             builder.RegisterAssetPortfolioSettingsClient(Program.Settings.LiquidityPortfolioMonitoringServiceUrl);
             builder.RegisterPortfolioSimulationClient(Program.Settings.LiquidityPortfolioSimulationServiceUrl);
