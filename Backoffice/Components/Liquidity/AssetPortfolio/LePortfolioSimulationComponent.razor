@@ -390,20 +390,20 @@
         StateHasChanged();
     }
 
-    private void SavePrices()
+    private async Task SavePrices()
 
     {
         _priceMapCollection.RemoveAll(e => string.IsNullOrWhiteSpace(e.Asset) || e.Price == 0);
         
         var pricesDictionary = _priceMapCollection.ToDictionary(map => map.Asset, map => map.Price);
 
-        _assetPortfolioSimulationService.SetSimulationPrices(new SetSimulationPricesRequest()
+        await _assetPortfolioSimulationService.SetSimulationPrices(new SetSimulationPricesRequest()
         {
             SimulationId = _selectedSimulationId,
             PriceMap = pricesDictionary
         });
 
-        RefreshCurrentSimulation();
+        await RefreshCurrentSimulation();
     }
 
 }
