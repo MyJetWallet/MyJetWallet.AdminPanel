@@ -24,6 +24,7 @@
 @inject ILogger<AssetPortfolioComponent> _logger;
 @inject IMyNoSqlServerDataReader<AssetPortfolioBalanceNoSql> _portfolioBalanceNoSql;
 @inject IMyNoSqlServerDataReader<AssetPortfolioStatusNoSql> _portfolioStatusNoSql;
+@inject IHedgePortfolioService _hedgePortfolioService;
 
 @implements IDisposable;
 
@@ -51,6 +52,7 @@
         <li><button type="button" class="btn-outline-secondary btn" @onclick="Refresh">Refresh</button></li>
         <li><button type="button" class="btn-outline-warning btn" @onclick="ShowChangeBalanceWindow">Change balance</button></li>
         <li><button type="button" class="btn-outline-warning btn" @onclick="CreateMarketTrade">Create Market Trade</button></li>
+        <li><button type="button" class="btn-outline-warning btn" @onclick="OpenHedgeConvertWindow">Hedge Portfolio</button></li>
     </ul>
     <table class="table" style="width: auto">
         <thead>
@@ -282,6 +284,43 @@
     </div>
 }
 
+@if (_hedgeConvertWindowOpen)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption="Hedge Portfolio"
+            OnClose="@CloseHedgeConvertWindow"
+            YesButtonCaption="Execute"
+            NoButtonCaption="Cancel"
+            OnSubmit="@ExecuteHedgeConvert">
+            <table>
+                <tr>
+                    <td>From Asset</td>
+                    <select @bind="@HedgeConvertRequest.FromAsset">
+                        @foreach (var name in AllAssets)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
+                    <td>To Asset</td>
+                    <select @bind="@HedgeConvertRequest.ToAsset">
+                        @foreach (var name in AllAssets)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
+                    <td>From Asset Volume</td>
+                    <td><input type="number" class="form-control" @bind=HedgeConvertRequest.FromAssetVolume /></td>
+                </tr>
+            </table>
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
 
 @code {
     private AssetPortfolioPages ActivePage { get; set; }
@@ -313,6 +352,8 @@
     private bool MarketTradeWindowException { get; set; }
     private string MarketTradeWindowExceptionText { get; set; }
 
+    private ExecuteManualConvertRequest HedgeConvertRequest = new ExecuteManualConvertRequest();
+    private bool _hedgeConvertWindowOpen = false;
 
     private string _timerId = Guid.NewGuid().ToString();
     private bool _isAutoUpdate = false;
@@ -571,5 +612,26 @@
     {
         _isAutoUpdate = false;
         GlobalTimers.RefreshTimer.RemoveCallback(_timerId);
+    }
+
+    private void OpenHedgeConvertWindow()
+    {
+        HedgeConvertRequest = new ExecuteManualConvertRequest();
+        _hedgeConvertWindowOpen = true;
+        
+        StateHasChanged();
+    }
+
+    private void ExecuteHedgeConvert()
+    {
+        _hedgePortfolioService.ExecuteManualConvert(HedgeConvertRequest);
+        CloseHedgeConvertWindow();
+    }
+
+    private void CloseHedgeConvertWindow()
+    {
+        _hedgeConvertWindowOpen = false;
+        HedgeConvertRequest = new ExecuteManualConvertRequest();
+        StateHasChanged();
     }
 }
