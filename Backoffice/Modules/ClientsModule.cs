@@ -29,6 +29,7 @@ using Service.Liquidity.PortfolioHedger.Client;
 using Service.Liquidity.Reports.Client;
 using Service.MatchingEngine.PriceSource.Client;
 using Service.MessageTemplates.Client;
+using Service.NewsRepository.Client;
 using Service.PriceHistory.Client;
 using Service.PushNotification.Client;
 using Service.Service.KYC.Client;
@@ -143,6 +144,8 @@ namespace Backoffice.Modules
             
             builder.RegisterPriceHistoryClient(Program.Settings.BasePriceServiceGrpcUrl);
             builder.RegisterMessageTemplatesCachedClient(Program.Settings.MessageTemplatesGrpcServiceUrl, _myNoSqlClient);
+            
+            builder.RegisterNewsRepositoryClient(Program.Settings.NewsRepositoryGrpcServiceUrl);
         }
         
         private void RegisterMyNoSqlTcpClient(ContainerBuilder builder)

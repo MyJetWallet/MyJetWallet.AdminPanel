@@ -12,6 +12,9 @@
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(Menus.CmcApiKeys)" @onclick="SetApiKeys">CMC Api Keys</button>
     </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.News)" @onclick="SetNews" >News</button>
+    </li>
 </ul>
 
 <div style="margin: 10px">
@@ -29,11 +32,15 @@
     {
         <CMCApiKeysComponent />
     }
+    @if (ActivePage == Menus.News)
+    {
+        <NewsComponent />
+    }
 </div>
 
 @code {
 
-    private Menus ActivePage { get; set; } = Menus.MarketReferences;
+    private Menus ActivePage { get; set; } = Menus.MarketInfo;
 
     private string CheckActive(Menus target)
     {
@@ -57,6 +64,12 @@
     {
         SetActive(Menus.CmcApiKeys);
     }
+    
+    private void SetNews()
+    {
+        SetActive(Menus.News);
+    }
+
 
     private void SetActive(Menus page)
     {
@@ -69,6 +82,7 @@
         MarketReferences,
         MarketInfo,
         CmcApiKeys,
+        News
     }
  
 }

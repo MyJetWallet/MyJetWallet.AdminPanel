@@ -1,0 +1,86 @@
+@using Microsoft.AspNetCore.Components
+@using Service.NewsRepository.Domain.Models
+@using Service.PriceHistory.Grpc.Models
+@using Backoffice.Services
+@inject IToaster _toaster;
+<BaseTwoButtonsDialog Caption="Create/Edit News"
+                      OnClose="OnClose"
+                      YesButtonCaption="Save"
+                      NoButtonCaption="Cancel"
+                      OnSubmit="OnSubmit">
+    
+    @if (!IsCreate)
+    {
+        <h4>Topic: @News.Topic</h4>
+        <h4>Lang: @News.Lang</h4>
+    }
+    @if (IsCreate)
+    {
+        <div>
+            Topic: <input type="text" class="form-control" @bind="News.Topic"/>
+        </div>
+        <div>
+            Lang: <input type="text" class="form-control" @bind="News.Lang"/>
+        </div>
+    }
+    <div>
+        Source: <input type="text" class="form-control" @bind="News.Source"/>
+    </div>
+    <div>
+        Url: <input type="text" class="form-control" @bind="News.UrlAddress"/>
+    </div>
+    <div>
+        Associated Assets: <input type="text" class="form-control" @bind="AssociatedAssetsAsString"/>
+    </div>
+
+
+</BaseTwoButtonsDialog>
+
+@code {
+    
+    
+    [Parameter]
+    public News News { get; set; } = new();
+
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+
+    [Parameter]
+    public EventCallback<News> OnUpdateCallback { get; set; }
+    
+    [Parameter]
+    public bool IsCreate { get; set; }
+    
+    public string AssociatedAssetsAsString { get; set; }
+
+    private void OnClose()
+    {
+        OnCloseCallback.InvokeAsync();
+    }
+
+    protected override void OnInitialized()
+    {
+        AssociatedAssetsAsString = News.AssociatedAssets.JoinIntoString(128);
+    }
+
+    private async Task OnSubmit()
+    {
+        if (string.IsNullOrWhiteSpace(News.Lang)
+            || string.IsNullOrWhiteSpace(News.Topic)
+            || string.IsNullOrWhiteSpace(News.Source)
+            || string.IsNullOrWhiteSpace(News.UrlAddress))
+        {
+         _toaster.Error("Empty fields are not allowed");   
+        }
+        else
+        {
+            if (IsCreate)
+                News.Timestamp = DateTime.UtcNow;
+            News.AssociatedAssets = !string.IsNullOrWhiteSpace(AssociatedAssetsAsString)
+                ? AssociatedAssetsAsString.Split(',').Select(a => a.Trim()).ToList()
+                : new List<string>();
+            await OnUpdateCallback.InvokeAsync(News);
+        }
+    }
+
+}

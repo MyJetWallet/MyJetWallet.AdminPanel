@@ -118,5 +118,8 @@ namespace Backoffice
 
         [YamlProperty("AdminPanel.LiquidityPortfolioSimulationServiceUrl")]
         public string LiquidityPortfolioSimulationServiceUrl { get; set; }
+        
+        [YamlProperty("AdminPanel.NewsRepositoryGrpcServiceUrl")]
+        public string NewsRepositoryGrpcServiceUrl { get; set; }
     }
 }

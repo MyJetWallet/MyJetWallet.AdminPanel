@@ -1,0 +1,110 @@
+@using Service.NewsRepository.Grpc
+@using Service.NewsRepository.Domain.Models
+@using Backoffice.Services
+@using Service.NewsRepository.Grpc.Models
+@inject INewsService _newsService
+<h3>News</h3>
+
+<table class="table" style="width: auto">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Topic</th>
+        <th>Lang</th>
+        <th>Source</th>
+        <th>UrlAddress</th>
+        <th>AssociatedAssets</th>
+        <th>Timestamp</th>
+    </tr>
+    </thead>
+    <tbody>
+    @{
+        var rowNumber = 0;
+    }
+        
+    @foreach (var news in _news)
+    {
+        rowNumber++;
+        <tr>
+            <td>@rowNumber</td>
+            <td>@news.Topic</td>
+            <td>@news.Lang</td>
+            <td>@news.Source</td>
+            <td>@news.UrlAddress</td>
+            <td>@news.AssociatedAssets.JoinIntoString(128)</td>
+            <td>@news.Timestamp</td>
+
+            <td>
+                <ul class="nav">
+                    <li><button type="button" class="btn-outline-info btn"  @onclick="() => { ShowEdit(news); }">Edit</button></li>
+                    <li><button type="button" class="btn-outline-danger btn"  @onclick="() => { DeleteNews(news); }">Delete</button></li>
+                </ul>
+            </td>
+        </tr>
+    }
+    </tbody>
+    <button type="button" class="btn-outline-info btn"  @onclick="ShowCreate">Add News</button>
+
+</table>
+
+
+@if (IsShowEdit)
+{
+    <div>
+        <NewsEditDialog News="@EditRequest" IsCreate="@isCreate" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="async () => { await OnUpdateNews(); }"/>
+    </div>
+}
+
+@code {
+    private List<News> _news = new();
+    private bool IsShowEdit  { get; set; }
+    private bool isCreate { get; set; }
+    private News EditRequest;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshNews();
+    }
+
+    private void ShowEdit(News newsEdit)
+    {
+        isCreate = false;
+        EditRequest = newsEdit;
+        IsShowEdit = true;
+    }
+
+    private void ShowCreate()
+    {
+        isCreate = true;
+        EditRequest = new News();
+        IsShowEdit = true;
+    }
+    private async Task RefreshNews()
+    {
+        _news = (await _newsService.GetNews(new ())).NewsList;
+        StateHasChanged();
+    }
+    
+    private void OnCloseEditDialog()
+    {
+        IsShowEdit = false;
+        StateHasChanged();
+    }
+
+    private async Task OnUpdateNews()
+    {
+        IsShowEdit = false;
+        await _newsService.AddOrUpdateNews(EditRequest);
+        await RefreshNews();
+    }
+
+    private async Task DeleteNews(News newsDelete)
+    {
+        await _newsService.DeleteNews(new DeleteNewsRequest()
+        {
+            Lang = newsDelete.Lang,
+            Topic = newsDelete.Topic
+        });
+        await RefreshNews();
+    }
+}
