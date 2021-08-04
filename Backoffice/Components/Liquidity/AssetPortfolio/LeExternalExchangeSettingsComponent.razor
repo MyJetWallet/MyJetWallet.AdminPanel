@@ -1,0 +1,167 @@
+@using Service.Liquidity.Portfolio.Grpc
+@using Service.Liquidity.Portfolio.Domain.Models
+@using Service.Liquidity.Monitoring.Grpc
+@using Service.Liquidity.Monitoring.Domain.Models
+@using MyNoSqlServer.Abstractions
+@using Service.Liquidity.PortfolioHedger.Domain.Models
+@using Service.Liquidity.PortfolioHedger.Grpc
+
+@inject IExternalExchangeSettingsService _externalExchangeSettingsService
+
+@foreach (var elem in Settings)
+{
+    <div class="col">
+        <table>
+            <thead>
+            <tr>
+                <th>ExchangeName</th>
+                <th>MinBalancePercent</th>
+                <th>IsActive</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td class="align-middle">
+                    <input type="text" class="form-control" @bind="elem.ExchangeName"/>
+                </td>
+                <td class="align-middle">
+                    <input type="number" class="form-control" @bind="elem.MinBalancePercent"/>
+                </td>
+                <td class="align-middle">
+                    <input type="checkbox" class="form-control" @bind="elem.IsActive"/>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <br>
+}
+
+<div>
+    <ul class="nav align-middle">
+        <li><button style="margin-left: 10px" type="button" class="btn-outline-danger btn" @onclick="ApplySettings">Apply</button></li>
+        <li><button style="margin-left: 10px" type="button" class="btn-outline-info btn" @onclick="ResetSettings">Refresh</button></li>
+        <li><button style="margin-left: 10px" type="button" class="btn-outline-info btn" @onclick="CreateNew">Create New</button></li>
+    </ul>
+</div>
+
+@if (IsShowQuestion)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption="@QuestionTitle"
+            OnClose="OnCloseQuestionDialog"
+            YesButtonCaption="Yes"
+            NoButtonCaption="No"
+            OnSubmit="ConfirmQuestion">
+            
+            <h3 class="alert-warning">@QuestionText</h3>
+            
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+@code {
+    private List<ExternalExchangeSettings> Settings { get; set; } = new();
+
+    private string ErrorText { get; set; }
+    private bool ShowError { get; set; } = false;
+    
+    private bool IsShowQuestion { get; set; }
+    private string QuestionTitle { get; set; }
+    private string QuestionText { get; set; }
+    private Func<Task> QuestionConfirmCallback { get; set; }
+
+    private async Task CreateNew()
+    {
+        Settings.Add(new ExternalExchangeSettings());
+        ShowError = false;
+        StateHasChanged();
+    }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshData();
+        StateHasChanged();
+    }
+    
+    private async Task RefreshData()
+    {
+        try
+        {
+            var response = await _externalExchangeSettingsService.GetExternalExchangeSettingsAsync();
+            if (!response.Success)
+            {
+                ShowErrorText(response.ErrorMessage);
+            }
+            
+            Settings = new();
+            
+            response.Settings.ForEach(elem =>
+            {
+                Settings.Add(elem);
+            });
+            ShowError = false;
+            StateHasChanged();
+        }
+        catch (Exception exception)
+        {
+            ShowErrorText(exception.Message);
+        }
+    }
+
+    private void ShowErrorText(string message)
+    {
+        ErrorText = message;
+        ShowError = true;
+        Settings = new List<ExternalExchangeSettings>();
+
+        StateHasChanged();
+    }
+
+    private void ApplySettings()
+    {
+        AskQuestion("Change Settings", "Apply a new settings. Are you sure?",
+            async () =>
+            {
+                Settings.ForEach(async elem =>
+                {
+                    await _externalExchangeSettingsService.UpdateExternalExchangeSettingsAsync(elem);
+                });
+                StateHasChanged();
+            });
+    }
+    private async Task ResetSettings()
+    {
+        await RefreshData();
+        StateHasChanged();
+    }
+
+    private void AskQuestion(string title, string content, Func<Task> confirmAction)
+    {
+        QuestionTitle = title;
+        QuestionText = content;
+        QuestionConfirmCallback = confirmAction;
+        IsShowQuestion = true;
+        
+        StateHasChanged();
+    }
+    private async Task ConfirmQuestion()
+    {
+        await InvokeAsync(StateHasChanged);
+        
+        var action = QuestionConfirmCallback;
+        if (action != null)
+        {
+            await action.Invoke();
+        }
+
+        IsShowQuestion = false;
+        await InvokeAsync(StateHasChanged);
+    }
+    private void OnCloseQuestionDialog()
+    {
+        IsShowQuestion = false;
+        StateHasChanged();
+    }
+}

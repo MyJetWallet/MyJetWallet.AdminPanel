@@ -138,7 +138,10 @@ namespace Backoffice.Modules
             builder.RegisterInstance(externalSettingsManager).As<IExternalMarketsSettingsManager>().SingleInstance();
             
             builder.RegisterFeesSettingsClients(Program.Settings.FeesServiceUrl);
+            
             builder.RegisterPortfolioHedgerClient(Program.Settings.PortfolioHedgerGrpcUrl);
+            builder.RegisterExternalExchangeSettingsServiceClient(Program.Settings.PortfolioHedgerGrpcUrl);
+            
             builder.RegisterBitgoDepositServiceClient(Program.Settings.BitgoDepositServiceGrpcUrl);
             builder.RegisterBitgoWithdrawalClient(Program.Settings.BitgoWithdrawalServiceGrpcUrl);
             

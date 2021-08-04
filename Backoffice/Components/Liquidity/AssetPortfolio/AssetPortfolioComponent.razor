@@ -44,6 +44,9 @@
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(AssetPortfolioPages.Simulation)" aria-current="page" @onclick="SetSimulation" >Simulation</button>
     </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(AssetPortfolioPages.ExchangeSettings)" aria-current="page" @onclick="SetExchangeSettings" >Exchange Settings</button>
+    </li>
 </ul>
 
 @if (ActivePage == AssetPortfolioPages.AssetPortfolio)
@@ -158,6 +161,10 @@
 @if (ActivePage == AssetPortfolioPages.Simulation)
 {
     <LePortfolioSimulationComponent />
+}
+@if (ActivePage == AssetPortfolioPages.ExchangeSettings)
+{
+    <LeExternalExchangeSettingsComponent />
 }
 
 @if (IsShowEdit)
@@ -438,7 +445,8 @@
         Trades,
         ChangeBalanceHistory,
         Settings,
-        Simulation
+        Simulation,
+        ExchangeSettings
     }
     
     private async Task CacheAllAssets()
@@ -537,6 +545,12 @@
     private void SetSimulation()
     {
         ActivePage = AssetPortfolioPages.Simulation;
+        StateHasChanged();
+    }
+
+    private void SetExchangeSettings()
+    {
+        ActivePage = AssetPortfolioPages.ExchangeSettings;
         StateHasChanged();
     }
 
