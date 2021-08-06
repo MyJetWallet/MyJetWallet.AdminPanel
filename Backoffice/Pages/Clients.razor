@@ -70,7 +70,7 @@
     {
         <tr>
             <td rowspan="4">
-                <ClientPresentationComponent ClientId="@ClientResult.ClientId" BrandId="@ClientResult.BrandId" BrokerId="@ClientResult.BrokerId" EmailConfirmed="@ClientResult.EmailConfirmed"/>
+                <ClientPresentationComponent ClientId="@ClientResult.ClientId" BrandId="@ClientResult.BrandId" BrokerId="@ClientResult.BrokerId" EmailConfirmed="@ClientResult.EmailConfirmed" Email="@ClientResult.Email"/>
             </td>
         </tr>
     }
@@ -115,7 +115,7 @@
             });
             if (response.Clients?.Any() == true)
             {
-                ClientResults.AddRange(response.Clients.Select(client => new ClientResultModel(client, result.EmailIsConfirmed)));
+                ClientResults.AddRange(response.Clients.Select(client => new ClientResultModel(client, result.EmailIsConfirmed, result.Email)));
             }
         }
         
@@ -142,11 +142,11 @@
                     {
                         TraderId = client.ClientId
                     });
-                    ClientResults.Add(new ClientResultModel(client, crmResponse.Trader.EmailIsConfirmed));
+                    ClientResults.Add(new ClientResultModel(client, crmResponse.Trader.EmailIsConfirmed, crmResponse.Trader.Email));
                 }
                 catch
                 {
-                    ClientResults.Add(new ClientResultModel(client, false));
+                    ClientResults.Add(new ClientResultModel(client, false, ""));
                 }
             }
         }

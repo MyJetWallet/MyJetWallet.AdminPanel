@@ -141,6 +141,9 @@
     public string WalletId { get; set; }
     
     [Parameter]
+    public string Email { get; set; }
+    
+    [Parameter]
     public bool EmailConfirmed { get; set; }
 
     private ClientPage ActivePage { get; set; }
@@ -183,7 +186,7 @@
 
         var wallets = await _walletService.GetWalletsByClient(new JetClientIdentity(BrokerId, BrandId, ClientId));
 
-        Client = new ClientModel(BrokerId, ClientId, BrandId,EmailConfirmed);
+        Client = new ClientModel(BrokerId, ClientId, BrandId,EmailConfirmed, Email);
         Client.Wallets = (wallets.Wallets ?? new List<ClientWallet>())
             .Select(e => new WalletModel(e.Name, BrokerId, ClientId, BrandId, e.WalletId, e.IsDefault))
             .ToList();
