@@ -21,7 +21,7 @@
       <PackageReference Include="Finance.PciDssPublic.HttpContracts" Version="1.0.0" />
       <PackageReference Include="Flurl.Http" Version="3.2.0" />
       <PackageReference Include="Grpc.Net.Client" Version="2.38.0" />
-      <PackageReference Include="Highsoft.Highcharts" Version="9.1.2" />
+      <PackageReference Include="Highsoft.Highcharts" Version="9.1.2.1" />
       <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.18.0" />
       <PackageReference Include="MW.Blazor.TagSelector" Version="1.2.3" />
       <PackageReference Include="MyCrm.Accounts.Grpc" Version="1.0.24" />
