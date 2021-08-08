@@ -24,7 +24,6 @@
 @inject ILogger<AssetPortfolioComponent> _logger;
 @inject IMyNoSqlServerDataReader<AssetPortfolioBalanceNoSql> _portfolioBalanceNoSql;
 @inject IMyNoSqlServerDataReader<AssetPortfolioStatusNoSql> _portfolioStatusNoSql;
-@inject IHedgePortfolioService _hedgePortfolioService;
 
 @implements IDisposable;
 
@@ -630,6 +629,7 @@
 
     private void OpenHedgeConvertWindow()
     {
+        return;
         HedgeConvertRequest = new ExecuteManualConvertRequest();
         _hedgeConvertWindowOpen = true;
         
@@ -638,7 +638,7 @@
 
     private void ExecuteHedgeConvert()
     {
-        _hedgePortfolioService.ExecuteManualConvert(HedgeConvertRequest);
+        //_hedgePortfolioService.ExecuteManualConvert(HedgeConvertRequest);
         CloseHedgeConvertWindow();
     }
 
