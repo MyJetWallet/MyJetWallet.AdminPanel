@@ -1,0 +1,135 @@
+@using Backoffice.Services.SpotInstruments
+@using Backoffice.Services.SpotExternalInstruments
+@using Service.AssetsDictionary.Domain.Models
+
+@inject ISpotExternalInstrumentManager SpotExternalInstrumentManager;
+@inject IToaster ToastService;
+
+<tr style="@(!Item.IsEnabled ? "background: lightgray" : "")">
+    <td>@Item.Exchange</td>
+    <td>@Item.Market</td>
+    <td style="@(!Item.IsEnabled ? "background: red" : "")">@Item.IsEnabled</td>
+    <td>@Item.BaseAsset</td>
+    <td>@Item.QuoteAsset</td>
+    <td>@Item.BrokerId</td>
+    <td>@Item.Symbol</td>
+
+    <td>
+        <ul class="nav">
+            <li><button type="button" class="btn-outline-info btn" @onclick="ShowDetails" >Details</button></li>
+            <li><button type="button" class="btn-outline-warning btn" @onclick="ShowEdit" >Edit</button></li>
+            @if (!Item.IsEnabled)
+            {
+                <li><button type="button" class="btn-outline-danger btn" @onclick="ShowDelete">Delete</button></li>
+            }
+        </ul>
+    </td>
+</tr>
+
+@if (IsShowDetails)
+{
+    <SpotExternalInstrumentDetailsDialog Item="@Item" OnCloseCallback="OnCloseInstrumentDialog" />
+}
+
+@if (IsShowEdit)
+{
+    <div>
+        <SpotExternalInstrumentDetailsDialogEdit Item="@Item" IsCreate="false" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="OnUpdateInstrument" />
+    </div>
+}
+
+@if (IsShowDelete)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption=@($"Delete instrument {Item.Symbol} [{Item.BrokerId}]")
+            OnClose="OnCloseDeleteDialog"
+            YesButtonCaption="Delete"
+            NoButtonCaption="Cancel"
+            OnSubmit="DeleteItem">
+            
+            <h3 class="alert-warning">Are you sure you want to delete the asset <b>@Item.Symbol [@Item.BrokerId]?</b></h3>
+            
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+
+
+
+
+@code {
+    
+    [Parameter]
+    public SpotConvertExternalInstrument Item { get; set; }
+    
+    [Parameter]
+    public EventCallback<SpotConvertExternalInstrument> OnDeleteCallback { get; set; }
+    
+    private bool IsShowDetails { get; set; }
+    private bool IsShowEdit { get; set; }
+    private bool IsShowDelete { get; set; }
+
+    private void ShowDetails()
+    {
+        IsShowDetails = true;
+        StateHasChanged();        
+    }
+
+    private void ShowEdit()
+    {
+        IsShowEdit = true;
+        StateHasChanged();
+    }
+
+    private void ShowDelete()
+    {
+        IsShowDelete = true;
+        StateHasChanged();
+    }
+
+    private void OnCloseInstrumentDialog()
+    {
+        IsShowDetails = false;
+        StateHasChanged();
+    }
+
+    private void OnCloseEditDialog()
+    {
+        IsShowEdit = false;
+        StateHasChanged();
+    }
+    
+    private async void OnUpdateInstrument(SpotConvertExternalInstrument item)
+    {
+        try
+        {
+            await SpotExternalInstrumentManager.UpdateInstrument(item);
+
+            IsShowEdit = false;
+            
+            ToastService.Info("Spot Instrument is updated", "Edit Spot Instrument");
+
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Edit Spot Instrument");
+        }
+    }
+
+
+    private void OnCloseDeleteDialog()
+    {
+        IsShowDelete = false;
+        StateHasChanged();
+    }
+
+    private async Task DeleteItem()
+    {
+        IsShowDelete = false;
+        await OnDeleteCallback.InvokeAsync(Item);
+    }
+
+
+}

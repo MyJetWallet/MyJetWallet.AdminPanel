@@ -11,6 +11,7 @@ using Backoffice.Services.Fees.Assets;
 using Backoffice.Services.Fees.Instruments;
 using Backoffice.Services.Fees.Settings;
 using Backoffice.Services.References;
+using Backoffice.Services.SpotExternalInstruments;
 using Backoffice.Services.SpotInstruments;
 using Backoffice.TableStorage;
 using MyCRM.AccountTransactions.Grpc;
@@ -44,6 +45,11 @@ namespace Backoffice.Modules
             builder
                 .RegisterType<SpotInstrumentManager>()
                 .As<ISpotInstrumentManager>()
+                .SingleInstance();
+            
+            builder
+                .RegisterType<SpotExternalInstrumentManager>()
+                .As<ISpotExternalInstrumentManager>()
                 .SingleInstance();
             
             builder
