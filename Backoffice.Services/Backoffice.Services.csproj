@@ -11,7 +11,7 @@
     <ItemGroup>
       <PackageReference Include="DotNetCoreDecorators" Version="1.0.21" />
       <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0-preview.6.21352.12" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0-preview.7.21377.19" />
       <PackageReference Include="MyCrm.Accounts.Grpc" Version="1.0.24" />
       <PackageReference Include="MyCRM.AccountTransactions.Grpc" Version="1.0.12" />
       <PackageReference Include="MyCrm.AuditLog.Grpc" Version="1.0.4" />
@@ -33,8 +33,8 @@
       <PackageReference Include="MyCrm.Withdrawals.Grpc" Version="1.0.17" />
       <PackageReference Include="MyJetWallet.BitGo.Settings" Version="1.0.6" />
       <PackageReference Include="MyJetWallet.Sdk.ExternalMarketsSettings" Version="1.0.3" />
-      <PackageReference Include="MyJetWallet.Service.AssetsDictionary.Client" Version="1.6.4" />
-      <PackageReference Include="MyJetWallet.Service.ClientWallets.Client" Version="1.2.0" />
+      <PackageReference Include="MyJetWallet.Service.AssetsDictionary.Client" Version="1.6.6" />
+      <PackageReference Include="MyJetWallet.Service.ClientWallets.Client" Version="1.2.1" />
       <PackageReference Include="MyJetWallet.Service.Fees.Client" Version="2.0.7" />
       <PackageReference Include="MyJetWallet.Service.Simulation.FTX.Client" Version="1.2.6" />
       <PackageReference Include="MyJetWallet.Service.Simulation.Binance.Client" Version="1.0.3" />
