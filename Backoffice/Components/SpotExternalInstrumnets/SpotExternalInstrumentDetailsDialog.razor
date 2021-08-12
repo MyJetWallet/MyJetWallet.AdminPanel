@@ -1,0 +1,38 @@
+@using Backoffice.Services.SpotInstruments
+@using Service.AssetsDictionary.Domain.Models
+<BaseOneButtonsDialog Caption=@($"{Item.Exchange} [{Item.Market}]") OnClose="OnClose" ButtonCaption="Close">
+    <table>
+        <tr>
+            <td>
+            
+                <table>
+                    <tr><td>Exchange</td><td class="float-left">@Item.Exchange</td></tr>
+                    <tr><td>Market</td><td class="float-left">@Item.Market</td></tr>
+                    <tr></tr>
+                    <tr><td>IsEnabled</td><td class="float-left">@Item.IsEnabled</td></tr>
+                    <tr><td>Base Asset</td><td class="float-left">@Item.BaseAsset</td></tr>
+                    <tr><td>Quote Asset</td><td class="float-left">@Item.QuoteAsset</td></tr>
+                    <tr><td>Broker</td><td class="float-left">@Item.BrokerId</td></tr>
+                    <tr><td>Symbol</td><td class="float-left">@Item.Symbol</td></tr>
+                </table>
+
+            </td>
+        </tr>
+    </table>
+</BaseOneButtonsDialog>
+
+
+@code {
+    
+    [Parameter]
+    public SpotConvertExternalInstrument Item { get; set; }
+    
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+
+    private void OnClose()
+    {
+        OnCloseCallback.InvokeAsync();
+    }
+    
+}

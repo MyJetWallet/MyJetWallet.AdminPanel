@@ -13,6 +13,11 @@ namespace Backoffice.Mocks
             throw new System.NotImplementedException();
         }
 
+        public async ValueTask<PhonePoolGrpcModel> GetPhonePoolAsync(GetPhonePoolGrpcRequest request)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public ValueTask InsertOrUpdateAsync(PhonePoolGrpcModel model)
         {
             throw new System.NotImplementedException();

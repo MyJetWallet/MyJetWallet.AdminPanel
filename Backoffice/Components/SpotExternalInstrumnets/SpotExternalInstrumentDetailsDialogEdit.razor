@@ -1,0 +1,118 @@
+@using Backoffice.Services.SpotInstruments
+@using Service.AssetsDictionary.Domain.Models
+
+<BaseTwoButtonsDialog 
+    Caption=@(!IsCreate ? $"{Item.Exchange} [{Item.Market}]" : "Create a new spot convert external instrument") 
+    OnClose="OnClose" 
+    YesButtonCaption="@(IsCreate ? "Create" : "Save")"
+    NoButtonCaption="Close"
+    OnSubmit="OnSubmit">
+
+    <table>
+        <tr>
+            <td>
+            
+                <table>
+                    <tr>
+                        <td>Exchange</td>
+                        <td class="float-left">
+                            @if (!IsCreate)
+                            {
+                                @Item.Exchange
+                            }
+                            else
+                            {
+                                <input type="text" class="form-control" @bind="Item.Exchange"/>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Market</td>
+                        <td class="float-left">
+                            @if (!IsCreate)
+                            {
+                                @Item.Market
+                            }
+                            else
+                            {
+                                <input type="text" class="form-control" @bind="Item.Market"/>
+                            }
+                        </td>
+                    </tr>
+                    <tr></tr>
+                    <tr>
+                        <td>IsEnabled</td>
+                        <td class="float-left" style="@(!Item.IsEnabled ? "background: red" : "")">
+                            <input type="checkbox" @bind="Item.IsEnabled"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Base Asset</td>
+                        <input type="text" class="form-control" @bind="Item.BaseAsset"/>
+                    </tr>
+                    <tr>
+                        <td>Quote Asset</td>
+                        <input type="text" class="form-control" @bind="Item.QuoteAsset"/>
+                    </tr>
+                    <tr>
+                        <td>BrokerId</td>
+                        <input type="text" class="form-control" @bind="Item.BrokerId"/>
+                    </tr>
+                    <tr>
+                        <td>Symbol</td>
+                        <input type="text" class="form-control" @bind="Item.Symbol"/>
+                    </tr>
+                </table>
+
+            </td>
+        </tr>
+    </table>
+</BaseTwoButtonsDialog>
+
+
+@code {
+    
+    [Parameter]
+    public SpotConvertExternalInstrument Item { get; set; }
+    
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+    
+    [Parameter]
+    public EventCallback<SpotConvertExternalInstrument> OnCreateCallback { get; set; }
+    
+    [Parameter]
+    public EventCallback<SpotConvertExternalInstrument> OnUpdateCallback { get; set; }
+
+    
+    [Parameter]
+    public bool IsCreate { get; set; }
+
+
+    private void OnClose()
+    {
+        OnCloseCallback.InvokeAsync();
+    }
+
+    private async Task OnSubmit()
+    {
+        if (IsCreate)
+            await OnCreateCallback.InvokeAsync(Item);
+        else
+            await OnUpdateCallback.InvokeAsync(Item);
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        if (IsCreate)
+        {
+            Item = new SpotConvertExternalInstrument()
+            {
+                BrokerId = "jetwallet"
+            };
+        }
+
+    }
+}

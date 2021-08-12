@@ -1,0 +1,115 @@
+@using Backoffice.Services.SpotInstruments
+@using Backoffice.Abstractions.Models
+@using Backoffice.Services.SpotExternalInstruments
+@using Service.AssetsDictionary.Domain.Models
+
+@inject ISpotExternalInstrumentManager SpotExternalInstrumentManager;
+@inject IToaster ToastService
+
+<Loader LoaderConfig="@LoaderConfig"/>
+
+<ul class="nav float-left">
+    <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
+    <li><button @onclick="OnAddInstrument" type="button" class="btn btn-outline-success" style="margin: 5px; border-radius: 10px">Add</button></li>
+</ul>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Exchange</th>
+        <th>Market</th>
+        <th>IsEnabled</th>
+        <th>Base Asset</th>
+        <th>Quote Asset</th>
+        <th>Broker</th>
+        <th>Symbol</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach(var instrument in InstrumentList)
+    {
+        <SpotExternalInstrumentTableRow Item="@instrument" OnDeleteCallback="DeleteInstrument" />
+    }
+    
+    </tbody>
+</table>
+
+@if (IsShowAdding)
+{
+    <div>
+        <SpotExternalInstrumentDetailsDialogEdit IsCreate="true" OnCloseCallback="OnCloseAddingDialog" OnCreateCallback="OnCreateInstrument" />
+    </div>
+}
+
+@code {
+
+    private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+
+    private List<SpotConvertExternalInstrument> InstrumentList { get; set; } = new();
+    
+    private bool IsShowAdding { get; set; }
+
+    private async Task OnRefresh()
+    {
+        LoaderConfig.Enable();
+        
+        InstrumentList = await SpotExternalInstrumentManager.GetAll();
+        
+        LoaderConfig.Disable();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void OnAddInstrument()
+    {
+        IsShowAdding = true;
+        StateHasChanged();   
+    }
+
+    private async Task DeleteInstrument(SpotConvertExternalInstrument item)
+    {
+        try
+        {
+            await SpotExternalInstrumentManager.DeleteInstrument(item);
+            
+            ToastService.Info($"Spot instrument {item.Symbol} is deleted", "Instrument deletion");
+            
+            await OnRefresh();    
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Instrument deletion");
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await OnRefresh();
+        
+        await base.OnInitializedAsync();
+    }
+
+    private void OnCloseAddingDialog()
+    {
+        IsShowAdding = false;
+        StateHasChanged();
+    }
+
+    private async Task OnCreateInstrument(SpotConvertExternalInstrument item)
+    {
+        try
+        {
+            await SpotExternalInstrumentManager.AddInstrument(item);
+            
+            ToastService.Info($"Instrument {item.Symbol} is created", "Create instrument");
+            
+            IsShowAdding = false;
+            
+            await OnRefresh();    
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Instrument creation");
+        }
+    }
+
+}
