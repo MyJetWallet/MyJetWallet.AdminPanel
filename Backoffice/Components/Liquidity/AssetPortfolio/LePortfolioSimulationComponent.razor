@@ -293,6 +293,7 @@
         oldSimulation.Portfolio = response.Portfolio.Portfolio;
         oldSimulation.Trades = response.Portfolio.Trades;
         oldSimulation.AssetBalances = response.Portfolio.AssetBalances;
+        oldSimulation.PriceMap = response.Portfolio.PriceMap;
         
         _balanceByWallets = response.Portfolio.Portfolio.BalanceByWallet ?? new List<NetBalanceByWallet>();
         _balanceByAssets = response.Portfolio.Portfolio.BalanceByAsset ?? new List<NetBalanceByAsset>();
