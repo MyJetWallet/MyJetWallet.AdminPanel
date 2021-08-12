@@ -23,6 +23,7 @@
         <th>Quote Asset</th>
         <th>Broker</th>
         <th>Symbol</th>
+        <th>Price Accuracy</th>
     </tr>
     </thead>
     <tbody>
@@ -37,7 +38,7 @@
 @if (IsShowAdding)
 {
     <div>
-        <SpotExternalInstrumentDetailsDialogEdit IsCreate="true" OnCloseCallback="OnCloseAddingDialog" OnCreateCallback="OnCreateInstrument" />
+        <SpotExternalInstrumentDetailsDialogEdit AddedInstruments="InstrumentList.Select(s=>s.Symbol).ToList()" IsCreate="true" OnCloseCallback="OnCloseAddingDialog" OnCreateCallback="OnCreateInstrument" />
     </div>
 }
 

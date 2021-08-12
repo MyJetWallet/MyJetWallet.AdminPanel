@@ -13,11 +13,12 @@
     <td>@Item.QuoteAsset</td>
     <td>@Item.BrokerId</td>
     <td>@Item.Symbol</td>
+    <td>@Item.PriceAccuracy</td>
 
     <td>
         <ul class="nav">
-            <li><button type="button" class="btn-outline-info btn" @onclick="ShowDetails" >Details</button></li>
-            <li><button type="button" class="btn-outline-warning btn" @onclick="ShowEdit" >Edit</button></li>
+            <li><button type="button" class="btn-outline-info btn" @onclick="ShowDetails">Details</button></li>
+            <li><button type="button" class="btn-outline-warning btn" @onclick="async () => { await EnableDisableInstrument(Item); }" >@(!Item.IsEnabled ? "Enable" : "Disable")</button></li>
             @if (!Item.IsEnabled)
             {
                 <li><button type="button" class="btn-outline-danger btn" @onclick="ShowDelete">Delete</button></li>
@@ -29,13 +30,6 @@
 @if (IsShowDetails)
 {
     <SpotExternalInstrumentDetailsDialog Item="@Item" OnCloseCallback="OnCloseInstrumentDialog" />
-}
-
-@if (IsShowEdit)
-{
-    <div>
-        <SpotExternalInstrumentDetailsDialogEdit Item="@Item" IsCreate="false" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="OnUpdateInstrument" />
-    </div>
 }
 
 @if (IsShowDelete)
@@ -65,7 +59,7 @@
     
     [Parameter]
     public EventCallback<SpotConvertExternalInstrument> OnDeleteCallback { get; set; }
-    
+
     private bool IsShowDetails { get; set; }
     private bool IsShowEdit { get; set; }
     private bool IsShowDelete { get; set; }
@@ -76,10 +70,19 @@
         StateHasChanged();        
     }
 
-    private void ShowEdit()
+    private async Task EnableDisableInstrument(SpotConvertExternalInstrument item)
     {
-        IsShowEdit = true;
-        StateHasChanged();
+        try
+        {
+            item.IsEnabled = !item.IsEnabled;
+            await SpotExternalInstrumentManager.UpdateInstrument(item);
+            ToastService.Info("Spot Instrument is updated", "Edit Spot Instrument");
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Edit Spot Instrument");
+        }
     }
 
     private void ShowDelete()
@@ -93,32 +96,7 @@
         IsShowDetails = false;
         StateHasChanged();
     }
-
-    private void OnCloseEditDialog()
-    {
-        IsShowEdit = false;
-        StateHasChanged();
-    }
     
-    private async void OnUpdateInstrument(SpotConvertExternalInstrument item)
-    {
-        try
-        {
-            await SpotExternalInstrumentManager.UpdateInstrument(item);
-
-            IsShowEdit = false;
-            
-            ToastService.Info("Spot Instrument is updated", "Edit Spot Instrument");
-
-            await InvokeAsync(StateHasChanged);
-        }
-        catch (Exception ex)
-        {
-            ToastService.Error(ex.Message, "Edit Spot Instrument");
-        }
-    }
-
-
     private void OnCloseDeleteDialog()
     {
         IsShowDelete = false;

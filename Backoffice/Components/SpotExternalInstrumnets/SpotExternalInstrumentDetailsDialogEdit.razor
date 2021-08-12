@@ -1,5 +1,6 @@
 @using Backoffice.Services.SpotInstruments
 @using Service.AssetsDictionary.Domain.Models
+@inject IToaster ToastService;
 
 <BaseTwoButtonsDialog 
     Caption=@(!IsCreate ? $"{Item.Exchange} [{Item.Market}]" : "Create a new spot convert external instrument") 
@@ -59,8 +60,8 @@
                         <input type="text" class="form-control" @bind="Item.BrokerId"/>
                     </tr>
                     <tr>
-                        <td>Symbol</td>
-                        <input type="text" class="form-control" @bind="Item.Symbol"/>
+                        <td>Price Accuracy</td>
+                        <input type="number" class="form-control" @bind="Item.PriceAccuracy"/>
                     </tr>
                 </table>
 
@@ -75,6 +76,9 @@
     [Parameter]
     public SpotConvertExternalInstrument Item { get; set; }
     
+    [Parameter]
+    public List<string> AddedInstruments { get; set; }
+
     [Parameter]
     public EventCallback OnCloseCallback { get; set; }
     
@@ -96,8 +100,14 @@
 
     private async Task OnSubmit()
     {
+        Item.Symbol = Item.BaseAsset.Trim() + Item.QuoteAsset.Trim();
         if (IsCreate)
-            await OnCreateCallback.InvokeAsync(Item);
+        {
+            if (AddedInstruments.Contains(Item.Symbol))
+                ToastService.Error($"Instrument with symbol {Item.Symbol} already exists");
+            else
+                await OnCreateCallback.InvokeAsync(Item);
+        }
         else
             await OnUpdateCallback.InvokeAsync(Item);
     }
