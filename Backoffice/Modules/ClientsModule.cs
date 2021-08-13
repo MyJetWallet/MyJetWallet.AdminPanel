@@ -3,6 +3,7 @@ using Backoffice.Services.ExternalMarkets;
 using Backoffice.Services.Simulations;
 using MyCrm.PersonalData.Grpc;
 using MyJetWallet.BitGo.Settings.Ioc;
+using MyJetWallet.Domain.ExternalMarketApi;
 using MyJetWallet.Sdk.Grpc;
 using MyJetWallet.Sdk.NoSql;
 using MyJetWallet.Sdk.Service;
@@ -154,6 +155,8 @@ namespace Backoffice.Modules
             builder.RegisterMessageTemplatesCachedClient(Program.Settings.MessageTemplatesGrpcServiceUrl, _myNoSqlClient);
             
             builder.RegisterNewsRepositoryClient(Program.Settings.NewsRepositoryGrpcServiceUrl);
+            
+            builder.RegisterExternalMarketClient(Program.Settings.ExternalApiGrpcUrl);
         }
         
         private void RegisterMyNoSqlTcpClient(ContainerBuilder builder)
