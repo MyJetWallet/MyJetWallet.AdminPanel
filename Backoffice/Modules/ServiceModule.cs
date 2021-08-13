@@ -158,7 +158,7 @@ namespace Backoffice.Modules
             builder.RegisterType<MyCrmTraderUrmParametersGrpcServiceMoq>().As<IMyCrmTraderUrmParametersGrpcService>()
                 .SingleInstance();
 
-            builder.RegisterType<MyCrmPaymentsReportGrpcServiceMoq>().As<IMyCrmPaymentsReportGrpcService>().SingleInstance();
+            
         }
     }
 }
