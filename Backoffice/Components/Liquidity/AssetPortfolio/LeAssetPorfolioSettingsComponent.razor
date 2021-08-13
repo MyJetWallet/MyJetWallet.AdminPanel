@@ -7,40 +7,35 @@
 @inject IAssetPortfolioSettingsManager _assetPortfolioSettingsManager
 @inject IMyNoSqlServerDataReader<AssetPortfolioSettingsNoSql> _myNoSqlServerDataReader;
 
-@foreach (var elem in Settings)
+@foreach (var elem in SettingsWithStringValues)
 {
     <div class="col">
         <table>
             <thead>
             <tr>
-                <th></th>
-                <th></th>
                 <th>Asset</th>
-                <th>NetWarningLevel</th>
-                <th>NetDangerLevel</th>
-                <th>NetCriticalLevel</th>
-                <th></th>
+                <th>PositiveUpl</th>
+                <th>NegativeUpl</th>
+                <th>PositiveNetUsd</th>
+                <th>NegativeNetUsd</th>
             </tr>
             </thead>
             <tbody>
             <tr>
-                <td>
-                    <h2>
-                        @elem.Asset
-                    </h2>
-                </td>
-                <td></td>
                 <td class="align-middle">
-                    <input type="text" class="form-control" @bind="elem.Asset"/>
+                    <input type="text" class="form-control" @bind="elem.Value.Asset"/>
                 </td>
                 <td class="align-middle">
-                    <input type="number" class="form-control" @bind="elem.NetWarningLevel"/>
+                    <input type="text" class="form-control" @bind="elem.Value.PositiveUplString"/>
                 </td>
                 <td class="align-middle">
-                    <input type="number" class="form-control" @bind="elem.NetDangerLevel"/>
+                    <input type="text" class="form-control" @bind="elem.Value.NegativeUplString"/>
                 </td>
                 <td class="align-middle">
-                    <input type="number" class="form-control" @bind="elem.NetCriticalLevel"/>
+                    <input type="text" class="form-control" @bind="elem.Value.PositiveNetUsdString"/>
+                </td>
+                <td class="align-middle">
+                    <input type="text" class="form-control" @bind="elem.Value.NegativeNetUsdString"/>
                 </td>
             </tr>
             </tbody>
@@ -75,6 +70,16 @@
 
 @code {
     private List<AssetPortfolioSettings> Settings { get; set; } = new();
+    private Dictionary<string, AssetPortfolioSettingsWithStringValues> SettingsWithStringValues { get; set; } = new();
+
+    private class AssetPortfolioSettingsWithStringValues
+    {
+        public string Asset { get; set; }
+        public string PositiveUplString { get; set; }
+        public string NegativeUplString { get; set; }
+        public string PositiveNetUsdString { get; set; }
+        public string NegativeNetUsdString { get; set; }
+    }
 
     private string ErrorText { get; set; }
     private bool ShowError { get; set; } = false;
@@ -86,7 +91,7 @@
 
     private async Task CreateNew()
     {
-        Settings.Add(new AssetPortfolioSettings());
+        SettingsWithStringValues.Add(string.Empty, new AssetPortfolioSettingsWithStringValues());
         ShowError = false;
         StateHasChanged();
     }
@@ -110,12 +115,71 @@
                 Settings.Add(elem.Settings);
             });
             ShowError = false;
+
+            RefreshSettingsWithStringValues();
+            
             StateHasChanged();
         }
         catch (Exception exception)
         {
             ShowErrorText(exception.Message);
         }
+    }
+
+    private void RefreshSettingsWithStringValues()
+    {
+        SettingsWithStringValues = new();
+        Settings.ForEach(e =>
+        {
+            var setting = SettingsWithStringValues.TryGetValue(e.Asset, out var result) ? result : null;
+
+            SettingsWithStringValues[e.Asset] = new AssetPortfolioSettingsWithStringValues()
+            {
+                Asset = e.Asset,
+                PositiveUplString = GetStringByDecimalList(e.PositiveUpl),
+                NegativeUplString = GetStringByDecimalList(e.NegativeUpl),
+                PositiveNetUsdString = GetStringByDecimalList(e.PositiveNetUsd),
+                NegativeNetUsdString = GetStringByDecimalList(e.NegativeNetUsd)
+            };
+        });
+        var x = SettingsWithStringValues;
+    }
+    
+    private void RefreshSettingsFromStrings()
+    {
+        Settings = new List<AssetPortfolioSettings>();
+        foreach (var (_, value) in SettingsWithStringValues)
+        {
+            Settings.Add(new AssetPortfolioSettings()
+            {
+                Asset = value.Asset,
+                PositiveUpl = GetDecimalListByString(value.PositiveUplString),
+                NegativeUpl = GetDecimalListByString(value.NegativeUplString),
+                PositiveNetUsd = GetDecimalListByString(value.PositiveNetUsdString),
+                NegativeNetUsd = GetDecimalListByString(value.NegativeNetUsdString)
+            });
+        }
+    }
+
+    private List<decimal> GetDecimalListByString(string value)
+    {
+        return value.Trim().Split(",").Where(e => !string.IsNullOrWhiteSpace(e)).Select(Convert.ToDecimal).ToList();
+    }
+
+    private string GetStringByDecimalList(List<decimal> list)
+    {
+        var result = string.Empty;
+
+        if (list == null)
+            return result;
+        
+        foreach (var e in list)
+        {
+            if (!string.IsNullOrWhiteSpace(result))
+                result += ", ";
+            result += e;
+        }
+        return result;
     }
 
     private void ShowErrorText(string message)
@@ -132,6 +196,8 @@
         AskQuestion("Change Settings", "Apply a new settings. Are you sure?",
             async () =>
             {
+                RefreshSettingsFromStrings();
+                
                 Settings.ForEach(async elem =>
                 {
                     await _assetPortfolioSettingsManager.UpdateAssetPortfolioSettingsAsync(elem);
@@ -139,6 +205,7 @@
                 StateHasChanged();
             });
     }
+
     private async Task ResetSettings()
     {
         await RefreshData();

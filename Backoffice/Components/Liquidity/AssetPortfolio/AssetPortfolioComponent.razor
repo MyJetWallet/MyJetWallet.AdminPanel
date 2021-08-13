@@ -102,18 +102,13 @@
         <tbody>
         @foreach (var netBalanceByAsset in _balanceByAssets)
         {
-            AssetStatus status;
+            AssetPortfolioStatus status;
             {
                 _portfolioStatuses.TryGetValue(netBalanceByAsset.Asset, out status);
             }
             <tr style="background: @GetAssetBackgroundStyle(status)">
                 <td>
                     <b>@netBalanceByAsset.Asset</b>
-                    @if (status != AssetStatus.Normal)
-                    {
-                        <br>
-                        <span>@status.ToString()</span>
-                    }
                 </td>
                 @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
                 {
@@ -331,7 +326,7 @@
     private AssetPortfolioPages ActivePage { get; set; }
     private List<NetBalanceByWallet> _balanceByWallets = new();
     private List<NetBalanceByAsset> _balanceByAssets = new();
-    private Dictionary<string, AssetStatus> _portfolioStatuses = new();
+    private Dictionary<string, AssetPortfolioStatus> _portfolioStatuses = new();
     private List<string> AllAssets { get; set; }
     private List<string> BrokerList { get; set; } = new();
     private List<string> WalletList { get; set; } = new();
@@ -401,7 +396,7 @@
         var statusResponse = _portfolioStatusNoSql.Get();
         foreach (var status in statusResponse)
         {
-            _portfolioStatuses[status.AssetStatus.Asset] = status.AssetStatus.Status;
+            _portfolioStatuses[status.AssetStatus.Asset] = status.AssetStatus;
         }
         
         await SetBrokersAndWallets();
@@ -601,15 +596,9 @@
         StateHasChanged();
     }
 
-    private string GetAssetBackgroundStyle(AssetStatus status)
+    private string GetAssetBackgroundStyle(AssetPortfolioStatus status)
     {
-        return status switch
-        {
-            AssetStatus.Warning => "lightyellow",
-            AssetStatus.Danger => "lightsalmon",
-            AssetStatus.Critical => "lightcoral",
-            _ => string.Empty
-            };
+        return string.Empty;
     }
 
     private string GetWalletStyle(NetBalanceByWallet wallet)
