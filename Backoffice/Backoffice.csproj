@@ -16,12 +16,12 @@
       <PackageReference Include="BlazorDateRangePicker" Version="3.6.0" />
       <PackageReference Include="Blazored.Typeahead" Version="4.6.0" />
       <PackageReference Include="BlazorInputFile" Version="0.2.0" />
-      <PackageReference Include="Blazorise.Bulma" Version="0.9.4.2" />
+      <PackageReference Include="Blazorise.Bulma" Version="0.9.4.3" />
       <PackageReference Include="CsvHelper" Version="27.1.1" />
       <PackageReference Include="Finance.PciDssPublic.HttpContracts" Version="1.0.0" />
       <PackageReference Include="Flurl.Http" Version="3.2.0" />
       <PackageReference Include="Grpc.Net.Client" Version="2.38.0" />
-      <PackageReference Include="Highsoft.Highcharts" Version="9.1.2.1" />
+      <PackageReference Include="Highsoft.Highcharts" Version="9.1.2.2" />
       <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.18.0" />
       <PackageReference Include="MW.Blazor.TagSelector" Version="1.2.3" />
       <PackageReference Include="MyCrm.Accounts.Grpc" Version="1.0.24" />
@@ -47,7 +47,7 @@
       <PackageReference Include="MyJetWallet.Service.Liquidity.Converter.Client" Version="1.1.1" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Engine.Client" Version="1.4.2" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Monitoring.Client" Version="1.0.2" />
-      <PackageReference Include="MyJetWallet.Service.Liquidity.Portfolio.Client" Version="1.6.4" />
+      <PackageReference Include="MyJetWallet.Service.Liquidity.Portfolio.Client" Version="1.6.5" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.PortfolioHedger.Client" Version="1.1.3" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Reports.Client" Version="1.1.5" />
       <PackageReference Include="MyJetWallet.Service.MatchingEngine.PriceSource.Client" Version="3.0.0" />
@@ -65,15 +65,15 @@
       <PackageReference Include="MyTokenGeneratorUtils" Version="1.0.1" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
       <PackageReference Include="protobuf-net.Grpc" Version="1.0.152" />
-      <PackageReference Include="Radzen.Blazor" Version="3.8.1" />
+      <PackageReference Include="Radzen.Blazor" Version="3.8.2" />
       <PackageReference Include="SimpleTrading.BaseMetrics" Version="1.0.3" />
       <PackageReference Include="SimpleTrading.Deposit.Grpc" Version="1.2.14" />
       <PackageReference Include="SimpleTrading.ServiceStatusReporterConnector" Version="1.0.9" />
       <PackageReference Include="Sotsera.Blazor.Toaster" Version="3.0.0" />
-      <PackageReference Include="Syncfusion.Blazor" Version="19.2.0.51" />
+      <PackageReference Include="Syncfusion.Blazor" Version="19.2.0.55" />
       <PackageReference Include="MySettingsReader" Version="1.2.1" />
-      <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0-preview.6.21352.12" />
-      <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0-preview.6.21352.12" />
+      <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0-preview.7.21377.19" />
+      <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0-preview.7.21377.19" />
       <PackageReference Include="MyJetWallet.Sdk.Service" Version="1.5.5" />
     </ItemGroup>
 
