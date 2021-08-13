@@ -121,5 +121,8 @@ namespace Backoffice
         
         [YamlProperty("AdminPanel.NewsRepositoryGrpcServiceUrl")]
         public string NewsRepositoryGrpcServiceUrl { get; set; }
+        
+        [YamlProperty("AdminPanel.ExternalApiGrpcUrl")]
+        public string ExternalApiGrpcUrl { get; set; }
     }
 }

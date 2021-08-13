@@ -1,6 +1,10 @@
 @using Backoffice.Services.SpotInstruments
+@using MyJetWallet.Domain.ExternalMarketApi
+@using MyJetWallet.Domain.ExternalMarketApi.Dto
 @using Service.AssetsDictionary.Domain.Models
 @inject IToaster ToastService;
+@inject IExternalExchangeManager _externalExchangeManager;
+@inject IExternalMarket _externalMarket;
 
 <BaseTwoButtonsDialog 
     Caption=@(!IsCreate ? $"{Item.Exchange} [{Item.Market}]" : "Create a new spot convert external instrument") 
@@ -17,27 +21,29 @@
                     <tr>
                         <td>Exchange</td>
                         <td class="float-left">
-                            @if (!IsCreate)
-                            {
-                                @Item.Exchange
-                            }
-                            else
-                            {
-                                <input type="text" class="form-control" @bind="Item.Exchange"/>
-                            }
+                        @if (ExchangeNames.Any())
+                        {
+                            <select @bind="Item.Exchange">
+                                @foreach (var exchange in ExchangeNames)
+                                {
+                                    <option value=@exchange>@exchange</option>
+                                }
+                            </select>
+                        }
                         </td>
                     </tr>
                     <tr>
                         <td>Market</td>
                         <td class="float-left">
-                            @if (!IsCreate)
-                            {
-                                @Item.Market
-                            }
-                            else
-                            {
-                                <input type="text" class="form-control" @bind="Item.Market"/>
-                            }
+                        @if (Item.Exchange!= null && Markets[Item.Exchange].Any())
+                        {
+                            <select @bind="Item.Market">
+                                @foreach (var market in Markets[Item.Exchange])
+                                {
+                                    <option value=@market>@market</option>
+                                }
+                            </select>
+                        }
                         </td>
                     </tr>
                     <tr></tr>
@@ -92,6 +98,9 @@
     [Parameter]
     public bool IsCreate { get; set; }
 
+    private List<string> ExchangeNames = new List<string>();
+    private Dictionary<string, List<string>> Markets = new Dictionary<string, List<string>>();
+
 
     private void OnClose()
     {
@@ -112,9 +121,9 @@
             await OnUpdateCallback.InvokeAsync(Item);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        base.OnInitialized();
+        await base.OnInitializedAsync();
 
         if (IsCreate)
         {
@@ -124,5 +133,19 @@
             };
         }
 
+        ExchangeNames = (await _externalExchangeManager.GetExternalExchangeCollectionAsync()).ExchangeNames;
+        foreach (var exchange in ExchangeNames)
+        {
+            var response = await _externalMarket.GetMarketInfoListAsync(new GetMarketInfoListRequest()
+            {
+                ExchangeName = exchange
+            });
+
+            var markets = response.Infos.Select(t => t.Market).ToList();
+            Markets.Add(exchange, markets);
+        }
+        Item.Exchange = ExchangeNames.First();
+        Item.Market = Markets[Item.Exchange].First();
+        StateHasChanged();
     }
 }
