@@ -97,6 +97,7 @@
                 <th style="background: @GetWalletStyle(wallet)">@wallet.WalletName</th>
             }
             <th style="background: lightgray">NET</th>
+            <th style="background: lightgray">Asset Status</th>
         </tr>
         </thead>
         <tbody>
@@ -133,6 +134,17 @@
                     <span>Open Price Avg: @Math.Round(netBalanceByAsset.OpenPriceAvg, 2)</span>
                     <br>
                     <span>Unreleased Pnl: @Math.Round(netBalanceByAsset.UnrealisedPnl, 2)</span>
+                </td>
+                <td style="background: @GetAssetBackgroundStyle(status)">
+                    @if (status?.UplStrike != 0) 
+                    {
+                        <span><b>UPL Strike: @status.UplStrike</b></span>
+                    }
+                    <br>
+                    @if (status?.NetUsdStrike != 0) 
+                    {
+                        <span><b>NETUSD Strike: @status.NetUsdStrike</b></span>
+                    }
                 </td>
             </tr>
         }
@@ -398,7 +410,6 @@
         {
             _portfolioStatuses[status.AssetStatus.Asset] = status.AssetStatus;
         }
-        
         await SetBrokersAndWallets();
     }
 
@@ -598,6 +609,10 @@
 
     private string GetAssetBackgroundStyle(AssetPortfolioStatus status)
     {
+        if (status.UplStrike != 0 || status.NetUsdStrike != 0)
+        {
+            return "lightcoral";
+        }
         return string.Empty;
     }
 
