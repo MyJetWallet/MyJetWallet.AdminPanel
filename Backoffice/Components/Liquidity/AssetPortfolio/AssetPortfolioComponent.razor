@@ -38,6 +38,9 @@
         <button class="nav-link @CheckActive(AssetPortfolioPages.ChangeBalanceHistory)" aria-current="page" @onclick="SetChangeBalanceHistory" >Change Balance History</button>
     </li>
     <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(AssetPortfolioPages.SettlementHistory)" aria-current="page" @onclick="SetSettlementHistory" >Settlement History</button>
+    </li>
+    <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(AssetPortfolioPages.Settings)" aria-current="page" @onclick="SetSettings" >Settings</button>
     </li>
     <li class="nav-item" style="margin: 10px">
@@ -171,6 +174,10 @@
 @if (ActivePage == AssetPortfolioPages.ExchangeSettings)
 {
     <LeExternalExchangeSettingsComponent />
+}
+@if (ActivePage == AssetPortfolioPages.SettlementHistory)
+{
+    <LeSettlementHistoryComponent />
 }
 
 @if (IsShowEdit)
@@ -521,6 +528,7 @@
         AssetPortfolio,
         Trades,
         ChangeBalanceHistory,
+        SettlementHistory,
         Settings,
         Simulation,
         ExchangeSettings
@@ -628,6 +636,11 @@
     private void SetExchangeSettings()
     {
         ActivePage = AssetPortfolioPages.ExchangeSettings;
+        StateHasChanged();
+    }
+    private void SetSettlementHistory()
+    {
+        ActivePage = AssetPortfolioPages.SettlementHistory;
         StateHasChanged();
     }
 
