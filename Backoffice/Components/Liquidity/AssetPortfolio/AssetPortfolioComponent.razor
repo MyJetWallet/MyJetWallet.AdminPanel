@@ -53,6 +53,7 @@
     <ul class="nav">
         <li><button type="button" class="btn-outline-secondary btn" @onclick="Refresh">Refresh</button></li>
         <li><button type="button" class="btn-outline-warning btn" @onclick="ShowChangeBalanceWindow">Change balance</button></li>
+        <li><button type="button" class="btn-outline-warning btn" @onclick="ShowReportSettlementWindow">Report settlement</button></li>
         <li><button type="button" class="btn-outline-warning btn" @onclick="CreateMarketTrade">Create Market Trade</button></li>
     </ul>
     <table class="table" style="width: auto">
@@ -333,6 +334,72 @@
     </div>
 }
 
+@if (IsShowReportSettlementWindow)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption="Report Settlement"
+            OnClose="@OnCloseReportSettlementWindow"
+            YesButtonCaption="Execute"
+            NoButtonCaption="Cancel"
+            OnSubmit="@PushSettlement">
+            <table>
+                <tr>
+                    <td>Wallet From</td>
+                    <select @bind="@_reportSettlementRequest.WalletFrom">
+                        @foreach (var name in WalletList)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
+                    <td>Wallet To</td>
+                    <select @bind="@_reportSettlementRequest.WalletTo">
+                        @foreach (var name in WalletList)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
+                    <td>Asset</td>
+                    <select @bind="@_reportSettlementRequest.Asset">
+                        @foreach (var name in AllAssets)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
+                    <td>Associate Broker Id</td>
+                    <td><input type="text" class="form-control" @bind=_reportSettlementRequest.BrokerId /></td>
+                </tr>
+                <tr>
+                    <td>Volume From</td>
+                    <td><input type="number" class="form-control" @bind=_reportSettlementRequest.VolumeFrom /></td>
+                </tr>
+                <tr>
+                    <td>Volume To</td>
+                    <td><input type="number" class="form-control" @bind=_reportSettlementRequest.VolumeTo /></td>
+                </tr>
+                <tr>
+                    <td>Comment</td>
+                    <td><input type="text" class="form-control" @bind=_reportSettlementRequest.Comment /></td>
+                </tr>
+                <tr>
+                    <td>User</td>
+                    <td><input type="text" class="form-control" @bind=_reportSettlementRequest.User /></td>
+                </tr>
+            </table>
+            @if (ReportSettlementWindowException)
+            {
+                <H3>@ReportSettlementWindowExceptionText</H3>
+            }
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
 
 @code {
     private AssetPortfolioPages ActivePage { get; set; }
@@ -363,6 +430,12 @@
     private double BaseVolume { get; set; }
     private bool MarketTradeWindowException { get; set; }
     private string MarketTradeWindowExceptionText { get; set; }
+
+    private ReportSettlementRequest _reportSettlementRequest = new ReportSettlementRequest();
+    private bool IsShowReportSettlementWindow { get; set; }
+    private bool ReportSettlementWindowException { get; set; }
+    private string ReportSettlementWindowExceptionText { get; set; }
+    
 
     private ExecuteManualConvertRequest HedgeConvertRequest = new ExecuteManualConvertRequest();
     private bool _hedgeConvertWindowOpen = false;
@@ -649,6 +722,40 @@
     {
         _hedgeConvertWindowOpen = false;
         HedgeConvertRequest = new ExecuteManualConvertRequest();
+        StateHasChanged();
+    }
+
+    private void ShowReportSettlementWindow()
+    {
+        IsShowReportSettlementWindow = true;
+        _reportSettlementRequest = new ReportSettlementRequest()
+        {
+            BrokerId = "jetwallet"
+        };
+        StateHasChanged();
+    }
+
+    private async Task PushSettlement()
+    {
+        var response = await _assetPortfolioService.ReportSettlement(_reportSettlementRequest);
+
+        if (!response.Success)
+        {
+            ReportSettlementWindowException = true;
+            ReportSettlementWindowExceptionText = response.ErrorMessage;
+            return;
+        }
+        await Refresh();
+        OnCloseReportSettlementWindow();
+    }
+
+    private void OnCloseReportSettlementWindow()
+    {
+        ReportSettlementWindowException = false;
+        ReportSettlementWindowExceptionText = string.Empty;
+        IsShowReportSettlementWindow = false;
+        _reportSettlementRequest = new ReportSettlementRequest();
+        
         StateHasChanged();
     }
 }
