@@ -153,17 +153,21 @@
             Settings.Add(new AssetPortfolioSettings()
             {
                 Asset = value.Asset,
-                PositiveUpl = GetDecimalListByString(value.PositiveUplString),
-                NegativeUpl = GetDecimalListByString(value.NegativeUplString),
-                PositiveNetUsd = GetDecimalListByString(value.PositiveNetUsdString),
-                NegativeNetUsd = GetDecimalListByString(value.NegativeNetUsdString)
+                PositiveUpl = GetDecimalListByString(value.PositiveUplString, false),
+                NegativeUpl = GetDecimalListByString(value.NegativeUplString, true),
+                PositiveNetUsd = GetDecimalListByString(value.PositiveNetUsdString, false),
+                NegativeNetUsd = GetDecimalListByString(value.NegativeNetUsdString, true)
             });
         }
     }
 
-    private List<decimal> GetDecimalListByString(string value)
+    private List<decimal> GetDecimalListByString(string value, bool isNegative)
     {
-        return value.Trim().Split(",").Where(e => !string.IsNullOrWhiteSpace(e)).Select(Convert.ToDecimal).ToList();
+        if (isNegative)
+        {
+            return value.Trim().Split(";").Where(e => !string.IsNullOrWhiteSpace(e)).Select(e => -Math.Abs(Convert.ToDecimal(e))).ToList();
+        }
+        return value.Trim().Split(";").Where(e => !string.IsNullOrWhiteSpace(e)).Select(Convert.ToDecimal).ToList();
     }
 
     private string GetStringByDecimalList(List<decimal> list)
@@ -176,7 +180,7 @@
         foreach (var e in list)
         {
             if (!string.IsNullOrWhiteSpace(result))
-                result += ", ";
+                result += "; ";
             result += e;
         }
         return result;
