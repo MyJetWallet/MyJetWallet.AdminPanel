@@ -1,5 +1,12 @@
 ﻿@using Backoffice.Services.SpotInstruments
+@using Microsoft.AspNetCore.Components
+@using MyJetWallet.Domain.ExternalMarketApi
+@using MyJetWallet.Domain.ExternalMarketApi.Dto
 @using Service.AssetsDictionary.Domain.Models
+
+@inject IExternalExchangeManager _externalExchangeManager;
+@inject IExternalMarket _externalMarket;
+
 
 <BaseTwoButtonsDialog 
     Caption=@(!IsCreate ? $"{Item.Instrument.Symbol} [{Item.Instrument.BrokerId}]" : "Create a new Asset") 
@@ -86,6 +93,38 @@
                         <td>IconUrl</td>
                         <input type="text" class="form-control" @bind="Item.Instrument.IconUrl"/>
                     </tr>
+                    <tr></tr>
+                    <tr>
+                        <td>Convert Exchange</td>
+                        <td class="float-left">
+                            @if (ExchangeNames.Any() && Markets.Any())
+                            {
+                                <select @bind="Item.Instrument.ConvertSourceExchange">
+                                    @foreach (var exchange in ExchangeNames)
+                                    {
+                                        <option value=@exchange>@exchange</option>
+                                    }
+                                </select>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Convert Market</td>
+                        <td class="float-left">
+                            @if (!string.IsNullOrEmpty(Item.Instrument.ConvertSourceExchange)
+                                 && ExchangeNames.Any() 
+                                 && Markets.Any()
+                                 && Markets[Item.Instrument.ConvertSourceExchange].Any())
+                            {
+                                <select @bind="Item.Instrument.ConvertSourceMarket">
+                                    @foreach (var market in Markets[Item.Instrument.ConvertSourceExchange])
+                                    {
+                                        <option value=@market>@market</option>
+                                    }
+                                </select>
+                            }
+                        </td>
+                    </tr>
                 </table>
 
             </td>
@@ -112,6 +151,8 @@
     [Parameter]
     public bool IsCreate { get; set; }
 
+    private List<string> ExchangeNames = new List<string>();
+    private Dictionary<string, List<string>> Markets = new Dictionary<string, List<string>>();
 
     private void OnClose()
     {
@@ -120,15 +161,20 @@
 
     private async Task OnSubmit()
     {
+        if (string.IsNullOrEmpty(Item.Instrument.ConvertSourceExchange))
+        {
+            Item.Instrument.ConvertSourceMarket = string.Empty;
+        }
+        
         if (IsCreate)
             await OnCreateCallback.InvokeAsync(Item);
         else
             await OnUpdateCallback.InvokeAsync(Item);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        base.OnInitialized();
+        await base.OnInitializedAsync();
 
         if (IsCreate)
         {
@@ -136,12 +182,42 @@
             {
                 Instrument = new SpotInstrument()
                 {
-                    BrokerId = "jetwallet"
+                    BrokerId = "jetwallet",
+                    ConvertSourceExchange = string.Empty,
+                    ConvertSourceMarket = string.Empty
                 },
                 Brands = new List<string>()
             };
         }
 
+        if (string.IsNullOrEmpty(Item.Instrument.ConvertSourceMarket))
+        {
+            Item.Instrument.ConvertSourceExchange = string.Empty;
+        }
+
         Item.Brands ??= new List<string>();
+        
+        ExchangeNames = (await _externalExchangeManager.GetExternalExchangeCollectionAsync()).ExchangeNames;
+        
+        ExchangeNames.Insert(0, string.Empty);
+            
+        foreach (var exchange in ExchangeNames)
+        {
+            if (exchange == string.Empty)
+            {
+                Markets.Add(exchange, new List<string>() {string.Empty});
+            }
+            else
+            {
+                var response = await _externalMarket.GetMarketInfoListAsync(new GetMarketInfoListRequest()
+                {
+                    ExchangeName = exchange
+                });
+
+                var markets = response.Infos.Select(t => t.Market).ToList();
+                markets.Insert(0, string.Empty);
+                Markets.Add(exchange, markets);
+            }
+        }
     }
 }
