@@ -1,0 +1,78 @@
+﻿@using Service.Bitgo.Watcher.NoSql
+@using MyNoSqlServer.Abstractions
+@using Backoffice.Abstractions.Models
+@using Backoffice.Services.BitGo.Assets
+@using MyJetWallet.BitGo.Settings.NoSql
+
+@inject IToaster ToastService;
+@inject IMyNoSqlServerDataReader<WalletBalanceEntity> _walletBalanceReader
+@inject IMyNoSqlServerDataReader<FeeWalletBalanceEntity> _feeWalletBalanceReader
+
+<Loader LoaderConfig="@LoaderConfig"/>
+
+<ul class="nav">
+    <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
+</ul>
+
+<h3>Fee wallets</h3>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Asset</th>
+        <th>Bitgo Wallet</th>
+        <th>Balance</th>
+        <th>Update time</th>
+    </tr>
+    </thead>
+    <tbody>
+        @foreach (var feeBalance in _feeBalances)
+        {
+            <BitGoFeeWalletBalanceTableRow Item="@feeBalance" />
+        }
+    </tbody>
+</table>
+
+<h3>Hot wallets</h3>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Asset</th>
+        <th>Bitgo Wallet</th>
+        <th>Balance</th>
+        <th>Update time</th>
+    </tr>
+    </thead>
+    <tbody>
+        @foreach (var balance in _balances)
+        {
+            <BitgoWalletBalanceTableRow Item="@balance" />
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<FeeWalletBalanceEntity> _feeBalances = new();
+    private List<WalletBalanceEntity> _balances = new();
+    
+    private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+
+    protected override void OnInitialized()
+    {
+        OnRefresh();
+        
+        base.OnInitialized();
+    }
+
+    private async void OnRefresh()
+    {
+        LoaderConfig.Enable();
+        
+        _feeBalances.AddRange(_feeWalletBalanceReader.Get());
+        _balances.AddRange(_walletBalanceReader.Get());
+        
+        LoaderConfig.Disable();
+        await InvokeAsync(StateHasChanged);
+    }
+}
