@@ -17,10 +17,11 @@
 <table class="table" style="width: auto; font-size: 10px;">
     <thead>
     <tr>
-        <th>Instrument</th>
         <th>Source</th>
+        <th>Market</th>
         <th>Price</th>
         <th>Status</th>
+        <th>Instrument</th>
         <th>Timestamp</th>
         <th>Delay</th>
         <th></th>
@@ -30,10 +31,11 @@
     @foreach (var price in _prices)
     {
         <tr style="background: @(GetRowBackground(price))">
-            <td>@price.InstrumentSymbol</td>
             <td>@price.Source</td>
+            <td>@price.SourceMarket</td>
             <td>@price.Price</td>
             <td>@price.InstrumentStatus.ToString()</td>
+            <td>@price.InstrumentSymbol</td>
             <td>@price.DateTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
             <td>@((DateTime.UtcNow - @price.DateTime).ToString())</td>
             <td>
@@ -68,13 +70,14 @@
 
     private Task ReloadData()
     {
-        var prices = _currentPricesClient.GetPrices(DomainConstants.DefaultBroker);
+        var prices = _currentPricesClient.GetAllPrices();
         
         _prices.Clear();
         _prices.AddRange(prices
             .OrderBy(e => e.InstrumentStatus == CurrentPrice.Status.Enabled ? 0 : (e.InstrumentStatus == CurrentPrice.Status.Disabled ? 1 : 2))
             .ThenBy(e => e.InstrumentSymbol)
-            .ThenBy(e => e.Source));
+            .ThenBy(e => e.Source)
+            .ThenBy(e => e.SourceMarket));
 
         return Task.CompletedTask;
     }
