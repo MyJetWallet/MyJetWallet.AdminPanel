@@ -27,6 +27,15 @@
     </td>
     
     <td>
+        @if (!string.IsNullOrEmpty(Item.Instrument.ConvertSourceExchange))
+        {
+            <div>
+                @Item.Instrument.ConvertSourceExchange [@Item.Instrument.ConvertSourceMarket]
+            </div>
+        }
+    </td>
+    
+    <td>
         @foreach (var brand in Item.Brands)
         {
             <MyLabel Color="lightyellow" Text="@brand" />            

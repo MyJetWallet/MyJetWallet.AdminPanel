@@ -33,7 +33,7 @@
       <PackageReference Include="MyCrm.Withdrawals.Grpc" Version="1.0.17" />
       <PackageReference Include="MyJetWallet.BitGo.Settings" Version="1.0.6" />
       <PackageReference Include="MyJetWallet.Sdk.ExternalMarketsSettings" Version="1.0.3" />
-      <PackageReference Include="MyJetWallet.Service.AssetsDictionary.Client" Version="1.6.8" />
+      <PackageReference Include="MyJetWallet.Service.AssetsDictionary.Client" Version="1.7.0" />
       <PackageReference Include="MyJetWallet.Service.ClientWallets.Client" Version="1.2.1" />
       <PackageReference Include="MyJetWallet.Service.Fees.Client" Version="2.0.7" />
       <PackageReference Include="MyJetWallet.Service.Simulation.FTX.Client" Version="1.2.6" />

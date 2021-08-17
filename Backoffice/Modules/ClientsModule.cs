@@ -98,6 +98,7 @@ namespace Backoffice.Modules
             
             builder.RegisterIndexPricesClient(_myNoSqlClient);
             builder.RegisterIndexPricesManager(Program.Settings.MyNoSqlWriterUrl);
+            builder.RegisterCurrentPricesClient(_myNoSqlClient);
             
             builder.RegisterConvertIndexPricesClient(_myNoSqlClient);
             builder.RegisterConvertIndexPricesManager(Program.Settings.MyNoSqlWriterUrl);
