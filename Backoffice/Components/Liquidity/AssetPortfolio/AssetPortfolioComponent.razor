@@ -340,15 +340,6 @@
                     </select>
                 </tr>
                 <tr>
-                    <td>To Asset</td>
-                    <select @bind="@HedgeConvertRequest.ToAsset">
-                        @foreach (var name in AllAssets)
-                        {
-                            <option value="@name">@name</option>
-                        }
-                    </select>
-                </tr>
-                <tr>
                     <td>From Asset Volume</td>
                     <td><input type="number" class="form-control" @bind=HedgeConvertRequest.FromAssetVolume /></td>
                 </tr>
@@ -449,6 +440,19 @@
                             <option value="@name">@name</option>
                         }
                     </select>
+                </tr>
+                <tr>
+                    <td>Fee Asset</td>
+                    <select @bind="@NewTrade.FeeAsset">
+                        @foreach (var name in AllAssets)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
+                    <td>Fee Volume</td>
+                    <td><input type="number" class="form-control" @bind=NewTrade.FeeVolume/></td>
                 </tr>
                 <tr>
                     <td>Comment</td>
