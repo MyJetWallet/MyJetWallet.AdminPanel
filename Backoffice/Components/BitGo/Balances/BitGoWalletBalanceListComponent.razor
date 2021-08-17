@@ -1,8 +1,6 @@
 ﻿@using Service.Bitgo.Watcher.NoSql
 @using MyNoSqlServer.Abstractions
 @using Backoffice.Abstractions.Models
-@using Backoffice.Services.BitGo.Assets
-@using MyJetWallet.BitGo.Settings.NoSql
 
 @inject IToaster ToastService;
 @inject IMyNoSqlServerDataReader<WalletBalanceEntity> _walletBalanceReader
@@ -47,7 +45,7 @@
     <tbody>
         @foreach (var balance in _balances)
         {
-            <BitgoWalletBalanceTableRow Item="@balance" />
+            <BitGoWalletBalanceTableRow Item="@balance" />
         }
     </tbody>
 </table>
@@ -69,8 +67,11 @@
     {
         LoaderConfig.Enable();
         
-        _feeBalances.AddRange(_feeWalletBalanceReader.Get());
+        _balances.Clear();
         _balances.AddRange(_walletBalanceReader.Get());
+        
+        _feeBalances.Clear();
+        _feeBalances.AddRange(_feeWalletBalanceReader.Get());
         
         LoaderConfig.Disable();
         await InvokeAsync(StateHasChanged);
