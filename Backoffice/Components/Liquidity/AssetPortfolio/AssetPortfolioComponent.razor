@@ -148,12 +148,22 @@
                     <br>
                     <span>Unreleased Pnl: @Math.Round(netBalanceByAsset.UnrealisedPnl, 2)</span>
                     <br>
-                    <span>Koef: @Math.Round(netBalanceByAsset.WalletBalances
-                                    .Where(e => !e.IsInternal)
-                                    .Sum(e => e.NetVolume) 
-                                  / netBalanceByAsset.WalletBalances
-                                      .Where(e => e.IsInternal)
-                                      .Sum(e => e.NetVolume), 2)</span>
+                    @if (netBalanceByAsset.WalletBalances
+                        .Where(e => e.IsInternal)
+                        .Sum(e => e.NetVolume) != 0)
+                    {
+                        <span>Koef: @Math.Round(netBalanceByAsset.WalletBalances
+                                        .Where(e => !e.IsInternal)
+                                        .Sum(e => e.NetVolume) 
+                                                / netBalanceByAsset.WalletBalances
+                                                    .Where(e => e.IsInternal)
+                                                    .Sum(e => e.NetVolume), 2)</span>
+                    }
+                    else
+                    {
+                        <span>Koef: 0</span>
+                    }
+
                 </td>
                 <td style="background: @GetAssetBackgroundStyle(status)">
                     @if (status?.UplStrike != 0) 
