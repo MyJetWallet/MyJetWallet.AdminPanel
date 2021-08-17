@@ -38,6 +38,9 @@
         <button class="nav-link @CheckActive(AssetPortfolioPages.ChangeBalanceHistory)" aria-current="page" @onclick="SetChangeBalanceHistory" >Change Balance History</button>
     </li>
     <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(AssetPortfolioPages.SettlementHistory)" aria-current="page" @onclick="SetSettlementHistory" >Settlement History</button>
+    </li>
+    <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(AssetPortfolioPages.Settings)" aria-current="page" @onclick="SetSettings" >Settings</button>
     </li>
     <li class="nav-item" style="margin: 10px">
@@ -53,7 +56,8 @@
     <ul class="nav">
         <li><button type="button" class="btn-outline-secondary btn" @onclick="Refresh">Refresh</button></li>
         <li><button type="button" class="btn-outline-warning btn" @onclick="ShowChangeBalanceWindow">Change balance</button></li>
-        <li><button type="button" class="btn-outline-warning btn" @onclick="CreateMarketTrade">Create Market Trade</button></li>
+        <li><button type="button" class="btn-outline-warning btn" @onclick="ShowReportSettlementWindow">Report settlement</button></li>
+        <li><button type="button" class="btn-outline-secondary btn" @onclick="ReportTrade">Report trade</button></li>
     </ul>
     <table class="table" style="width: auto">
         <thead>
@@ -64,6 +68,7 @@
                 <th style="background: @GetWalletStyle(wallet)">@wallet.WalletName</th>
             }
             <th style="background: lightgray">NET</th>
+            <th style="background: lightgray">Status</th>
         </tr>
         </thead>
         <tbody>
@@ -74,6 +79,10 @@
                 <td>@Math.Round(wallet.NetUsdVolume, 2)</td>
             }
             <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Sum(elem => elem.NetUsdVolume), 2)</b></td>
+            @if (_portfolioStatuses.TryGetValue("_TOTAL_", out var x) && x.NetUsdStrike != 0)
+            {
+                <td style="background: lightgray"><b>NETUSD Limit: @x.NetUsdStrike</b></td>
+            }
         </tr>
         <tr>
             <td><b>UNRELEASED PNL</b></td>
@@ -82,6 +91,10 @@
                 <td>@Math.Round(wallet.UnreleasedPnlUsd, 2)</td>
             }
             <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Sum(elem => elem.UnreleasedPnlUsd), 2)</b></td>
+            @if (_portfolioStatuses.TryGetValue("_TOTAL_", out var y) && x.UplStrike != 0)
+            {
+                <td style="background: lightgray"><b>UPL Limit: @y.UplStrike</b></td>
+            }
         </tr>
         </tbody>
     </table>
@@ -97,23 +110,19 @@
                 <th style="background: @GetWalletStyle(wallet)">@wallet.WalletName</th>
             }
             <th style="background: lightgray">NET</th>
+            <th style="background: lightgray">Asset Status</th>
         </tr>
         </thead>
         <tbody>
         @foreach (var netBalanceByAsset in _balanceByAssets)
         {
-            AssetStatus status;
+            AssetPortfolioStatus status;
             {
                 _portfolioStatuses.TryGetValue(netBalanceByAsset.Asset, out status);
             }
             <tr style="background: @GetAssetBackgroundStyle(status)">
                 <td>
                     <b>@netBalanceByAsset.Asset</b>
-                    @if (status != AssetStatus.Normal)
-                    {
-                        <br>
-                        <span>@status.ToString()</span>
-                    }
                 </td>
                 @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
                 {
@@ -138,6 +147,24 @@
                     <span>Open Price Avg: @Math.Round(netBalanceByAsset.OpenPriceAvg, 2)</span>
                     <br>
                     <span>Unreleased Pnl: @Math.Round(netBalanceByAsset.UnrealisedPnl, 2)</span>
+                    <br>
+                    <span>Koef: @Math.Round(netBalanceByAsset.WalletBalances
+                                    .Where(e => !e.IsInternal)
+                                    .Sum(e => e.NetVolume) 
+                                  / netBalanceByAsset.WalletBalances
+                                      .Where(e => e.IsInternal)
+                                      .Sum(e => e.NetVolume), 2)</span>
+                </td>
+                <td style="background: @GetAssetBackgroundStyle(status)">
+                    @if (status?.UplStrike != 0) 
+                    {
+                        <span><b>UPL Limit: @status.UplStrike</b></span>
+                    }
+                    <br>
+                    @if (status?.NetUsdStrike != 0) 
+                    {
+                        <span><b>NETUSD Limit: @status.NetUsdStrike</b></span>
+                    }
                 </td>
             </tr>
         }
@@ -163,6 +190,10 @@
 @if (ActivePage == AssetPortfolioPages.ExchangeSettings)
 {
     <LeExternalExchangeSettingsComponent />
+}
+@if (ActivePage == AssetPortfolioPages.SettlementHistory)
+{
+    <LeSettlementHistoryComponent />
 }
 
 @if (IsShowEdit)
@@ -309,8 +340,45 @@
                     </select>
                 </tr>
                 <tr>
-                    <td>To Asset</td>
-                    <select @bind="@HedgeConvertRequest.ToAsset">
+                    <td>From Asset Volume</td>
+                    <td><input type="number" class="form-control" @bind=HedgeConvertRequest.FromAssetVolume /></td>
+                </tr>
+            </table>
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+@if (IsShowReportSettlementWindow)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption="Report Settlement"
+            OnClose="@OnCloseReportSettlementWindow"
+            YesButtonCaption="Execute"
+            NoButtonCaption="Cancel"
+            OnSubmit="@PushSettlement">
+            <table>
+                <tr>
+                    <td>Wallet From</td>
+                    <select @bind="@_reportSettlementRequest.WalletFrom">
+                        @foreach (var name in WalletList)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
+                    <td>Wallet To</td>
+                    <select @bind="@_reportSettlementRequest.WalletTo">
+                        @foreach (var name in WalletList)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
+                    <td>Asset</td>
+                    <select @bind="@_reportSettlementRequest.Asset">
                         @foreach (var name in AllAssets)
                         {
                             <option value="@name">@name</option>
@@ -318,10 +386,103 @@
                     </select>
                 </tr>
                 <tr>
-                    <td>From Asset Volume</td>
-                    <td><input type="number" class="form-control" @bind=HedgeConvertRequest.FromAssetVolume /></td>
+                    <td>Associate Broker Id</td>
+                    <td><input type="text" class="form-control" @bind=_reportSettlementRequest.BrokerId /></td>
+                </tr>
+                <tr>
+                    <td>Volume From</td>
+                    <td><input type="number" class="form-control" @bind=_reportSettlementRequest.VolumeFrom /></td>
+                </tr>
+                <tr>
+                    <td>Volume To</td>
+                    <td><input type="number" class="form-control" @bind=_reportSettlementRequest.VolumeTo /></td>
+                </tr>
+                <tr>
+                    <td>Comment</td>
+                    <td><input type="text" class="form-control" @bind=_reportSettlementRequest.Comment /></td>
+                </tr>
+                <tr>
+                    <td>User</td>
+                    <td><input type="text" class="form-control" @bind=_reportSettlementRequest.User /></td>
                 </tr>
             </table>
+            @if (ReportSettlementWindowException)
+            {
+                <H3>@ReportSettlementWindowExceptionText</H3>
+            }
+        </BaseTwoButtonsDialog>
+    </div>
+}
+@if (IsCreateDialogOpen)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption="Create new trade"
+            OnClose="@OnCloseCreateDialog"
+            YesButtonCaption="Save"
+            NoButtonCaption="Cancel"
+            OnSubmit="@OnSaveNewTrade">
+            <table>
+                <tr>
+                    <td>Broker Id</td>
+                    <select @bind="@NewTrade.BrokerId">
+                        @foreach (var name in BrokerList)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
+                    <td>Wallet Name</td>
+                    <select @bind="@NewTrade.WalletName">
+                        @foreach (var name in WalletList)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
+                    <td>Fee Asset</td>
+                    <select @bind="@NewTrade.FeeAsset">
+                        @foreach (var name in AllAssets)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
+                    <td>Fee Volume</td>
+                    <td><input type="number" class="form-control" @bind=NewTrade.FeeVolume/></td>
+                </tr>
+                <tr>
+                    <td>Comment</td>
+                    <td><input type="text" class="form-control" @bind=NewTrade.Comment/></td>
+                </tr>
+                <tr>
+                    <td>User</td>
+                    <td><input type="text" class="form-control" @bind=NewTrade.User/></td>
+                </tr>
+                <tr>
+                    <td>Instrument Symbol</td>
+                    <td><input type="text" class="form-control" @bind=NewTrade.Symbol/></td>
+                </tr>
+                <tr>
+                    <td>Price</td>
+                    <td><input type="number" class="form-control" @bind=NewTrade.Price/></td>
+                </tr>
+                <tr>
+                    <td>Base volume</td>
+                    <td><input type="number" class="form-control" @bind=NewTrade.BaseVolume/></td>
+                </tr>
+                <tr>
+                    <td>Quote volume</td>
+                    <td><input type="number" class="form-control" @bind=NewTrade.QuoteVolume/></td>
+                </tr>
+            </table>
+            @if (ShowError)
+            {
+                <H3>@ErrorText</H3>
+            }
         </BaseTwoButtonsDialog>
     </div>
 }
@@ -331,7 +492,7 @@
     private AssetPortfolioPages ActivePage { get; set; }
     private List<NetBalanceByWallet> _balanceByWallets = new();
     private List<NetBalanceByAsset> _balanceByAssets = new();
-    private Dictionary<string, AssetStatus> _portfolioStatuses = new();
+    private Dictionary<string, AssetPortfolioStatus> _portfolioStatuses = new();
     private List<string> AllAssets { get; set; }
     private List<string> BrokerList { get; set; } = new();
     private List<string> WalletList { get; set; } = new();
@@ -357,11 +518,17 @@
     private bool MarketTradeWindowException { get; set; }
     private string MarketTradeWindowExceptionText { get; set; }
 
+    private ReportSettlementRequest _reportSettlementRequest = new ReportSettlementRequest();
+    private bool IsShowReportSettlementWindow { get; set; }
+    private bool ReportSettlementWindowException { get; set; }
+    private string ReportSettlementWindowExceptionText { get; set; }
+
     private ExecuteManualConvertRequest HedgeConvertRequest = new ExecuteManualConvertRequest();
     private bool _hedgeConvertWindowOpen = false;
 
     private string _timerId = Guid.NewGuid().ToString();
     private bool _isAutoUpdate = false;
+    private const string PlWalletName = "PL Balance";
     
     protected override async Task OnInitializedAsync()
     {
@@ -398,13 +565,17 @@
         _balanceByWallets = balanceResponse?.BalanceByWallet ?? new List<NetBalanceByWallet>();
         _balanceByAssets = balanceResponse?.BalanceByAsset ?? new List<NetBalanceByAsset>();
 
+        var plBalance = _balanceByWallets.FirstOrDefault(e => e.WalletName == PlWalletName);
+        if (plBalance != null)
+            plBalance.IsInternal = true;
+
         var statusResponse = _portfolioStatusNoSql.Get();
         foreach (var status in statusResponse)
         {
-            _portfolioStatuses[status.AssetStatus.Asset] = status.AssetStatus.Status;
+            _portfolioStatuses[status.AssetStatus.Asset] = status.AssetStatus;
         }
-        
         await SetBrokersAndWallets();
+        await CacheInstrumentsAndAssets();
     }
 
     private async Task SetBrokersAndWallets()
@@ -418,6 +589,7 @@
         ExchangeList = extWallets.ExchangeNames;
         
         WalletList.AddRange(extWallets.ExchangeNames);
+        WalletList.Add(PlWalletName);
     }
 
     private async Task SetAssetPortfolio()
@@ -442,6 +614,7 @@
         AssetPortfolio,
         Trades,
         ChangeBalanceHistory,
+        SettlementHistory,
         Settings,
         Simulation,
         ExchangeSettings
@@ -551,6 +724,11 @@
         ActivePage = AssetPortfolioPages.ExchangeSettings;
         StateHasChanged();
     }
+    private void SetSettlementHistory()
+    {
+        ActivePage = AssetPortfolioPages.SettlementHistory;
+        StateHasChanged();
+    }
 
     private async Task CreateMarketTrade()
     {
@@ -601,15 +779,13 @@
         StateHasChanged();
     }
 
-    private string GetAssetBackgroundStyle(AssetStatus status)
+    private string GetAssetBackgroundStyle(AssetPortfolioStatus status)
     {
-        return status switch
+        if (status.UplStrike != 0 || status.NetUsdStrike != 0)
         {
-            AssetStatus.Warning => "lightyellow",
-            AssetStatus.Danger => "lightsalmon",
-            AssetStatus.Critical => "lightcoral",
-            _ => string.Empty
-            };
+            return "lightcoral";
+        }
+        return string.Empty;
     }
 
     private string GetWalletStyle(NetBalanceByWallet wallet)
@@ -646,5 +822,107 @@
         _hedgeConvertWindowOpen = false;
         HedgeConvertRequest = new ExecuteManualConvertRequest();
         StateHasChanged();
+    }
+
+    private void ShowReportSettlementWindow()
+    {
+        IsShowReportSettlementWindow = true;
+        _reportSettlementRequest = new ReportSettlementRequest()
+        {
+            BrokerId = "jetwallet"
+        };
+        StateHasChanged();
+    }
+
+    private async Task PushSettlement()
+    {
+        var response = await _assetPortfolioService.ReportSettlement(_reportSettlementRequest);
+
+        if (!response.Success)
+        {
+            ReportSettlementWindowException = true;
+            ReportSettlementWindowExceptionText = response.ErrorMessage;
+            return;
+        }
+        await Refresh();
+        OnCloseReportSettlementWindow();
+    }
+
+    private void OnCloseReportSettlementWindow()
+    {
+        ReportSettlementWindowException = false;
+        ReportSettlementWindowExceptionText = string.Empty;
+        IsShowReportSettlementWindow = false;
+        _reportSettlementRequest = new ReportSettlementRequest();
+        
+        StateHasChanged();
+    }
+    
+    private bool IsCreateDialogOpen { get; set; }
+    private ReportManualTradeRequest NewTrade { get; set; }
+    private bool ShowError { get; set; }
+    private string ErrorText { get; set; }
+    private List<SpotInstrumentItem> AllInstruments { get; set; }
+    private List<string> AssetCollection { get; set; }
+    
+    private void ReportTrade()
+    {
+        NewTrade = new ReportManualTradeRequest();
+        IsCreateDialogOpen = true;
+    }
+    private async void OnSaveNewTrade()
+    {
+        if (string.IsNullOrEmpty(NewTrade.BrokerId) && BrokerList.Count() == 1)
+        {
+            NewTrade.BrokerId = BrokerList.First();
+        }
+        if (string.IsNullOrEmpty(NewTrade.WalletName) && WalletList.Count() == 1)
+        {
+            NewTrade.WalletName = WalletList.First();
+        }
+        
+        var instrumentExist = AllInstruments.Any(elem => elem.Instrument.Symbol == NewTrade.Symbol);
+
+        if (!instrumentExist)
+        {
+            ShowError = true;
+            ErrorText = "Instrument not found";
+            StateHasChanged();
+            return;
+        }
+
+        var response = await _manualTradeService.ReportManualTradeAsync(NewTrade);
+        if (response.Success)
+        {
+            await Refresh();
+            OnCloseCreateDialog();
+        } else 
+        {
+            ShowError = true;
+            ErrorText = response.ErrorMessage;
+            StateHasChanged();
+        }
+    }
+
+    private void OnCloseCreateDialog()
+    {
+        IsCreateDialogOpen = false;
+        ShowError = false;
+        ErrorText = string.Empty;
+        StateHasChanged();
+    }
+    
+    private async Task CacheInstrumentsAndAssets()
+    {
+        AssetCollection = new List<string>();
+        
+        AllInstruments = await _spotInstrumentManager.GetAll();
+        AllInstruments.ForEach(instrument =>
+        {
+            AssetCollection.Add(instrument.Instrument.BaseAsset);
+            AssetCollection.Add(instrument.Instrument.QuoteAsset);
+        });
+
+        AssetCollection = AssetCollection.Distinct().ToList();
     }
 }

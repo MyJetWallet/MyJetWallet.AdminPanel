@@ -1,0 +1,13 @@
+﻿@using Service.Bitgo.Watcher.NoSql
+
+<tr>
+    <td>@Item.AssetSymbol</td>
+    <td>@Item.WalletId</td>
+    <td>@Item.Balance</td>
+    <td>@Item.UpdateTime</td>
+</tr>
+
+@code {
+    [Parameter]
+    public FeeWalletBalanceEntity Item { get; set; }
+}

@@ -20,7 +20,6 @@
     {
         <li><button type="button" class="btn-outline-info btn" @onclick="NextPage">>>> Next >>></button></li>
     }
-    <li><button type="button" class="btn-outline-secondary btn" @onclick="ReportTrade">Report trade</button></li>
     <li><button type="button" class="btn-outline-secondary btn" @onclick="Refresh">Refresh</button></li>
     <li><span style="margin-left: 10px; vertical-align: center">Count in page: </span><input type="number" style="width: 40px" @bind="CountInPage"/></li>
     
@@ -56,7 +55,9 @@
         <th>Source</th>
         <th>Comment</th>
         <th>User</th>
-        <th>TotalReleasePnl</th>
+        <th>Total Release Pnl</th>
+        <th>Fee Asset</th>
+        <th>Fee Volume</th>
     </tr>
     </thead>
     <tbody>
@@ -82,71 +83,14 @@
             <td>@trade.Comment</td>
             <td>@trade.User</td>
             <td>@trade.TotalReleasePnl</td>
+            <td>@trade.FeeAsset</td>
+            <td>@trade.FeeVolume</td>
         </tr>
     }
     </tbody>
 </table>
 
-@if (IsCreateDialogOpen)
-{
-    <div>
-        <BaseTwoButtonsDialog
-            Caption="Create new trade"
-            OnClose="@OnCloseCreateDialog"
-            YesButtonCaption="Save"
-            NoButtonCaption="Cancel"
-            OnSubmit="@OnSaveNewTrade">
-            <table>
-                <tr>
-                    <td>Broker Id</td>
-                    <select @bind="@NewTrade.BrokerId">
-                        @foreach (var name in BrokerList)
-                        {
-                            <option value="@name">@name</option>
-                        }
-                    </select>
-                </tr>
-                <tr>
-                    <td>Wallet Name</td>
-                    <select @bind="@NewTrade.WalletName">
-                        @foreach (var name in WalletList)
-                        {
-                            <option value="@name">@name</option>
-                        }
-                    </select>
-                </tr>
-                <tr>
-                    <td>Comment</td>
-                    <td><input type="text" class="form-control" @bind=NewTrade.Comment/></td>
-                </tr>
-                <tr>
-                    <td>User</td>
-                    <td><input type="text" class="form-control" @bind=NewTrade.User/></td>
-                </tr>
-                <tr>
-                    <td>Instrument Symbol</td>
-                    <td><input type="text" class="form-control" @bind=NewTrade.Symbol/></td>
-                </tr>
-                <tr>
-                    <td>Price</td>
-                    <td><input type="number" class="form-control" @bind=NewTrade.Price/></td>
-                </tr>
-                <tr>
-                    <td>Base volume</td>
-                    <td><input type="number" class="form-control" @bind=NewTrade.BaseVolume/></td>
-                </tr>
-                <tr>
-                    <td>Quote volume</td>
-                    <td><input type="number" class="form-control" @bind=NewTrade.QuoteVolume/></td>
-                </tr>
-            </table>
-            @if (ShowError)
-            {
-                <H3>@ErrorText</H3>
-            }
-        </BaseTwoButtonsDialog>
-    </div>
-}
+
 
 @code {
     
@@ -157,71 +101,17 @@
     
     private int CountInPage { get; set; } = 20;
     private long _lastSeen = 0;
-    
-    private bool IsCreateDialogOpen { get; set; }
-    private ReportManualTradeRequest NewTrade { get; set; }
-    private bool ShowError { get; set; }
-    private string ErrorText { get; set; }
-    
+        
     private bool AssetFilerActive { get; set; }
     private List<string> AssetCollection { get; set; }
     private string FilterAsset { get; set; }
-    
     private List<SpotInstrumentItem> AllInstruments { get; set; }
-    
+
     protected override async Task OnInitializedAsync()
     {
         await Refresh();
     }
-
-    private async void OnSaveNewTrade()
-    {
-        if (string.IsNullOrEmpty(NewTrade.BrokerId) && BrokerList.Count() == 1)
-        {
-            NewTrade.BrokerId = BrokerList.First();
-        }
-        if (string.IsNullOrEmpty(NewTrade.WalletName) && WalletList.Count() == 1)
-        {
-            NewTrade.WalletName = WalletList.First();
-        }
-        
-        var instrumentExist = AllInstruments.Any(elem => elem.Instrument.Symbol == NewTrade.Symbol);
-
-        if (!instrumentExist)
-        {
-            ShowError = true;
-            ErrorText = "Instrument not found";
-            StateHasChanged();
-            return;
-        }
-
-        var response = await _manualTradeService.ReportManualTradeAsync(NewTrade);
-        if (response.Success)
-        {
-            await Refresh();
-            OnCloseCreateDialog();
-        } else 
-        {
-            ShowError = true;
-            ErrorText = response.ErrorMessage;
-            StateHasChanged();
-        }
-    }
-
-    private void OnCloseCreateDialog()
-    {
-        IsCreateDialogOpen = false;
-        ShowError = false;
-        ErrorText = string.Empty;
-        StateHasChanged();
-    }
-
-    private void ReportTrade()
-    {
-        NewTrade = new ReportManualTradeRequest();
-        IsCreateDialogOpen = true;
-    }
-
+    
     private async Task Refresh()
     {
         var request = new GetAssetPortfolioTradesRequest() {BatchSize = CountInPage};
