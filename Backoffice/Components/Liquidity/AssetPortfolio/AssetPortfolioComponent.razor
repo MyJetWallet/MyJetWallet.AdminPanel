@@ -68,6 +68,7 @@
                 <th style="background: @GetWalletStyle(wallet)">@wallet.WalletName</th>
             }
             <th style="background: lightgray">NET</th>
+            <th style="background: lightgray">Status</th>
         </tr>
         </thead>
         <tbody>
@@ -78,6 +79,10 @@
                 <td>@Math.Round(wallet.NetUsdVolume, 2)</td>
             }
             <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Sum(elem => elem.NetUsdVolume), 2)</b></td>
+            @if (_portfolioStatuses.TryGetValue("_TOTAL_", out var x) && x.NetUsdStrike != 0)
+            {
+                <td style="background: lightgray"><b>NETUSD Limit: @x.NetUsdStrike</b></td>
+            }
         </tr>
         <tr>
             <td><b>UNRELEASED PNL</b></td>
@@ -86,6 +91,10 @@
                 <td>@Math.Round(wallet.UnreleasedPnlUsd, 2)</td>
             }
             <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Sum(elem => elem.UnreleasedPnlUsd), 2)</b></td>
+            @if (_portfolioStatuses.TryGetValue("_TOTAL_", out var y) && x.UplStrike != 0)
+            {
+                <td style="background: lightgray"><b>UPL Limit: @y.UplStrike</b></td>
+            }
         </tr>
         </tbody>
     </table>
