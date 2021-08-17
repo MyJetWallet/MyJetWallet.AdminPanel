@@ -18,7 +18,6 @@ using Service.Bitgo.Watcher.Client;
 using Service.Bitgo.WithdrawalProcessor.Client;
 using Service.ChangeBalanceGateway.Client;
 using Service.ClientWallets.Client;
-using Service.CoinMarketCapReader.Client;
 using Service.Fees.Client.Grpc;
 using Service.IndexPrices.Client;
 using Service.Liquidity.Converter.Client;
@@ -29,7 +28,6 @@ using Service.Liquidity.Portfolio.Client;
 using Service.Liquidity.Portfolio.Domain.Models;
 using Service.Liquidity.PortfolioHedger.Client;
 using Service.Liquidity.Reports.Client;
-using Service.MatchingEngine.PriceSource.Client;
 using Service.MessageTemplates.Client;
 using Service.NewsRepository.Client;
 using Service.PriceHistory.Client;
@@ -89,9 +87,6 @@ namespace Backoffice.Modules
             //builder.RegisterSmsProviderTwilioClient(Program.Settings.SmsProviderTwilioGrpcServiceUrl);
 
             builder.RegisterLiquidityConverterManagerClient(Program.Settings.LiquidityConverterGrpcServiceUrl);
-
-            builder.RegisterMatchingEnginePriceSourceClient(_myNoSqlClient);
-            builder.RegisterMatchingEngineOrderBookClient(_myNoSqlClient);
 
             builder.RegisterPortfolioClient(Program.Settings.LiquidityPortfolioServiceUrl);
             builder.RegisterAssetPortfolioSettingsClient(Program.Settings.LiquidityPortfolioMonitoringServiceUrl);

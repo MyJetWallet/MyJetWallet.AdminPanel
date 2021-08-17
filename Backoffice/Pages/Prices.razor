@@ -15,18 +15,10 @@
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(Menus.ConversionPrices)" @onclick="SetConversionPrices" >ConversionPrices</button>
     </li>
-    <li class="nav-item" style="margin: 10px">
-        <button class="nav-link @CheckActive(Menus.Prices)" aria-current="page" @onclick="SetPrices" >Prices</button>
-    </li>
 </ul>
 
 <div style="margin: 10px">
     
-    @if (ActivePage == Menus.Prices)
-    {
-        <PricesComponent/>
-    }
-
     @if (ActivePage == Menus.BasePrices)
     {
         <BasePriceComponent />
@@ -57,11 +49,6 @@
         return "";
     }
 
-    private void SetPrices()
-    {
-        SetActive(Menus.Prices);
-    }
-
     private void SetBasePrices()
     {
         SetActive(Menus.BasePrices);
@@ -85,7 +72,6 @@
     
     public enum Menus
     {
-        Prices,
         BasePrices,
         IndexPrices,
         ConversionPrices,
