@@ -57,7 +57,7 @@
         <li><button type="button" class="btn-outline-secondary btn" @onclick="Refresh">Refresh</button></li>
         <li><button type="button" class="btn-outline-warning btn" @onclick="ShowChangeBalanceWindow">Change balance</button></li>
         <li><button type="button" class="btn-outline-warning btn" @onclick="ShowReportSettlementWindow">Report settlement</button></li>
-        <li><button type="button" class="btn-outline-warning btn" @onclick="CreateMarketTrade">Create Market Trade</button></li>
+        <li><button type="button" class="btn-outline-secondary btn" @onclick="ReportTrade">Report trade</button></li>
     </ul>
     <table class="table" style="width: auto">
         <thead>
@@ -142,12 +142,12 @@
                 <td style="background: @GetAssetBackgroundStyle(status)">
                     @if (status?.UplStrike != 0) 
                     {
-                        <span><b>UPL Strike: @status.UplStrike</b></span>
+                        <span><b>UPL Limit: @status.UplStrike</b></span>
                     }
                     <br>
                     @if (status?.NetUsdStrike != 0) 
                     {
-                        <span><b>NETUSD Strike: @status.NetUsdStrike</b></span>
+                        <span><b>NETUSD Limit: @status.NetUsdStrike</b></span>
                     }
                 </td>
             </tr>
@@ -406,6 +406,66 @@
         </BaseTwoButtonsDialog>
     </div>
 }
+@if (IsCreateDialogOpen)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption="Create new trade"
+            OnClose="@OnCloseCreateDialog"
+            YesButtonCaption="Save"
+            NoButtonCaption="Cancel"
+            OnSubmit="@OnSaveNewTrade">
+            <table>
+                <tr>
+                    <td>Broker Id</td>
+                    <select @bind="@NewTrade.BrokerId">
+                        @foreach (var name in BrokerList)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
+                    <td>Wallet Name</td>
+                    <select @bind="@NewTrade.WalletName">
+                        @foreach (var name in WalletList)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
+                    <td>Comment</td>
+                    <td><input type="text" class="form-control" @bind=NewTrade.Comment/></td>
+                </tr>
+                <tr>
+                    <td>User</td>
+                    <td><input type="text" class="form-control" @bind=NewTrade.User/></td>
+                </tr>
+                <tr>
+                    <td>Instrument Symbol</td>
+                    <td><input type="text" class="form-control" @bind=NewTrade.Symbol/></td>
+                </tr>
+                <tr>
+                    <td>Price</td>
+                    <td><input type="number" class="form-control" @bind=NewTrade.Price/></td>
+                </tr>
+                <tr>
+                    <td>Base volume</td>
+                    <td><input type="number" class="form-control" @bind=NewTrade.BaseVolume/></td>
+                </tr>
+                <tr>
+                    <td>Quote volume</td>
+                    <td><input type="number" class="form-control" @bind=NewTrade.QuoteVolume/></td>
+                </tr>
+            </table>
+            @if (ShowError)
+            {
+                <H3>@ErrorText</H3>
+            }
+        </BaseTwoButtonsDialog>
+    </div>
+}
 
 
 @code {
@@ -442,13 +502,13 @@
     private bool IsShowReportSettlementWindow { get; set; }
     private bool ReportSettlementWindowException { get; set; }
     private string ReportSettlementWindowExceptionText { get; set; }
-    
 
     private ExecuteManualConvertRequest HedgeConvertRequest = new ExecuteManualConvertRequest();
     private bool _hedgeConvertWindowOpen = false;
 
     private string _timerId = Guid.NewGuid().ToString();
     private bool _isAutoUpdate = false;
+    private const string PlWalletName = "PL Balance";
     
     protected override async Task OnInitializedAsync()
     {
@@ -485,12 +545,17 @@
         _balanceByWallets = balanceResponse?.BalanceByWallet ?? new List<NetBalanceByWallet>();
         _balanceByAssets = balanceResponse?.BalanceByAsset ?? new List<NetBalanceByAsset>();
 
+        var plBalance = _balanceByWallets.FirstOrDefault(e => e.WalletName == PlWalletName);
+        if (plBalance != null)
+            plBalance.IsInternal = true;
+
         var statusResponse = _portfolioStatusNoSql.Get();
         foreach (var status in statusResponse)
         {
             _portfolioStatuses[status.AssetStatus.Asset] = status.AssetStatus;
         }
         await SetBrokersAndWallets();
+        await CacheInstrumentsAndAssets();
     }
 
     private async Task SetBrokersAndWallets()
@@ -504,6 +569,7 @@
         ExchangeList = extWallets.ExchangeNames;
         
         WalletList.AddRange(extWallets.ExchangeNames);
+        WalletList.Add(PlWalletName);
     }
 
     private async Task SetAssetPortfolio()
@@ -770,5 +836,73 @@
         _reportSettlementRequest = new ReportSettlementRequest();
         
         StateHasChanged();
+    }
+    
+    private bool IsCreateDialogOpen { get; set; }
+    private ReportManualTradeRequest NewTrade { get; set; }
+    private bool ShowError { get; set; }
+    private string ErrorText { get; set; }
+    private List<SpotInstrumentItem> AllInstruments { get; set; }
+    private List<string> AssetCollection { get; set; }
+    
+    private void ReportTrade()
+    {
+        NewTrade = new ReportManualTradeRequest();
+        IsCreateDialogOpen = true;
+    }
+    private async void OnSaveNewTrade()
+    {
+        if (string.IsNullOrEmpty(NewTrade.BrokerId) && BrokerList.Count() == 1)
+        {
+            NewTrade.BrokerId = BrokerList.First();
+        }
+        if (string.IsNullOrEmpty(NewTrade.WalletName) && WalletList.Count() == 1)
+        {
+            NewTrade.WalletName = WalletList.First();
+        }
+        
+        var instrumentExist = AllInstruments.Any(elem => elem.Instrument.Symbol == NewTrade.Symbol);
+
+        if (!instrumentExist)
+        {
+            ShowError = true;
+            ErrorText = "Instrument not found";
+            StateHasChanged();
+            return;
+        }
+
+        var response = await _manualTradeService.ReportManualTradeAsync(NewTrade);
+        if (response.Success)
+        {
+            await Refresh();
+            OnCloseCreateDialog();
+        } else 
+        {
+            ShowError = true;
+            ErrorText = response.ErrorMessage;
+            StateHasChanged();
+        }
+    }
+
+    private void OnCloseCreateDialog()
+    {
+        IsCreateDialogOpen = false;
+        ShowError = false;
+        ErrorText = string.Empty;
+        StateHasChanged();
+    }
+    
+    private async Task CacheInstrumentsAndAssets()
+    {
+        AssetCollection = new List<string>();
+        
+        AllInstruments = await _spotInstrumentManager.GetAll();
+        AllInstruments.ForEach(instrument =>
+        {
+            AssetCollection.Add(instrument.Instrument.BaseAsset);
+            AssetCollection.Add(instrument.Instrument.QuoteAsset);
+        });
+
+        AssetCollection = AssetCollection.Distinct().ToList();
     }
 }
