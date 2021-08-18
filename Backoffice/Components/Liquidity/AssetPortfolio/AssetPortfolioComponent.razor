@@ -452,6 +452,24 @@
                     </select>
                 </tr>
                 <tr>
+                    <td>Base Asset</td>
+                    <select @bind="@NewTrade.BaseAsset">
+                        @foreach (var name in AllAssets)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
+                    <td>Quote Asset</td>
+                    <select @bind="@NewTrade.QuoteAsset">
+                        @foreach (var name in AllAssets)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
                     <td>Fee Asset</td>
                     <select @bind="@NewTrade.FeeAsset">
                         @foreach (var name in AllAssets)
@@ -465,16 +483,8 @@
                     <td><input type="number" class="form-control" @bind=NewTrade.FeeVolume/></td>
                 </tr>
                 <tr>
-                    <td>Comment</td>
-                    <td><input type="text" class="form-control" @bind=NewTrade.Comment/></td>
-                </tr>
-                <tr>
-                    <td>User</td>
-                    <td><input type="text" class="form-control" @bind=NewTrade.User/></td>
-                </tr>
-                <tr>
                     <td>Instrument Symbol</td>
-                    <td><input type="text" class="form-control" @bind=NewTrade.Symbol/></td>
+                    <td><input type="text" class="form-control" @bind=NewTrade.AssociateSymbol/></td>
                 </tr>
                 <tr>
                     <td>Price</td>
@@ -487,6 +497,14 @@
                 <tr>
                     <td>Quote volume</td>
                     <td><input type="number" class="form-control" @bind=NewTrade.QuoteVolume/></td>
+                </tr>
+                <tr>
+                    <td>Comment</td>
+                    <td><input type="text" class="form-control" @bind=NewTrade.Comment/></td>
+                </tr>
+                <tr>
+                    <td>User</td>
+                    <td><input type="text" class="form-control" @bind=NewTrade.User/></td>
                 </tr>
             </table>
             @if (ShowError)
@@ -585,7 +603,6 @@
             _portfolioStatuses[status.AssetStatus.Asset] = status.AssetStatus;
         }
         await SetBrokersAndWallets();
-        await CacheInstrumentsAndAssets();
     }
 
     private async Task SetBrokersAndWallets()
@@ -872,9 +889,7 @@
     private ReportManualTradeRequest NewTrade { get; set; }
     private bool ShowError { get; set; }
     private string ErrorText { get; set; }
-    private List<SpotInstrumentItem> AllInstruments { get; set; }
-    private List<string> AssetCollection { get; set; }
-    
+
     private void ReportTrade()
     {
         NewTrade = new ReportManualTradeRequest();
@@ -890,17 +905,6 @@
         {
             NewTrade.WalletName = WalletList.First();
         }
-        
-        var instrumentExist = AllInstruments.Any(elem => elem.Instrument.Symbol == NewTrade.Symbol);
-
-        if (!instrumentExist)
-        {
-            ShowError = true;
-            ErrorText = "Instrument not found";
-            StateHasChanged();
-            return;
-        }
-
         var response = await _manualTradeService.ReportManualTradeAsync(NewTrade);
         if (response.Success)
         {
@@ -920,19 +924,5 @@
         ShowError = false;
         ErrorText = string.Empty;
         StateHasChanged();
-    }
-    
-    private async Task CacheInstrumentsAndAssets()
-    {
-        AssetCollection = new List<string>();
-        
-        AllInstruments = await _spotInstrumentManager.GetAll();
-        AllInstruments.ForEach(instrument =>
-        {
-            AssetCollection.Add(instrument.Instrument.BaseAsset);
-            AssetCollection.Add(instrument.Instrument.QuoteAsset);
-        });
-
-        AssetCollection = AssetCollection.Distinct().ToList();
     }
 }
