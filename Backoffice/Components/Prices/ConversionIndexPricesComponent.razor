@@ -1,22 +1,85 @@
 @using MyJetWallet.Domain.Prices
 @using MyJetWallet.Sdk.Service.Tools
 @using Microsoft.Extensions.Logging
+@using MyJetWallet.Domain
+@using Service.AssetsDictionary.Client
+@using Service.AssetsDictionary.Domain.Models
 @using Service.IndexPrices.Client
 @using Service.IndexPrices.Domain.Models
 @using Service.Liquidity.Engine.Grpc
 @using Syncfusion.Blazor.Diagrams
+@using Backoffice.Services.Assets
 
 @inject IConvertIndexPricesClient _convertIndexPricesClient
 @inject IConvertIndexPriceManager _convertIndexPriceManager;
 @inject IToaster _toaster;
+@inject IAssetItemManager _assetItemManager;
+
 @implements IDisposable
 
 <h3>Conversion Index Prices</h3>
+
+<table class="table" style="width: auto; font-size: 10px;">
+    <tr>
+        <th></th>
+        @foreach (var asset in _assets.OrderBy(e => e.Symbol))
+        {
+            <th>@asset.Symbol</th>
+        }
+    </tr>
+    
+    @foreach (var asset in _assets.OrderBy(e => e.Symbol))
+    {
+        <tr>
+            <th>@asset.Symbol</th>
+            @foreach (var quoteAsset in _assets.OrderBy(e => e.Symbol))
+            {
+                var price = _prices.FirstOrDefault(e => e.BaseAsset == asset.Symbol && e.QuotedAsset == quoteAsset.Symbol);
+                var delay = price != null ? DateTime.UtcNow - price.UpdateDate : TimeSpan.Zero;
+                
+                if (asset.Symbol == quoteAsset.Symbol)
+                {
+                    <td style="background: gray">----</td>
+                }
+                else
+                {
+                    <td style="background: @(GetRowBackground(price))">
+                        @if (!string.IsNullOrEmpty(price?.Error))
+                        {
+                            <Tooltip Text="@price?.Error">error</Tooltip>
+                        }
+                        else
+                        {
+                            <div class="align-content-center">
+                                <div class="row">
+                                    <div class="col-md-1">@price?.Price</div>
+                                </div>
+                                @if (delay.TotalMilliseconds > 2000)
+                                {
+                                    <div class="row">
+                                        <div class="col-md-1">@delay.ToString()</div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </td>
+                }
+               
+            }
+        </tr>
+    }
+    
+</table>
+
+
+<hr style="margin: 50px" />
+<h3>Manage prices</h3>
+
 <ul class="nav">
     <li><button type="button" class="btn-outline-info btn" style="height: 20px; font-size: 10px" @onclick="@(() => OpenUpdateWindow(null))" >Create new</button></li>
 </ul>    
 
-<table class="table" style="width: auto; font-size: 10px;">
+<table class="table" style="width: auto; font-size: 10px">
     <thead>
     <tr>
         <th>BaseAsset</th>
@@ -91,9 +154,15 @@
     private bool _isDispose = false;
     
     private string SelectedSymbol { get; set; }
+
+    private IReadOnlyList<Asset> _assets = new List<Asset>();
     
     protected override async Task OnInitializedAsync()
     {
+        var assetList = await _assetItemManager.GetAll();
+
+        _assets = assetList.Select(e => e.Asset).Where(e => e.IsEnabled).ToList();
+        
         await ReloadData();
 
         GlobalTimers.RefreshTimer.RegisterCallback(nameof(IndexPricesComponent), DoTime);

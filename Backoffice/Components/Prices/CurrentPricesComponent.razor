@@ -2,12 +2,15 @@
 @using MyJetWallet.Sdk.Service.Tools
 @using Microsoft.Extensions.Logging
 @using MyJetWallet.Domain
+@using Service.AssetsDictionary.Client
+@using Service.AssetsDictionary.Domain.Models
 @using Service.IndexPrices.Client
 @using Service.IndexPrices.Domain.Models
 @using Service.Liquidity.Engine.Grpc
 @using Syncfusion.Blazor.Diagrams
 
 @inject ICurrentPricesClient _currentPricesClient
+
 
 @implements IDisposable
 
@@ -55,6 +58,7 @@
     
     protected override async Task OnInitializedAsync()
     {
+
         await ReloadData();
 
         GlobalTimers.RefreshTimer.RegisterCallback(nameof(IndexPricesComponent), DoTime);
@@ -77,6 +81,7 @@
             .ThenBy(e => e.InstrumentSymbol)
             .ThenBy(e => e.Source)
             .ThenBy(e => e.SourceMarket));
+
 
         return Task.CompletedTask;
     }
