@@ -44,24 +44,25 @@
                 else
                 {
                     <td style="background: @(GetRowBackground(price))">
-                        @if (!string.IsNullOrEmpty(price?.Error))
-                        {
-                            <Tooltip Text="@price?.Error">error</Tooltip>
-                        }
-                        else
-                        {
-                            <div class="align-content-center">
-                                <div class="row">
-                                    <div class="col-md-1">@price?.Price</div>
-                                </div>
-                                @if (delay.TotalMilliseconds > 2000)
-                                {
-                                    <div class="row">
-                                        <div class="col-md-1">@delay.ToString()</div>
-                                    </div>
-                                }
+                        <div class="align-content-center">
+                            <div class="row">
+                                <div class="col-md-1">@price?.Price</div>
                             </div>
-                        }
+                            @if (!string.IsNullOrEmpty(price?.Error))
+                            {
+                                <div class="row">
+                                    <div class="col-md-1">
+                                        <Tooltip Text="@price?.Error">error</Tooltip>
+                                    </div>
+                                </div>
+                            }
+                            @if (delay.TotalMilliseconds > 2000)
+                            {
+                                <div class="row">
+                                    <div class="col-md-1">@delay.ToString()</div>
+                                </div>
+                            }
+                        </div>
                     </td>
                 }
                
