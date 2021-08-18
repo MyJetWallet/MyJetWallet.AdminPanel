@@ -35,20 +35,20 @@
       <PackageReference Include="MyJetWallet.Sdk.Grpc" Version="1.0.2" />
       <PackageReference Include="MyJetWallet.Sdk.NoSql" Version="1.2.0" />
       <PackageReference Include="MyJetWallet.Service.ActiveOrders.Client" Version="3.0.2" />
-      <PackageReference Include="MyJetWallet.Service.AssetsDictionary.Client" Version="1.7.0" />
-      <PackageReference Include="MyJetWallet.Service.BalanceHistory.Client" Version="2.0.7" />
+      <PackageReference Include="MyJetWallet.Service.AssetsDictionary.Client" Version="1.7.1" />
+      <PackageReference Include="MyJetWallet.Service.BalanceHistory.Client" Version="2.0.8" />
       <PackageReference Include="MyJetWallet.Service.Balances.Client" Version="1.0.7" />
       <PackageReference Include="MyJetWallet.Service.Bitgo.DepositDetector.Client" Version="1.1.7" />
-      <PackageReference Include="MyJetWallet.Service.Bitgo.WithdrawalProcessor.Client" Version="1.0.3" />
+      <PackageReference Include="MyJetWallet.Service.Bitgo.WithdrawalProcessor.Client" Version="1.0.4" />
       <PackageReference Include="MyJetWallet.Service.ChangeBalanceGateway.Client" Version="1.7.1" />
       <PackageReference Include="MyJetWallet.Service.ClientWallets.Client" Version="1.2.1" />
       <PackageReference Include="MyJetWallet.Service.CoinMarketCapReader.Client" Version="1.0.1" />
       <PackageReference Include="MyJetWallet.Service.IndexPrices.Client" Version="1.2.0" />
-      <PackageReference Include="MyJetWallet.Service.Liquidity.Converter.Client" Version="1.1.1" />
+      <PackageReference Include="MyJetWallet.Service.Liquidity.Converter.Client" Version="1.1.2" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Engine.Client" Version="1.4.2" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Monitoring.Client" Version="1.0.4" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Portfolio.Client" Version="1.6.8" />
-      <PackageReference Include="MyJetWallet.Service.Liquidity.PortfolioHedger.Client" Version="1.1.6" />
+      <PackageReference Include="MyJetWallet.Service.Liquidity.PortfolioHedger.Client" Version="1.1.7" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Reports.Client" Version="1.1.7" />
       <PackageReference Include="MyJetWallet.Service.MessageTemplates.Client" Version="1.0.3" />
       <PackageReference Include="MyJetWallet.Service.NewsRepository.Client" Version="1.0.0" />
@@ -64,7 +64,7 @@
       <PackageReference Include="MyTokenGeneratorUtils" Version="1.0.1" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
       <PackageReference Include="protobuf-net.Grpc" Version="1.0.152" />
-      <PackageReference Include="Radzen.Blazor" Version="3.8.2" />
+      <PackageReference Include="Radzen.Blazor" Version="3.9.0" />
       <PackageReference Include="SimpleTrading.BaseMetrics" Version="1.0.3" />
       <PackageReference Include="SimpleTrading.Deposit.Grpc" Version="1.2.14" />
       <PackageReference Include="SimpleTrading.ServiceStatusReporterConnector" Version="1.0.9" />

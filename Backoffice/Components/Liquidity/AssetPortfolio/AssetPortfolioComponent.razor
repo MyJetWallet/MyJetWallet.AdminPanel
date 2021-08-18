@@ -53,6 +53,10 @@
 
 @if (ActivePage == AssetPortfolioPages.AssetPortfolio)
 {
+    AssetPortfolioStatus totalStatus;
+    {
+        _portfolioStatuses.TryGetValue("_TOTAL_", out totalStatus);
+    }
     <ul class="nav">
         <li><button type="button" class="btn-outline-secondary btn" @onclick="Refresh">Refresh</button></li>
         <li><button type="button" class="btn-outline-warning btn" @onclick="ShowChangeBalanceWindow">Change balance</button></li>
@@ -72,28 +76,28 @@
         </tr>
         </thead>
         <tbody>
-        <tr>
+        <tr style="background: @GetTotalPnlBackgroundStyle(totalStatus)">
             <td><b>NET USD</b></td>
             @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
             {
                 <td>@Math.Round(wallet.NetUsdVolume, 2)</td>
             }
             <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Sum(elem => elem.NetUsdVolume), 2)</b></td>
-            @if (_portfolioStatuses.TryGetValue("_TOTAL_", out var x) && x.NetUsdStrike != 0)
+            @if (totalStatus != null && totalStatus.NetUsdStrike != 0)
             {
-                <td style="background: lightgray"><b>NETUSD Limit: @x.NetUsdStrike</b></td>
+                <td style="background: lightgray"><b>NETUSD Limit: @totalStatus.NetUsdStrike</b></td>
             }
         </tr>
-        <tr>
+        <tr style="background: @GetTotalNetUsdBackgroundStyle(totalStatus)">
             <td><b>UNRELEASED PNL</b></td>
             @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
             {
                 <td>@Math.Round(wallet.UnreleasedPnlUsd, 2)</td>
             }
             <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Sum(elem => elem.UnreleasedPnlUsd), 2)</b></td>
-            @if (_portfolioStatuses.TryGetValue("_TOTAL_", out var y) && x.UplStrike != 0)
+            @if (totalStatus != null && totalStatus.UplStrike != 0)
             {
-                <td style="background: lightgray"><b>UPL Limit: @y.UplStrike</b></td>
+                <td style="background: lightgray"><b>UPL Limit: @totalStatus.UplStrike</b></td>
             }
         </tr>
         </tbody>
@@ -452,6 +456,24 @@
                     </select>
                 </tr>
                 <tr>
+                    <td>Base Asset</td>
+                    <select @bind="@NewTrade.BaseAsset">
+                        @foreach (var name in AllAssets)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
+                    <td>Quote Asset</td>
+                    <select @bind="@NewTrade.QuoteAsset">
+                        @foreach (var name in AllAssets)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+                <tr>
                     <td>Fee Asset</td>
                     <select @bind="@NewTrade.FeeAsset">
                         @foreach (var name in AllAssets)
@@ -465,16 +487,8 @@
                     <td><input type="number" class="form-control" @bind=NewTrade.FeeVolume/></td>
                 </tr>
                 <tr>
-                    <td>Comment</td>
-                    <td><input type="text" class="form-control" @bind=NewTrade.Comment/></td>
-                </tr>
-                <tr>
-                    <td>User</td>
-                    <td><input type="text" class="form-control" @bind=NewTrade.User/></td>
-                </tr>
-                <tr>
                     <td>Instrument Symbol</td>
-                    <td><input type="text" class="form-control" @bind=NewTrade.Symbol/></td>
+                    <td><input type="text" class="form-control" @bind=NewTrade.AssociateSymbol/></td>
                 </tr>
                 <tr>
                     <td>Price</td>
@@ -487,6 +501,14 @@
                 <tr>
                     <td>Quote volume</td>
                     <td><input type="number" class="form-control" @bind=NewTrade.QuoteVolume/></td>
+                </tr>
+                <tr>
+                    <td>Comment</td>
+                    <td><input type="text" class="form-control" @bind=NewTrade.Comment/></td>
+                </tr>
+                <tr>
+                    <td>User</td>
+                    <td><input type="text" class="form-control" @bind=NewTrade.User/></td>
                 </tr>
             </table>
             @if (ShowError)
@@ -585,7 +607,6 @@
             _portfolioStatuses[status.AssetStatus.Asset] = status.AssetStatus;
         }
         await SetBrokersAndWallets();
-        await CacheInstrumentsAndAssets();
     }
 
     private async Task SetBrokersAndWallets()
@@ -788,7 +809,23 @@
         MarketTradeWindowOpen = false;
         StateHasChanged();
     }
-
+    
+    private string GetTotalPnlBackgroundStyle(AssetPortfolioStatus status)
+    {
+        if (status != null && status.UplStrike != 0)
+        {
+            return "lightcoral";
+        }
+        return string.Empty;
+    }
+    private string GetTotalNetUsdBackgroundStyle(AssetPortfolioStatus status)
+    {
+        if (status != null && status.NetUsdStrike != 0)
+        {
+            return "lightcoral";
+        }
+        return string.Empty;
+    }
     private string GetAssetBackgroundStyle(AssetPortfolioStatus status)
     {
         if (status.UplStrike != 0 || status.NetUsdStrike != 0)
@@ -872,9 +909,7 @@
     private ReportManualTradeRequest NewTrade { get; set; }
     private bool ShowError { get; set; }
     private string ErrorText { get; set; }
-    private List<SpotInstrumentItem> AllInstruments { get; set; }
-    private List<string> AssetCollection { get; set; }
-    
+
     private void ReportTrade()
     {
         NewTrade = new ReportManualTradeRequest();
@@ -890,17 +925,6 @@
         {
             NewTrade.WalletName = WalletList.First();
         }
-        
-        var instrumentExist = AllInstruments.Any(elem => elem.Instrument.Symbol == NewTrade.Symbol);
-
-        if (!instrumentExist)
-        {
-            ShowError = true;
-            ErrorText = "Instrument not found";
-            StateHasChanged();
-            return;
-        }
-
         var response = await _manualTradeService.ReportManualTradeAsync(NewTrade);
         if (response.Success)
         {
@@ -920,19 +944,5 @@
         ShowError = false;
         ErrorText = string.Empty;
         StateHasChanged();
-    }
-    
-    private async Task CacheInstrumentsAndAssets()
-    {
-        AssetCollection = new List<string>();
-        
-        AllInstruments = await _spotInstrumentManager.GetAll();
-        AllInstruments.ForEach(instrument =>
-        {
-            AssetCollection.Add(instrument.Instrument.BaseAsset);
-            AssetCollection.Add(instrument.Instrument.QuoteAsset);
-        });
-
-        AssetCollection = AssetCollection.Distinct().ToList();
     }
 }

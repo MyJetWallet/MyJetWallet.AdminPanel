@@ -123,7 +123,7 @@
     {
         try
         {
-            var response = await SettingsManager
+            var response = SettingsManager
                 .GetLiquidityConverterSettingsAsync();
             if (!response.Success)
             {

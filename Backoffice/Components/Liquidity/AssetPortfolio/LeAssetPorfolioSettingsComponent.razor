@@ -163,6 +163,11 @@
 
     private List<decimal> GetDecimalListByString(string value, bool isNegative)
     {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return new List<decimal>();
+        }
+        
         if (isNegative)
         {
             return value.Trim().Split(";").Where(e => !string.IsNullOrWhiteSpace(e)).Select(e => -Math.Abs(Convert.ToDecimal(e))).ToList();
