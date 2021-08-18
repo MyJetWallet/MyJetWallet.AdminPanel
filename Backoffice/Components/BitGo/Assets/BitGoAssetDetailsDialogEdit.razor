@@ -58,6 +58,12 @@
                             <input type="text" class="form-control" @bind="Item.BitgoCoin"/>
                         </td>
                     </tr>
+                    <tr>
+                        <td>Min balance</td>
+                        <td class="float-left">
+                            <input type="number" class="form-control" @bind="Item.MinBalance"/>
+                        </td>
+                    </tr>
                 </table>
             </td>
 
@@ -101,5 +107,4 @@
         if (IsCreate)
             Item = new BitgoAssetMapEntity();
     }
-
 }

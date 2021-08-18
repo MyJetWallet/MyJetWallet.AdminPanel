@@ -2,8 +2,8 @@
 @using Backoffice.Abstractions.Models
 @using Backoffice.Services.BitGo.Assets
 
-@inject IBitGoAssetManager BitGoAssetManager;
-@inject IToaster ToastService;
+@inject IBitGoAssetManager _bitGoAssetManager;
+@inject IToaster _toastService;
 
 
 <tr>
@@ -11,6 +11,7 @@
     <td>@Item.BitgoWalletId</td>
     <td>@Item.EnabledBitgoWalletIds</td>
     <td>@Item.BitgoCoin</td>
+    <td>@Item.MinBalance</td>
 
     <td>
         <ul class="nav">
@@ -100,7 +101,7 @@
     {
         try
         {
-            await BitGoAssetManager.UpdateAsset(asset);
+            await _bitGoAssetManager.UpdateAsset(asset);
 
             IsShowEdit = false;
 
@@ -108,7 +109,7 @@
         }
         catch (Exception ex)
         {
-            ToastService.Error(ex.Message, "Edit BitGo asset");
+            _toastService.Error(ex.Message, "Edit BitGo asset");
         }
     }
 

@@ -2,8 +2,8 @@
 @using Backoffice.Abstractions.Models
 @using Backoffice.Services.BitGo.Assets
 
-@inject IBitGoAssetManager BitGoAssetManager;
-@inject IToaster ToastService
+@inject IBitGoAssetManager _bitGoAssetManager;
+@inject IToaster _toastService
 
 <Loader LoaderConfig="@LoaderConfig"/>
 
@@ -19,6 +19,7 @@
             <th>BitGo wallet</th>
             <th>Enabled BitGo wallet</th>
             <th>BitGo coin</th>
+            <th>Min balance</th>
             <th></th>
         </tr>
     </thead>
@@ -52,7 +53,7 @@
     {
         LoaderConfig.Enable();
         
-        BitGoAssetList = await BitGoAssetManager.GetAll() ?? new List<BitgoAssetMapEntity>();
+        BitGoAssetList = await _bitGoAssetManager.GetAll() ?? new List<BitgoAssetMapEntity>();
         
         LoaderConfig.Disable();
         await InvokeAsync(StateHasChanged);
@@ -81,9 +82,9 @@
     {
         try
         {
-            await BitGoAssetManager.CreateBitGoAsset(item);
+            await _bitGoAssetManager.CreateBitGoAsset(item);
             
-            ToastService.Info($"BitGo Asset {item.AssetSymbol} is created", "Create BitGo asset");
+            _toastService.Info($"BitGo Asset {item.AssetSymbol} is created", "Create BitGo asset");
             
             IsShowAdding = false;
             
@@ -91,7 +92,7 @@
         }
         catch (Exception ex)
         {
-            ToastService.Error(ex.Message, "BitGo Asset creation");
+            _toastService.Error(ex.Message, "BitGo Asset creation");
         }
     }
 
@@ -99,15 +100,15 @@
     {
         try
         {
-            await BitGoAssetManager.DeleteAsset(item);
+            await _bitGoAssetManager.DeleteAsset(item);
             
-            ToastService.Info($"BitGO Asset {item.AssetSymbol} is deleted", "Delete BitGo asset");
+            _toastService.Info($"BitGO Asset {item.AssetSymbol} is deleted", "Delete BitGo asset");
             
             OnRefresh();    
         }
         catch (Exception ex)
         {
-            ToastService.Error(ex.Message, "Asset deletion");
+            _toastService.Error(ex.Message, "Asset deletion");
         }
     }
 }
