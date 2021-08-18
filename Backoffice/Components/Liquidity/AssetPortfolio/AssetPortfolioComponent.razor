@@ -53,6 +53,10 @@
 
 @if (ActivePage == AssetPortfolioPages.AssetPortfolio)
 {
+    AssetPortfolioStatus totalStatus;
+    {
+        _portfolioStatuses.TryGetValue("_TOTAL_", out totalStatus);
+    }
     <ul class="nav">
         <li><button type="button" class="btn-outline-secondary btn" @onclick="Refresh">Refresh</button></li>
         <li><button type="button" class="btn-outline-warning btn" @onclick="ShowChangeBalanceWindow">Change balance</button></li>
@@ -72,28 +76,28 @@
         </tr>
         </thead>
         <tbody>
-        <tr>
+        <tr style="background: @GetTotalPnlBackgroundStyle(totalStatus)">
             <td><b>NET USD</b></td>
             @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
             {
                 <td>@Math.Round(wallet.NetUsdVolume, 2)</td>
             }
             <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Sum(elem => elem.NetUsdVolume), 2)</b></td>
-            @if (_portfolioStatuses.TryGetValue("_TOTAL_", out var x) && x.NetUsdStrike != 0)
+            @if (totalStatus != null && totalStatus.NetUsdStrike != 0)
             {
-                <td style="background: lightgray"><b>NETUSD Limit: @x.NetUsdStrike</b></td>
+                <td style="background: lightgray"><b>NETUSD Limit: @totalStatus.NetUsdStrike</b></td>
             }
         </tr>
-        <tr>
+        <tr style="background: @GetTotalNetUsdBackgroundStyle(totalStatus)">
             <td><b>UNRELEASED PNL</b></td>
             @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
             {
                 <td>@Math.Round(wallet.UnreleasedPnlUsd, 2)</td>
             }
             <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Sum(elem => elem.UnreleasedPnlUsd), 2)</b></td>
-            @if (_portfolioStatuses.TryGetValue("_TOTAL_", out var y) && x.UplStrike != 0)
+            @if (totalStatus != null && totalStatus.UplStrike != 0)
             {
-                <td style="background: lightgray"><b>UPL Limit: @y.UplStrike</b></td>
+                <td style="background: lightgray"><b>UPL Limit: @totalStatus.UplStrike</b></td>
             }
         </tr>
         </tbody>
@@ -805,7 +809,23 @@
         MarketTradeWindowOpen = false;
         StateHasChanged();
     }
-
+    
+    private string GetTotalPnlBackgroundStyle(AssetPortfolioStatus status)
+    {
+        if (status != null && status.UplStrike != 0)
+        {
+            return "lightcoral";
+        }
+        return string.Empty;
+    }
+    private string GetTotalNetUsdBackgroundStyle(AssetPortfolioStatus status)
+    {
+        if (status != null && status.NetUsdStrike != 0)
+        {
+            return "lightcoral";
+        }
+        return string.Empty;
+    }
     private string GetAssetBackgroundStyle(AssetPortfolioStatus status)
     {
         if (status.UplStrike != 0 || status.NetUsdStrike != 0)
