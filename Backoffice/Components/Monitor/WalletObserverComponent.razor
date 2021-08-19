@@ -7,6 +7,7 @@
 <ul class="nav">
     <li><button type="button" class="btn-outline-secondary btn" @onclick="RefreshData">Refresh</button></li>
     <li><button type="button" class="btn-outline-secondary btn" @onclick="AddWallet">Add wallet</button></li>
+    <li><button type="button" class="btn-outline-warning btn" @onclick="RemoveWallet">Remove wallet</button></li>
 </ul>
 
 <ul class="nav">
@@ -17,27 +18,26 @@
             <th style="background: lightgray">Asset</th>
             @foreach (var wallet in Balances.Select(e => e.WalletName).Distinct().OrderBy(e => e))
             {
-                <th style="background: lightgray" colspan="3" align="center">@wallet</th>
+                <th style="background: lightgray" colspan="2" align="center">@wallet</th>
             }
+            <th></th>
         </tr>
         </thead>
         <tbody>
-        <th style="background: lightgray"></th>
-        @foreach (var wallet in Balances.Select(e => e.WalletName).Distinct().OrderBy(e => e))
-        {
-            <th style="background: lightgray">Volume</th>
-            <th style="background: lightgray">USD Volume</th>
-            <th style="background: lightgray">Min in USD</th>
-        }
         @foreach (var asset in Balances.Select(e => e.Asset).Distinct().OrderBy(e => e))
         {
             <tr border="1px solid red">
                 <td>@asset</td>
                 @foreach (var wallet in Balances.Select(e => e.WalletName).Distinct().OrderBy(e => e))
                 {
-                    <td>@Balances.FirstOrDefault(e => e.WalletName == wallet && e.Asset == asset)?.Volume</td>
-                    <td>@Balances.FirstOrDefault(e => e.WalletName == wallet && e.Asset == asset)?.UsdVolume</td>
-                    <td>@Balances.FirstOrDefault(e => e.WalletName == wallet && e.Asset == asset)?.MinBalanceInUsd</td>
+                    <td>
+                        <span>@Math.Round(Balances.FirstOrDefault(e => e.WalletName == wallet && e.Asset == asset)?.Volume ?? 0, 8)</span>
+                        <br>
+                        <span>USD: @Math.Round(Balances.FirstOrDefault(e => e.WalletName == wallet && e.Asset == asset)?.UsdVolume ?? 0, 2)</span>
+                        <br>
+                        <span><b>Min in USD: @Balances.FirstOrDefault(e => e.WalletName == wallet && e.Asset == asset)?.MinBalanceInUsd</b></span>
+                    </td>
+                    <td><button type="button" class="btn-outline-secondary btn" @onclick="() => ChangeMinBalance(wallet, asset)">Change</button></td>
                 }
             </tr>
         }
@@ -51,7 +51,7 @@
         <BaseTwoButtonsDialog
             Caption="Market Trade"
             OnClose="@OnCloseAddWalletWindow"
-            YesButtonCaption="Save"
+            YesButtonCaption="Execute"
             NoButtonCaption="Cancel"
             OnSubmit="@OnSubmitAddWalletWindow">
             <table>
@@ -60,9 +60,68 @@
                     <td><input type="text" class="form-control" @bind=NewWallet.WalletName /></td>
                 </tr>
             </table>
-           @if (AddWalletWindowException)
+            @if (AddWalletWindowException)
+            {
+                <H3>@AddWalletWindowExceptionText</H3>
+            }
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+@if (RemoveWalletWindowOpen)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption="Market Trade"
+            OnClose="@OnCloseRemoveWalletWindow"
+            YesButtonCaption="Execute"
+            NoButtonCaption="Cancel"
+            OnSubmit="@OnSubmitRemoveWalletWindow">
+            <table>
+                <tr>
+                    <td>Wallet Name</td>
+                    <select @bind="@RemoveWalletRequest.Name">
+                        @foreach (var name in Balances.Select(e => e.WalletName).Distinct())
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+            </table>
+            @if (RemoveWalletWindowException)
+            {
+                <H3>@RemoveWalletWindowExceptionText</H3>
+            }
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+@if (ChangeMinBalanceWindowOpen)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption="Market Trade"
+            OnClose="@OnCloseChangeMinBalanceWindow"
+            YesButtonCaption="Execute"
+            NoButtonCaption="Cancel"
+            OnSubmit="@OnSubmitChangeMinBalanceWindow">
+            <table>
+                <tr>
+                    <td>Wallet Name</td>
+                    <td>@NewWallet.WalletName</td>
+                </tr>
+                <tr>
+                    <td>Asset</td>
+                    <td>@NewWallet.Asset</td>
+                </tr>
+                <tr>
+                    <td>Min balance in USD</td>
+                    <td><input type="number" class="form-control" @bind=NewWallet.MinBalanceInUsd/></td>
+                </tr>
+            </table>
+           @if (ChangeMinBalanceWindowException)
            {
-               <H3>@AddWalletWindowExceptionText</H3>
+               <H3>@ChangeMinBalanceWindowExceptionText</H3>
            }
         </BaseTwoButtonsDialog>
     </div>
@@ -118,6 +177,78 @@
             AddWalletWindowExceptionText = response.ErrorMessage;
             return;
         }
+        await RefreshData();
         OnCloseAddWalletWindow();
+    }
+    private bool ChangeMinBalanceWindowOpen = false;
+    private bool ChangeMinBalanceWindowException = false;
+    private string ChangeMinBalanceWindowExceptionText = string.Empty;
+    
+    
+    private void ChangeMinBalance(string wallet, string asset)
+    {
+        ChangeMinBalanceWindowOpen = true;
+        NewWallet = new()
+        {
+            WalletName = wallet,
+            Asset = asset
+        };
+    }
+    
+    private void OnCloseChangeMinBalanceWindow()
+    {
+        ChangeMinBalanceWindowOpen = false;
+        ChangeMinBalanceWindowException = false;
+        ChangeMinBalanceWindowExceptionText = string.Empty;
+        NewWallet = new AddNewWalletRequest();
+        
+        StateHasChanged();
+    }
+
+    private async Task OnSubmitChangeMinBalanceWindow()
+    {
+        var response = await _internalWalletObserverService.UpsertWalletAsync(NewWallet);
+        if (!response.Success)
+        {
+            ChangeMinBalanceWindowException = true;
+            ChangeMinBalanceWindowExceptionText = response.ErrorMessage;
+            return;
+        }
+        await RefreshData();
+        OnCloseChangeMinBalanceWindow();
+    }
+
+    private bool RemoveWalletWindowOpen = false;
+    private bool RemoveWalletWindowException = false;
+    private string RemoveWalletWindowExceptionText = string.Empty;
+    private RemoveWalletRequest RemoveWalletRequest = new();
+    
+    private void RemoveWallet()
+    {
+        RemoveWalletWindowOpen = true;
+        RemoveWalletRequest = new RemoveWalletRequest();
+    }
+    
+    private void OnCloseRemoveWalletWindow()
+    {
+        RemoveWalletWindowOpen = false;
+        RemoveWalletWindowException = false;
+        RemoveWalletWindowExceptionText = string.Empty;
+        RemoveWalletRequest = new RemoveWalletRequest();
+        
+        StateHasChanged();
+    }
+
+    private async Task OnSubmitRemoveWalletWindow()
+    {
+        var response = await _internalWalletObserverService.RemoveWalletAsync(RemoveWalletRequest);
+        if (!response.Success)
+        {
+            RemoveWalletWindowException = true;
+            RemoveWalletWindowExceptionText = response.ErrorMessage;
+            return;
+        }
+        await RefreshData();
+        OnCloseRemoveWalletWindow();
     }
 }
