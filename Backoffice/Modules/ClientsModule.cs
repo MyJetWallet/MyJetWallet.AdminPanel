@@ -35,6 +35,7 @@ using Service.PushNotification.Client;
 using Service.Service.KYC.Client;
 using Service.SmsProviderMock.Client;
 using Service.SmsSender.Client;
+using Service.WalletObserver.Client;
 using SimpleTrading.PersonalData.Grpc;
 
 namespace Backoffice.Modules
@@ -155,6 +156,8 @@ namespace Backoffice.Modules
             builder.RegisterNewsRepositoryClient(Program.Settings.NewsRepositoryGrpcServiceUrl);
             
             builder.RegisterExternalMarketClient(Program.Settings.ExternalApiGrpcUrl);
+            
+            builder.RegisterWalletObserverClient(Program.Settings.WalletObserverGrpcUrl);
         }
         
         private void RegisterMyNoSqlTcpClient(ContainerBuilder builder)

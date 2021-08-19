@@ -1,4 +1,4 @@
-@using Backoffice.Components.Clients
+@using Backoffice.Components.Monitor
 
 @page "/Monitor"
 
@@ -7,12 +7,19 @@
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(Menus.Trades)" aria-current="page" @onclick="SetTrades" >Trades</button>
     </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.WalletObserver)" aria-current="page" @onclick="SetWalletObserver" >Wallet Observer</button>
+    </li>
 </ul>
 
 <div style="margin: 10px">
     @if (ActivePage == Menus.Trades)
     {
         <ClientTradeHistoryComponent />
+    }
+    @if (ActivePage == Menus.WalletObserver)
+    {
+        <WalletObserverComponent />
     }
 </div>
 
@@ -38,6 +45,12 @@
     }
     public enum Menus
     {
-        Trades
+        Trades,
+        WalletObserver
+    }
+
+    private void SetWalletObserver()
+    {
+        SetActive(Menus.WalletObserver);
     }
 }

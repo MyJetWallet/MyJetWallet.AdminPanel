@@ -124,5 +124,8 @@ namespace Backoffice
         
         [YamlProperty("AdminPanel.ExternalApiGrpcUrl")]
         public string ExternalApiGrpcUrl { get; set; }
+
+        [YamlProperty("AdminPanel.WalletObserverGrpcUrl")]
+        public string WalletObserverGrpcUrl { get; set; }
     }
 }
