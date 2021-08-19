@@ -1,5 +1,123 @@
-<h3>WalletObserverComponent</h3>
+@using Service.WalletObserver.Grpc
+@using Service.WalletObserver.Domain.Models
+@using Service.WalletObserver.Grpc.Models
+
+@inject IInternalWalletObserverService _internalWalletObserverService
+
+<ul class="nav">
+    <li><button type="button" class="btn-outline-secondary btn" @onclick="RefreshData">Refresh</button></li>
+    <li><button type="button" class="btn-outline-secondary btn" @onclick="AddWallet">Add wallet</button></li>
+</ul>
+
+<ul class="nav">
+
+    <table class="table" style="width: auto">
+        <thead>
+        <tr align="center">
+            <th style="background: lightgray">Asset</th>
+            @foreach (var wallet in Balances.Select(e => e.WalletName).Distinct().OrderBy(e => e))
+            {
+                <th style="background: lightgray" colspan="3" align="center">@wallet</th>
+            }
+        </tr>
+        </thead>
+        <tbody>
+        <th style="background: lightgray"></th>
+        @foreach (var wallet in Balances.Select(e => e.WalletName).Distinct().OrderBy(e => e))
+        {
+            <th style="background: lightgray">Volume</th>
+            <th style="background: lightgray">USD Volume</th>
+            <th style="background: lightgray">Min in USD</th>
+        }
+        @foreach (var asset in Balances.Select(e => e.Asset).Distinct().OrderBy(e => e))
+        {
+            <tr border="1px solid red">
+                <td>@asset</td>
+                @foreach (var wallet in Balances.Select(e => e.WalletName).Distinct().OrderBy(e => e))
+                {
+                    <td>@Balances.FirstOrDefault(e => e.WalletName == wallet && e.Asset == asset)?.Volume</td>
+                    <td>@Balances.FirstOrDefault(e => e.WalletName == wallet && e.Asset == asset)?.UsdVolume</td>
+                    <td>@Balances.FirstOrDefault(e => e.WalletName == wallet && e.Asset == asset)?.MinBalanceInUsd</td>
+                }
+            </tr>
+        }
+        </tbody>
+    </table>
+</ul>
+
+@if (AddWalletWindowOpen)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption="Market Trade"
+            OnClose="@OnCloseAddWalletWindow"
+            YesButtonCaption="Save"
+            NoButtonCaption="Cancel"
+            OnSubmit="@OnSubmitAddWalletWindow">
+            <table>
+                <tr>
+                    <td>Wallet Name</td>
+                    <td><input type="text" class="form-control" @bind=NewWallet.WalletName /></td>
+                </tr>
+            </table>
+           @if (AddWalletWindowException)
+           {
+               <H3>@AddWalletWindowExceptionText</H3>
+           }
+        </BaseTwoButtonsDialog>
+    </div>
+}
 
 @code {
+
+    private List<InternalWalletBalance> Balances { get; set; } = new();
     
+    private bool AddWalletWindowOpen = false;
+    private bool AddWalletWindowException = false;
+    private string AddWalletWindowExceptionText = string.Empty;
+    private AddNewWalletRequest NewWallet = new();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshData();
+    }
+
+    private async Task RefreshData()
+    {
+        Balances = new List<InternalWalletBalance>();
+        var response = await _internalWalletObserverService.GetWalletsAsync();
+        if (response.Success && response.WalletList != null)
+        {
+            Balances = response.WalletList;
+        }
+        StateHasChanged();
+    }
+
+    private void AddWallet()
+    {
+        AddWalletWindowOpen = true;
+        NewWallet = new AddNewWalletRequest();
+    }
+
+    private void OnCloseAddWalletWindow()
+    {
+        AddWalletWindowOpen = false;
+        AddWalletWindowException = false;
+        AddWalletWindowExceptionText = string.Empty;
+        NewWallet = new AddNewWalletRequest();
+        
+        StateHasChanged();
+    }
+
+    private async Task OnSubmitAddWalletWindow()
+    {
+        var response = await _internalWalletObserverService.UpsertWalletAsync(NewWallet);
+        if (!response.Success)
+        {
+            AddWalletWindowException = true;
+            AddWalletWindowExceptionText = response.ErrorMessage;
+            return;
+        }
+        OnCloseAddWalletWindow();
+    }
 }
