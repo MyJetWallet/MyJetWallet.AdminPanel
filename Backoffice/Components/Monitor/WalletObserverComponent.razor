@@ -35,7 +35,7 @@
                         <br>
                         <span>USD: @Math.Round(Balances.FirstOrDefault(e => e.WalletName == wallet && e.Asset == asset)?.UsdVolume ?? 0, 2)</span>
                         <br>
-                        <span><b>Min in USD: @Balances.FirstOrDefault(e => e.WalletName == wallet && e.Asset == asset)?.MinBalanceInUsd</b></span>
+                        <span><b>Limit: @Balances.FirstOrDefault(e => e.WalletName == wallet && e.Asset == asset)?.MinBalanceInUsd</b></span>
                     </td>
                     <td><button type="button" class="btn-outline-secondary btn" @onclick="() => ChangeMinBalance(wallet, asset)">Change</button></td>
                 }
