@@ -24,7 +24,7 @@
         </tr>
         </thead>
         <tbody>
-        @foreach (var asset in Balances.Select(e => e.Asset).Distinct().OrderBy(e => e))
+        @foreach (var asset in Balances.Where(e => !string.IsNullOrWhiteSpace(e.Asset)).Select(e => e.Asset).Distinct().OrderBy(e => e))
         {
             <tr border="1px solid red">
                 <td>@asset</td>
@@ -45,7 +45,7 @@
     </table>
 </ul>
 
-@if (AddWalletWindowOpen)
+@if (_addWalletWindowOpen)
 {
     <div>
         <BaseTwoButtonsDialog
@@ -57,18 +57,18 @@
             <table>
                 <tr>
                     <td>Wallet Name</td>
-                    <td><input type="text" class="form-control" @bind=NewWallet.WalletName /></td>
+                    <td><input type="text" class="form-control" @bind=_newWallet.WalletName /></td>
                 </tr>
             </table>
-            @if (AddWalletWindowException)
+            @if (_addWalletWindowException)
             {
-                <H3>@AddWalletWindowExceptionText</H3>
+                <H3>@_addWalletWindowExceptionText</H3>
             }
         </BaseTwoButtonsDialog>
     </div>
 }
 
-@if (RemoveWalletWindowOpen)
+@if (_removeWalletWindowOpen)
 {
     <div>
         <BaseTwoButtonsDialog
@@ -80,7 +80,7 @@
             <table>
                 <tr>
                     <td>Wallet Name</td>
-                    <select @bind="@RemoveWalletRequest.Name">
+                    <select @bind="@_removeWalletRequest.Name">
                         @foreach (var name in Balances.Select(e => e.WalletName).Distinct())
                         {
                             <option value="@name">@name</option>
@@ -88,15 +88,15 @@
                     </select>
                 </tr>
             </table>
-            @if (RemoveWalletWindowException)
+            @if (_removeWalletWindowException)
             {
-                <H3>@RemoveWalletWindowExceptionText</H3>
+                <H3>@_removeWalletWindowExceptionText</H3>
             }
         </BaseTwoButtonsDialog>
     </div>
 }
 
-@if (ChangeMinBalanceWindowOpen)
+@if (_changeMinBalanceWindowOpen)
 {
     <div>
         <BaseTwoButtonsDialog
@@ -108,20 +108,20 @@
             <table>
                 <tr>
                     <td>Wallet Name</td>
-                    <td>@NewWallet.WalletName</td>
+                    <td>@_newWallet.WalletName</td>
                 </tr>
                 <tr>
                     <td>Asset</td>
-                    <td>@NewWallet.Asset</td>
+                    <td>@_newWallet.Asset</td>
                 </tr>
                 <tr>
                     <td>Min balance in USD</td>
-                    <td><input type="number" class="form-control" @bind=NewWallet.MinBalanceInUsd/></td>
+                    <td><input type="number" class="form-control" @bind=_newWallet.MinBalanceInUsd/></td>
                 </tr>
             </table>
-           @if (ChangeMinBalanceWindowException)
+           @if (_changeMinBalanceWindowException)
            {
-               <H3>@ChangeMinBalanceWindowExceptionText</H3>
+               <H3>@_changeMinBalanceWindowExceptionText</H3>
            }
         </BaseTwoButtonsDialog>
     </div>
@@ -131,10 +131,10 @@
 
     private List<InternalWalletBalance> Balances { get; set; } = new();
     
-    private bool AddWalletWindowOpen = false;
-    private bool AddWalletWindowException = false;
-    private string AddWalletWindowExceptionText = string.Empty;
-    private AddNewWalletRequest NewWallet = new();
+    private bool _addWalletWindowOpen = false;
+    private bool _addWalletWindowException = false;
+    private string _addWalletWindowExceptionText = string.Empty;
+    private AddNewWalletRequest _newWallet = new();
     
     protected override async Task OnInitializedAsync()
     {
@@ -154,41 +154,41 @@
 
     private void AddWallet()
     {
-        AddWalletWindowOpen = true;
-        NewWallet = new AddNewWalletRequest();
+        _addWalletWindowOpen = true;
+        _newWallet = new AddNewWalletRequest();
     }
 
     private void OnCloseAddWalletWindow()
     {
-        AddWalletWindowOpen = false;
-        AddWalletWindowException = false;
-        AddWalletWindowExceptionText = string.Empty;
-        NewWallet = new AddNewWalletRequest();
+        _addWalletWindowOpen = false;
+        _addWalletWindowException = false;
+        _addWalletWindowExceptionText = string.Empty;
+        _newWallet = new AddNewWalletRequest();
         
         StateHasChanged();
     }
 
     private async Task OnSubmitAddWalletWindow()
     {
-        var response = await _internalWalletObserverService.UpsertWalletAsync(NewWallet);
+        var response = await _internalWalletObserverService.UpsertWalletAsync(_newWallet);
         if (!response.Success)
         {
-            AddWalletWindowException = true;
-            AddWalletWindowExceptionText = response.ErrorMessage;
+            _addWalletWindowException = true;
+            _addWalletWindowExceptionText = response.ErrorMessage;
             return;
         }
         await RefreshData();
         OnCloseAddWalletWindow();
     }
-    private bool ChangeMinBalanceWindowOpen = false;
-    private bool ChangeMinBalanceWindowException = false;
-    private string ChangeMinBalanceWindowExceptionText = string.Empty;
+    private bool _changeMinBalanceWindowOpen = false;
+    private bool _changeMinBalanceWindowException = false;
+    private string _changeMinBalanceWindowExceptionText = string.Empty;
     
     
     private void ChangeMinBalance(string wallet, string asset)
     {
-        ChangeMinBalanceWindowOpen = true;
-        NewWallet = new()
+        _changeMinBalanceWindowOpen = true;
+        _newWallet = new()
         {
             WalletName = wallet,
             Asset = asset
@@ -197,55 +197,55 @@
     
     private void OnCloseChangeMinBalanceWindow()
     {
-        ChangeMinBalanceWindowOpen = false;
-        ChangeMinBalanceWindowException = false;
-        ChangeMinBalanceWindowExceptionText = string.Empty;
-        NewWallet = new AddNewWalletRequest();
+        _changeMinBalanceWindowOpen = false;
+        _changeMinBalanceWindowException = false;
+        _changeMinBalanceWindowExceptionText = string.Empty;
+        _newWallet = new AddNewWalletRequest();
         
         StateHasChanged();
     }
 
     private async Task OnSubmitChangeMinBalanceWindow()
     {
-        var response = await _internalWalletObserverService.UpsertWalletAsync(NewWallet);
+        var response = await _internalWalletObserverService.UpsertWalletAsync(_newWallet);
         if (!response.Success)
         {
-            ChangeMinBalanceWindowException = true;
-            ChangeMinBalanceWindowExceptionText = response.ErrorMessage;
+            _changeMinBalanceWindowException = true;
+            _changeMinBalanceWindowExceptionText = response.ErrorMessage;
             return;
         }
         await RefreshData();
         OnCloseChangeMinBalanceWindow();
     }
 
-    private bool RemoveWalletWindowOpen = false;
-    private bool RemoveWalletWindowException = false;
-    private string RemoveWalletWindowExceptionText = string.Empty;
-    private RemoveWalletRequest RemoveWalletRequest = new();
+    private bool _removeWalletWindowOpen = false;
+    private bool _removeWalletWindowException = false;
+    private string _removeWalletWindowExceptionText = string.Empty;
+    private RemoveWalletRequest _removeWalletRequest = new();
     
     private void RemoveWallet()
     {
-        RemoveWalletWindowOpen = true;
-        RemoveWalletRequest = new RemoveWalletRequest();
+        _removeWalletWindowOpen = true;
+        _removeWalletRequest = new RemoveWalletRequest();
     }
     
     private void OnCloseRemoveWalletWindow()
     {
-        RemoveWalletWindowOpen = false;
-        RemoveWalletWindowException = false;
-        RemoveWalletWindowExceptionText = string.Empty;
-        RemoveWalletRequest = new RemoveWalletRequest();
+        _removeWalletWindowOpen = false;
+        _removeWalletWindowException = false;
+        _removeWalletWindowExceptionText = string.Empty;
+        _removeWalletRequest = new RemoveWalletRequest();
         
         StateHasChanged();
     }
 
     private async Task OnSubmitRemoveWalletWindow()
     {
-        var response = await _internalWalletObserverService.RemoveWalletAsync(RemoveWalletRequest);
+        var response = await _internalWalletObserverService.RemoveWalletAsync(_removeWalletRequest);
         if (!response.Success)
         {
-            RemoveWalletWindowException = true;
-            RemoveWalletWindowExceptionText = response.ErrorMessage;
+            _removeWalletWindowException = true;
+            _removeWalletWindowExceptionText = response.ErrorMessage;
             return;
         }
         await RefreshData();
