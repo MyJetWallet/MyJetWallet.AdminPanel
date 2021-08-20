@@ -11,14 +11,22 @@
 </ul>
 
 <ul class="nav">
-
     <table class="table" style="width: auto">
         <thead>
         <tr align="center">
             <th style="background: lightgray">Asset</th>
-            @foreach (var wallet in Balances.Select(e => e.WalletName).Distinct().OrderBy(e => e))
+            @foreach (var walletName in Balances.Select(e => e.WalletName).OrderBy(e => e).Distinct())
             {
-                <th style="background: lightgray" colspan="2" align="center">@wallet</th>
+                <th style="background: lightgray" colspan="2" align="center">
+                    <span>Name: @Balances.FirstOrDefault(e => e.WalletName == walletName)?.WalletName</span>
+                    <br>
+                    <span>Id: @Balances.FirstOrDefault(e => e.WalletName == walletName)?.WalletId</span>
+                    <br>
+                    <span>BrokerId: @Balances.FirstOrDefault(e => e.WalletName == walletName)?.BrokerId</span>
+                    <br>
+                    <span>AccountId: @Balances.FirstOrDefault(e => e.WalletName == walletName)?.AccountId</span>
+                    <br>
+                </th>
             }
             <th></th>
         </tr>
@@ -58,6 +66,18 @@
                 <tr>
                     <td>Wallet Name</td>
                     <td><input type="text" class="form-control" @bind=_newWallet.WalletName /></td>
+                </tr>
+                <tr>
+                    <td>Wallet Id</td>
+                    <td><input type="text" class="form-control" @bind=_newWallet.WalletId /></td>
+                </tr>
+                <tr>
+                    <td>Broker Id</td>
+                    <td><input type="text" class="form-control" @bind=_newWallet.BrokerId /></td>
+                </tr>
+                <tr>
+                    <td>Account Id</td>
+                    <td><input type="text" class="form-control" @bind=_newWallet.AccountId /></td>
                 </tr>
             </table>
             @if (_addWalletWindowException)
