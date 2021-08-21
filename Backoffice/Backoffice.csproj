@@ -53,7 +53,7 @@
       <PackageReference Include="MyJetWallet.Service.MatchingEngine.PriceSource.Client" Version="3.0.0" />
       <PackageReference Include="MyJetWallet.Service.MessageTemplates.Client" Version="1.0.3" />
       <PackageReference Include="MyJetWallet.Service.NewsRepository.Client" Version="1.0.0" />
-      <PackageReference Include="MyJetWallet.Service.PriceHistory.Client" Version="1.1.5" />
+      <PackageReference Include="MyJetWallet.Service.PriceHistory.Client" Version="1.2.0" />
       <PackageReference Include="MyJetWallet.Service.PushNotification.Client" Version="1.2.4.1" />
       <PackageReference Include="MyJetWallet.Service.Service.KYC.Client" Version="1.0.6" />
       <PackageReference Include="MyJetWallet.Service.SmsProviderMock.Client" Version="1.0.17" />
