@@ -80,7 +80,7 @@
         _prices = (await _basePriceSerivce.GetAllPrices(new BasePriceRequest()
         {
             BrokerId = "jetwallet"
-        })).BasePrices;
+        })).BasePrices ?? new List<BasePriceResponse>();
 
         StateHasChanged();
     }
