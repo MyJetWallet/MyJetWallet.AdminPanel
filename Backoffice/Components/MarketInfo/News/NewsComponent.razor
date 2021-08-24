@@ -81,7 +81,7 @@
     }
     private async Task RefreshNews()
     {
-        _news = (await _newsService.GetNews(new ())).NewsList;
+        _news = (await _newsService.GetNews(new ())).NewsList ?? new List<News>();
         StateHasChanged();
     }
     
