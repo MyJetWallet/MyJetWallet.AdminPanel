@@ -26,11 +26,11 @@
     <td>@Item.WorkflowState</td>
     <td>
         <ul class="nav">
-            @if (Item.Status != WithdrawalStatus.Success)
+            @if (Item.Status != WithdrawalStatus.Success && Item.Status != WithdrawalStatus.Cancelled)
             {
                 <li><button type="button" class="btn-outline-info btn" @onclick="ShowRetry">Retry</button></li>
             }
-            @if (Item.Status != WithdrawalStatus.Success)
+            @if (Item.Status != WithdrawalStatus.Success && Item.Status != WithdrawalStatus.Cancelled)
             {
                 <li><button type="button" class="btn-outline-danger btn" @onclick="ShowCancel">Cancel</button></li>
             }
@@ -140,7 +140,9 @@
             case WithdrawalWorkflowState.Failed:
                 return "lightcoral";
             default:
-                return "white";
+                return (Item.Status != WithdrawalStatus.Success && Item.Status != WithdrawalStatus.Cancelled)
+                    ? "white"
+                    : "lightgray";
         }
     }
 
