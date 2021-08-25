@@ -45,7 +45,7 @@
                         <br>
                         <span><b>Limit: @Balances.FirstOrDefault(e => e.WalletName == wallet && e.Asset == asset)?.MinBalanceInUsd</b></span>
                     </td>
-                    <td><button type="button" class="btn-outline-secondary btn" @onclick="() => ChangeMinBalance(wallet, asset)">Change</button></td>
+                    <td><button type="button" class="btn-outline-secondary btn" @onclick="() => ChangeMinBalance(@Balances.FirstOrDefault(e => e.WalletName == wallet && e.Asset == asset))">Change</button></td>
                 }
             </tr>
         }
@@ -190,6 +190,13 @@
 
     private async Task OnSubmitAddWalletWindow()
     {
+        if (string.IsNullOrWhiteSpace(_newWallet.WalletId))
+        {
+            _addWalletWindowException = true;
+            _addWalletWindowExceptionText = "Pls enter wallet id.";
+            return;
+        }
+        
         var response = await _internalWalletObserverService.UpsertWalletAsync(_newWallet);
         if (!response.Success)
         {
@@ -205,13 +212,15 @@
     private string _changeMinBalanceWindowExceptionText = string.Empty;
     
     
-    private void ChangeMinBalance(string wallet, string asset)
+    private void ChangeMinBalance(InternalWalletBalance balance)
     {
         _changeMinBalanceWindowOpen = true;
         _newWallet = new()
         {
-            WalletName = wallet,
-            Asset = asset
+            WalletName = balance.WalletName,
+            Asset = balance.Asset,
+            BrokerId = balance.BrokerId,
+            WalletId = balance.WalletId
         };
     }
     
