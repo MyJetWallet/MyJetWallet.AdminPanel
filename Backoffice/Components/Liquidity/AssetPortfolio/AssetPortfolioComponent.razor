@@ -131,11 +131,11 @@
                 @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
                 {
                     <td>
-                        @if (netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).Volume != 0)
+                        @if (netBalanceByAsset.WalletBalances.FirstOrDefault(elem => elem.WalletName == wallet.WalletName)?.Volume != 0)
                         {
-                            <span><b>@Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).Volume, 8)</b></span>
+                            <span><b>@Math.Round(netBalanceByAsset.WalletBalances.FirstOrDefault(elem => elem.WalletName == wallet.WalletName)?.Volume ?? 0, 8)</b></span>
                             <br>
-                            <span>USD: @Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).UsdVolume, 2)</span>
+                            <span>USD: @Math.Round(netBalanceByAsset.WalletBalances.FirstOrDefault(elem => elem.WalletName == wallet.WalletName)?.UsdVolume ?? 0, 2)</span>
                         }
                     </td>
                 }
@@ -700,15 +700,15 @@
         if (string.IsNullOrEmpty(BrokerId) && 
             _balanceByWallets.Select(elem => elem.BrokerId).Distinct().Count() == 1)
         {
-            BrokerId = _balanceByWallets.First().BrokerId;
+            BrokerId = _balanceByWallets.FirstOrDefault().BrokerId;
         }
         if (string.IsNullOrEmpty(WalletName) && _balanceByWallets.Count() == 1)
         {
-            WalletName = _balanceByWallets.First().WalletName;
+            WalletName = _balanceByWallets.FirstOrDefault().WalletName;
         }
         if (string.IsNullOrEmpty(Asset) && _balanceByAssets.Count() == 1)
         {
-            Asset = _balanceByAssets.First().Asset;
+            Asset = _balanceByAssets.FirstOrDefault().Asset;
         }
 
         if (BalanceDiff != 0 &&
@@ -915,11 +915,11 @@
     {
         if (string.IsNullOrEmpty(NewTrade.BrokerId) && BrokerList.Count() == 1)
         {
-            NewTrade.BrokerId = BrokerList.First();
+            NewTrade.BrokerId = BrokerList.FirstOrDefault();
         }
         if (string.IsNullOrEmpty(NewTrade.WalletName) && WalletList.Count() == 1)
         {
-            NewTrade.WalletName = WalletList.First();
+            NewTrade.WalletName = WalletList.FirstOrDefault();
         }
         var response = await _manualTradeService.ReportManualTradeAsync(NewTrade);
         if (response.Success)

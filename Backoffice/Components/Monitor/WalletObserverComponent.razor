@@ -45,7 +45,7 @@
                         <br>
                         <span><b>Limit: @Balances.FirstOrDefault(e => e.WalletName == wallet && e.Asset == asset)?.MinBalanceInUsd</b></span>
                     </td>
-                    <td><button type="button" class="btn-outline-secondary btn" @onclick="() => ChangeMinBalance(Balances.FirstOrDefault(e => e.WalletName == wallet && e.Asset == asset))">Change</button></td>
+                    <td><button type="button" class="btn-outline-secondary btn" @onclick="() => ChangeMinBalance(wallet, asset)">Change</button></td>
                 }
             </tr>
         }
@@ -212,8 +212,15 @@
     private string _changeMinBalanceWindowExceptionText = string.Empty;
     
     
-    private void ChangeMinBalance(InternalWalletBalance balance)
+    private void ChangeMinBalance(string wallet, string asset)
     {
+        var balance = Balances.FirstOrDefault(e => e.WalletName == wallet && e.Asset == asset);
+
+        if (balance == null)
+        {
+            return;
+        }
+        
         _changeMinBalanceWindowOpen = true;
         _newWallet = new()
         {
