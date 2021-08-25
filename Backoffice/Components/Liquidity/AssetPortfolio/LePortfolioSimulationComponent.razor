@@ -54,23 +54,23 @@
                     <td><b>NET USD</b></td>
                     @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
                     {
-                        <td>@Math.Round(wallet.NetUsdVolume, 2)</td>
+                        <td>@Math.Round(wallet.UsdVolume, 2)</td>
                     }
-                    <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Sum(elem => elem.NetUsdVolume), 2)</b></td>
+                    <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Sum(elem => elem.UsdVolume), 2)</b></td>
                 </tr>
                 <tr>
                     <td><b>UNRELEASED PNL</b></td>
                     @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
                     {
-                        <td>@Math.Round(wallet.UnreleasedPnlUsd, 2)</td>
+                        <td></td>
                     }
-                    <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Sum(elem => elem.UnreleasedPnlUsd), 2)</b></td>
+                    <td style="background: lightgray"><b>@Math.Round(_balanceByAssets.Sum(elem => elem.UnrealisedPnl), 2)</b></td>
                 </tr>
                 <tr>
                     <td><b>RELEASED PNL</b></td>
                     @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
                     {
-                        <td>0</td>
+                        <td></td>
                     }
                     <td style="background: lightgray"><b>@Math.Round(_trades.Sum(elem => elem.TotalReleasePnl), 2)</b></td>
                 </tr>
@@ -100,22 +100,18 @@
                         @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
                         {
                             <td>
-                                @if (netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetVolume != 0)
+                                @if (netBalanceByAsset.WalletBalances.FirstOrDefault(elem => elem.WalletName == wallet.WalletName)?.Volume != 0)
                                 {
-                                    <span><b>@Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetVolume, 8)</b></span>
+                                    <span><b>@Math.Round(netBalanceByAsset.WalletBalances.FirstOrDefault(elem => elem.WalletName == wallet.WalletName)?.Volume ?? 0, 8)</b></span>
                                     <br>
-                                    <span>USD: @Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetUsdVolume, 2)</span>
-                                    <br>
-                                    <span>Open Price: @Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).OpenPrice, 2)</span>
-                                    <br>
-                                    <span>Unreleased Pnl: @Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).UnreleasedPnlUsd, 2)</span>
+                                    <span>USD: @Math.Round(netBalanceByAsset.WalletBalances.FirstOrDefault(elem => elem.WalletName == wallet.WalletName)?.UsdVolume ?? 0, 2)</span>
                                 }
                             </td>
                         }
                         <td style="background: lightgray">
-                            <span><b>@Math.Round(netBalanceByAsset.NetVolume, 8)</b></span>
+                            <span><b>@Math.Round(netBalanceByAsset.Volume, 8)</b></span>
                             <br>
-                            <span>USD: @Math.Round(netBalanceByAsset.NetUsdVolume, 2)</span>
+                            <span>USD: @Math.Round(netBalanceByAsset.UsdVolume, 2)</span>
                             <br>
                             <span>Open Price Avg: @Math.Round(netBalanceByAsset.OpenPriceAvg, 2)</span>
                             <br>
@@ -247,8 +243,8 @@
     private List<PortfolioSimulation> _simulationList = new();
     private long _selectedSimulationId = 0;
     
-    private List<NetBalanceByWallet> _balanceByWallets = new();
-    private List<NetBalanceByAsset> _balanceByAssets = new();
+    private List<BalanceByWallet> _balanceByWallets = new();
+    private List<BalanceByAsset> _balanceByAssets = new();
     private List<AssetPortfolioTrade> _trades = new();
     private List<PriceMap> _priceMapCollection = new();
     
@@ -292,11 +288,10 @@
 
         oldSimulation.Portfolio = response.Portfolio.Portfolio;
         oldSimulation.Trades = response.Portfolio.Trades;
-        oldSimulation.AssetBalances = response.Portfolio.AssetBalances;
         oldSimulation.PriceMap = response.Portfolio.PriceMap;
         
-        _balanceByWallets = response.Portfolio.Portfolio.BalanceByWallet ?? new List<NetBalanceByWallet>();
-        _balanceByAssets = response.Portfolio.Portfolio.BalanceByAsset ?? new List<NetBalanceByAsset>();
+        _balanceByWallets = response.Portfolio.Portfolio.BalanceByWallet ?? new List<BalanceByWallet>();
+        _balanceByAssets = response.Portfolio.Portfolio.BalanceByAsset ?? new List<BalanceByAsset>();
         _trades = response.Portfolio.Trades ?? new List<AssetPortfolioTrade>();
         _priceMapCollection = response.Portfolio.PriceMap.Select(e => new PriceMap(){Asset = e.Key, Price = e.Value}).ToList();
 
@@ -365,8 +360,8 @@
     {
         _selectedSimulationId = simulation.SimulationId;
         
-        _balanceByWallets = simulation.Portfolio.BalanceByWallet ?? new List<NetBalanceByWallet>();
-        _balanceByAssets = simulation.Portfolio.BalanceByAsset ?? new List<NetBalanceByAsset>();
+        _balanceByWallets = simulation.Portfolio.BalanceByWallet ?? new List<BalanceByWallet>();
+        _balanceByAssets = simulation.Portfolio.BalanceByAsset ?? new List<BalanceByAsset>();
         _trades = simulation.Trades ?? new List<AssetPortfolioTrade>();
         _priceMapCollection = simulation.PriceMap.Select(e => new PriceMap(){Asset = e.Key, Price = e.Value}).ToList();
 

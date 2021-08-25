@@ -80,9 +80,9 @@
             <td><b>NET USD</b></td>
             @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
             {
-                <td>@Math.Round(wallet.NetUsdVolume, 2)</td>
+                <td>@Math.Round(wallet.UsdVolume, 2)</td>
             }
-            <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Sum(elem => elem.NetUsdVolume), 2)</b></td>
+            <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Sum(elem => elem.UsdVolume), 2)</b></td>
             @if (totalStatus != null && totalStatus.NetUsdStrike != 0)
             {
                 <td style="background: lightgray"><b>NETUSD Limit: @totalStatus.NetUsdStrike</b></td>
@@ -92,9 +92,9 @@
             <td><b>UNRELEASED PNL</b></td>
             @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
             {
-                <td>@Math.Round(wallet.UnreleasedPnlUsd, 2)</td>
+                <td></td>
             }
-            <td style="background: lightgray"><b>@Math.Round(_balanceByWallets.Sum(elem => elem.UnreleasedPnlUsd), 2)</b></td>
+            <td style="background: lightgray"><b>@Math.Round(_balanceByAssets.Sum(elem => elem.UnrealisedPnl), 2)</b></td>
             @if (totalStatus != null && totalStatus.UplStrike != 0)
             {
                 <td style="background: lightgray"><b>UPL Limit: @totalStatus.UplStrike</b></td>
@@ -131,22 +131,18 @@
                 @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
                 {
                     <td>
-                        @if (netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetVolume != 0)
+                        @if (netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).Volume != 0)
                         {
-                            <span><b>@Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetVolume, 8)</b></span>
+                            <span><b>@Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).Volume, 8)</b></span>
                             <br>
-                            <span>USD: @Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).NetUsdVolume, 2)</span>
-                            <br>
-                            <span>Open Price: @Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).OpenPrice, 2)</span>
-                            <br>
-                            <span>Unreleased Pnl: @Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).UnreleasedPnlUsd, 2)</span>
+                            <span>USD: @Math.Round(netBalanceByAsset.WalletBalances.First(elem => elem.WalletName == wallet.WalletName).UsdVolume, 2)</span>
                         }
                     </td>
                 }
                 <td style="background: lightgray">
-                    <span><b>@Math.Round(netBalanceByAsset.NetVolume, 8)</b></span>
+                    <span><b>@Math.Round(netBalanceByAsset.Volume, 8)</b></span>
                     <br>
-                    <span>USD: @Math.Round(netBalanceByAsset.NetUsdVolume, 2)</span>
+                    <span>USD: @Math.Round(netBalanceByAsset.UsdVolume, 2)</span>
                     <br>
                     <span>Open Price Avg: @Math.Round(netBalanceByAsset.OpenPriceAvg, 2)</span>
                     <br>
@@ -154,14 +150,14 @@
                     <br>
                     @if (netBalanceByAsset.WalletBalances
                         .Where(e => e.IsInternal)
-                        .Sum(e => e.NetVolume) != 0)
+                        .Sum(e => e.Volume) != 0)
                     {
                         <span>Koef: @Math.Round(netBalanceByAsset.WalletBalances
                                         .Where(e => !e.IsInternal)
-                                        .Sum(e => e.NetVolume) 
+                                        .Sum(e => e.Volume) 
                                                 / netBalanceByAsset.WalletBalances
                                                     .Where(e => e.IsInternal)
-                                                    .Sum(e => e.NetVolume), 2)</span>
+                                                    .Sum(e => e.Volume), 2)</span>
                     }
                     else
                     {
@@ -522,8 +518,8 @@
 
 @code {
     private AssetPortfolioPages ActivePage { get; set; }
-    private List<NetBalanceByWallet> _balanceByWallets = new();
-    private List<NetBalanceByAsset> _balanceByAssets = new();
+    private List<BalanceByWallet> _balanceByWallets = new();
+    private List<BalanceByAsset> _balanceByAssets = new();
     private Dictionary<string, AssetPortfolioStatus> _portfolioStatuses = new();
     private List<string> AllAssets { get; set; }
     private List<string> BrokerList { get; set; } = new();
@@ -594,8 +590,8 @@
     private async Task RefreshInternal()
     {
         var balanceResponse = _portfolioBalanceNoSql.Get().FirstOrDefault()?.Balance;
-        _balanceByWallets = balanceResponse?.BalanceByWallet ?? new List<NetBalanceByWallet>();
-        _balanceByAssets = balanceResponse?.BalanceByAsset ?? new List<NetBalanceByAsset>();
+        _balanceByWallets = balanceResponse?.BalanceByWallet ?? new List<BalanceByWallet>();
+        _balanceByAssets = balanceResponse?.BalanceByAsset ?? new List<BalanceByAsset>();
 
         var plBalance = _balanceByWallets.FirstOrDefault(e => e.WalletName == PlWalletName);
         if (plBalance != null)
@@ -835,7 +831,7 @@
         return string.Empty;
     }
 
-    private string GetWalletStyle(NetBalanceByWallet wallet)
+    private string GetWalletStyle(BalanceByWallet wallet)
     {
         var color = wallet.IsInternal
             ? string.Empty
