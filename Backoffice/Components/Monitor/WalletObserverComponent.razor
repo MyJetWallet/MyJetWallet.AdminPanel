@@ -45,7 +45,7 @@
                         <br>
                         <span><b>Limit: @Balances.FirstOrDefault(e => e.WalletName == wallet && e.Asset == asset)?.MinBalanceInUsd</b></span>
                     </td>
-                    <td><button type="button" class="btn-outline-secondary btn" @onclick="() => ChangeMinBalance(@Balances.FirstOrDefault(e => e.WalletName == wallet && e.Asset == asset))">Change</button></td>
+                    <td><button type="button" class="btn-outline-secondary btn" @onclick="() => ChangeMinBalance(Balances.FirstOrDefault(e => e.WalletName == wallet && e.Asset == asset))">Change</button></td>
                 }
             </tr>
         }
