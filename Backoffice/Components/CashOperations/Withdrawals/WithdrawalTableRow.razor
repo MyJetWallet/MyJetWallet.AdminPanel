@@ -7,7 +7,7 @@
 @inject IBitgoWithdrawalService _bitgoWithdrawalService
 @inject IToaster ToastService;
 
-<tr>
+<tr style="background: @GetBGColor()">
     <td>@Item.Id</td>
     <td>@Item.ClientId</td>
     <td>@Item.WalletId</td>
@@ -23,6 +23,7 @@
     <td>@Item.LastError</td>
     <td>@Item.RetriesCount</td>
     <td>@Item.EventDate</td>
+    <td>@Item.WorkflowState</td>
     <td>
         <ul class="nav">
             @if (Item.Status != WithdrawalStatus.Success)
@@ -127,6 +128,20 @@
     {
         IsShowCancel = false;
         StateHasChanged();
+    }
+
+
+    private string GetBGColor()
+    {
+        switch (Item.WorkflowState)
+        {
+            case WithdrawalWorkflowState.Retrying:
+                return "lightgoldenyellow";
+            case WithdrawalWorkflowState.Failed:
+                return "lightcoral";
+            default:
+                return "white";
+        }
     }
 
 }
