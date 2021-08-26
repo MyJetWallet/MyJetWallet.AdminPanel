@@ -104,6 +104,7 @@
 
         var crmData = await _crmPersonalDataService.GetByPhraseAsync(new GetByPhraseGrpcRequest
         {
+            UserId = Program.Settings.CrmUserId,
             Phrase = SearchText
         }).ToListAsync();
         foreach (var result in crmData)
@@ -140,7 +141,8 @@
                 {
                     var crmResponse = await _crmPersonalDataService.GetAsync(new GetPersonalDataGrpcRequest()
                     {
-                        TraderId = client.ClientId
+                        TraderId = client.ClientId,
+                        BackOfficeUserId = Program.Settings.CrmUserId
                     });
                     ClientResults.Add(new ClientResultModel(client, crmResponse.Trader.EmailIsConfirmed, crmResponse.Trader.Email));
                 }

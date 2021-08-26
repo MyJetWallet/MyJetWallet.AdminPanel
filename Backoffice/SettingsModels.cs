@@ -127,5 +127,8 @@ namespace Backoffice
 
         [YamlProperty("AdminPanel.WalletObserverGrpcUrl")]
         public string WalletObserverGrpcUrl { get; set; }
+        
+        [YamlProperty("AdminPanel.CrmUserId")]
+        public string CrmUserId { get; set; }
     }
 }
