@@ -1,4 +1,4 @@
-﻿@using Backoffice.Components.Prices
+﻿@using Backoffice.Components.Prices.ExternalMarkets
 
 @page "/Prices"
 
@@ -14,6 +14,9 @@
     </li>
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(Menus.IndexPrices)" @onclick="SetIndexPrices" >IndexPrices</button>
+    </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.ExternalMarkets)" @onclick="SetExternalMarkets" >ExternalMarkets</button>
     </li>
 </ul>
 
@@ -35,6 +38,10 @@
     {
         <CurrentPricesComponent />
     }
+        @if (ActivePage == Menus.ExternalMarkets)
+        {
+            <ExernalMarketComponent />
+        }
 </div>
 
 @code {
@@ -47,6 +54,11 @@
             return "active";
 
         return "";
+    }
+    
+    private void SetExternalMarkets()
+    {
+        SetActive(Menus.ExternalMarkets);
     }
 
     private void SetBasePrices()
@@ -75,7 +87,8 @@
         BasePrices,
         IndexPrices,
         ConversionPrices,
-        CurrentPrice
+        CurrentPrice,
+        ExternalMarkets
     }
 
     private void SetCurrentPrices()
