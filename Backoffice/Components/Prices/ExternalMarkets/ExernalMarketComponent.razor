@@ -1,9 +1,9 @@
-﻿@using Service.Liquidity.Engine.Grpc
-@using Service.Liquidity.Engine.Grpc.Models
+﻿
 @using MyJetWallet.Domain.ExternalMarketApi.Models
+@using Service.Liquidity.InternalWallets.Grpc
+@using Service.Liquidity.InternalWallets.Grpc.Models
 
 @inject IExternalMarketsGrpc ExternalMarketsManager
-@inject IOrderBookManagerGrpc OrderBookManagerGrpc
 
 <ul class="nav nav-tabs nav-pills">
     @foreach (var market in MarketList)

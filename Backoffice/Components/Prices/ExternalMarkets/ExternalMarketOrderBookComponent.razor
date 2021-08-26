@@ -1,7 +1,9 @@
 ﻿@using Service.Liquidity.Engine.Grpc
 @using Service.Liquidity.Engine.Grpc.Models
+@using MyJetWallet.Domain.ExternalMarketApi
+@using MyJetWallet.Domain.ExternalMarketApi.Dto
 
-@inject IOrderBookManagerGrpc OrderBookManagerGrpc
+@inject IOrderBookSource _orderBookManagerGrpc
 
 <div style="width: auto">
     <div class="row">
@@ -62,13 +64,13 @@
     {
         var limit = MaxLevelCount > 0 ? MaxLevelCount : 1000;
 
-        var booksResp = await OrderBookManagerGrpc.GetOrderBookAsync(new GetOrderBookRequest
+        var booksResp = await _orderBookManagerGrpc.GetOrderBookAsync(new MarketRequest()
         {
-            Symbol = Symbol,
-            Source = ActiveMarket
+            Market = Symbol,
+            ExchangeName = ActiveMarket
         });
 
-        var book = booksResp.Data;
+        var book = booksResp.OrderBook;
 
         var list = new List<Level>();
 
