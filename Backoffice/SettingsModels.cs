@@ -130,5 +130,8 @@ namespace Backoffice
         
         [YamlProperty("AdminPanel.CrmUserId")]
         public string CrmUserId { get; set; }
+
+        [YamlProperty("AdminPanel.InternalWalletsGrpcUrl")]
+        public string InternalWalletsGrpcUrl { get; set; }
     }
 }

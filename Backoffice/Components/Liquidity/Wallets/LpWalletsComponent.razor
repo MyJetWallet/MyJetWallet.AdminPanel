@@ -1,11 +1,11 @@
-﻿@using Service.Liquidity.Engine.Grpc
-@using Service.Liquidity.Engine.Grpc.Models
-@using Service.Liquidity.Engine.Domain.Models.Wallets
-@using Service.Balances.Domain.Models
+﻿@using Service.Balances.Domain.Models
 @using Service.ClientWallets.Grpc
 @using MyJetWallet.Domain
+@using Service.Liquidity.InternalWallets.Domain.Models
+@using Service.Liquidity.InternalWallets.Grpc
+@using Service.Liquidity.InternalWallets.Grpc.Models
 
-@inject ILpWalletManagerGrpc LpWalletManagerGrpc
+@inject ILpWalletService _lpWalletManagerGrpc
 @inject IExternalMarketsGrpc ExternalMarketsManager
 
 <div class="row">
@@ -122,14 +122,14 @@
         AssetList = new Dictionary<string, string>();
         Balances = new Dictionary<string, Dictionary<string, BalanceItem>>();
         
-        var lpWallets = await LpWalletManagerGrpc.GetAllAsync();
+        var lpWallets = await _lpWalletManagerGrpc.GetAllAsync();
 
         LpWallets = lpWallets.Data.List ?? new List<LpWallet>();
 
         foreach (var wallet in LpWallets)
         {
             var balanceResp =
-                await LpWalletManagerGrpc.GetBalancesAsync(new WalletNameRequest() {WalletName = wallet.Name});
+                await _lpWalletManagerGrpc.GetBalancesAsync(new WalletNameRequest() {WalletName = wallet.Name});
 
             Balances[wallet.WalletId] = (balanceResp.Data.List ?? new List<WalletBalance>())
                 .Select(e => new BalanceItem(e.AssetId, e.Balance, Math.Round(e.Balance-e.Reserve, 4)))
@@ -192,7 +192,7 @@
     
     private async void AddWallet(LpWallet wallet)
     {
-        await LpWalletManagerGrpc.AddWalletAsync(wallet);
+        await _lpWalletManagerGrpc.AddWalletAsync(wallet);
         
         IsShowDetails = false;
         IsShowAddDialog = false;

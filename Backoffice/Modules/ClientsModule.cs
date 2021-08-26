@@ -22,6 +22,7 @@ using Service.Fees.Client.Grpc;
 using Service.IndexPrices.Client;
 using Service.Liquidity.Converter.Client;
 using Service.Liquidity.Engine.Client;
+using Service.Liquidity.InternalWallets.Client;
 using Service.Liquidity.Monitoring.Client;
 using Service.Liquidity.Monitoring.Domain.Models;
 using Service.Liquidity.Portfolio.Client;
@@ -158,6 +159,8 @@ namespace Backoffice.Modules
             builder.RegisterExternalMarketClient(Program.Settings.ExternalApiGrpcUrl);
             
             builder.RegisterWalletObserverClient(Program.Settings.WalletObserverGrpcUrl);
+            
+            builder.InternalWalletsClient(Program.Settings.InternalWalletsGrpcUrl);
         }
         
         private void RegisterMyNoSqlTcpClient(ContainerBuilder builder)
