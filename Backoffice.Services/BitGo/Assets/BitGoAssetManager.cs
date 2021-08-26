@@ -33,7 +33,7 @@ namespace Backoffice.Services.BitGo.Assets
             {
                 _logger.LogInformation("Creating BitGo asset: {jsonText}", JsonConvert.SerializeObject(item));
                 await _bitGoAssetMapSettingsService.CreateBitgoAssetMapEntityAsync(item.BrokerId, item.AssetSymbol,
-                    item.BitgoWalletId, item.EnabledBitgoWalletIds, item.BitgoCoin, item.MinBalance);
+                    item.BitgoWalletId, item.EnabledBitgoWalletIds, item.BitgoCoin, item.MinBalance, item.TagSeparator);
                 _logger.LogInformation("Created BitGo asset: {jsonText}", JsonConvert.SerializeObject(item));
             }
             catch (Exception ex)
@@ -49,7 +49,7 @@ namespace Backoffice.Services.BitGo.Assets
             {
                 _logger.LogInformation("Updating BitGo asset: {jsonText}", JsonConvert.SerializeObject(item));
                 await _bitGoAssetMapSettingsService.UpdateBitgoAssetMapEntityAsync(item.BrokerId, item.AssetSymbol,
-                    item.BitgoWalletId, item.EnabledBitgoWalletIds, item.BitgoCoin, item.MinBalance);
+                    item.BitgoWalletId, item.EnabledBitgoWalletIds, item.BitgoCoin, item.MinBalance, item.TagSeparator);
                 _logger.LogInformation("Updated BitGo asset: {jsonText}", JsonConvert.SerializeObject(item));
             }
             catch (Exception ex)
