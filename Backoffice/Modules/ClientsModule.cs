@@ -21,7 +21,6 @@ using Service.ClientWallets.Client;
 using Service.Fees.Client.Grpc;
 using Service.IndexPrices.Client;
 using Service.Liquidity.Converter.Client;
-using Service.Liquidity.Engine.Client;
 using Service.Liquidity.InternalWallets.Client;
 using Service.Liquidity.Monitoring.Client;
 using Service.Liquidity.Monitoring.Domain.Models;
@@ -75,8 +74,6 @@ namespace Backoffice.Modules
                 .RegisterInstance(assetDictionaryFactory.GetSpotConvertExternalInstrumentsDictionaryService())
                 .As<ISpotConvertExternalInstrumentsDictionaryService>()
                 .SingleInstance();
-
-            builder.RegisterLiquidityEngineClient(Program.Settings.LiquidityEngineGrpcServiceUrl);
 
             var simulationManager = new SimulationsManager(Program.Settings.SimulationsFTX, Program.Settings.SimulationsBinance);
             builder.RegisterInstance(simulationManager).As<ISimulationsManager>().SingleInstance();

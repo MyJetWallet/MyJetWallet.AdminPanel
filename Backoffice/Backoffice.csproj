@@ -45,7 +45,6 @@
       <PackageReference Include="MyJetWallet.Service.CoinMarketCapReader.Client" Version="1.0.1" />
       <PackageReference Include="MyJetWallet.Service.IndexPrices.Client" Version="1.2.1" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Converter.Client" Version="1.1.2" />
-      <PackageReference Include="MyJetWallet.Service.Liquidity.Engine.Client" Version="1.4.2" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.InternalWallets.Client" Version="1.0.2" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Monitoring.Client" Version="1.0.4" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Portfolio.Client" Version="1.6.9" />
@@ -91,6 +90,17 @@
       <_ContentIncludedByDefault Remove="Components\Templates\TemplatesComponent.razor" />
       <_ContentIncludedByDefault Remove="Components\Liquidity\ExternalMarkets\ExernalMarketComponent.razor" />
       <_ContentIncludedByDefault Remove="Components\Liquidity\ExternalMarkets\ExternalMarketOrderBookComponent.razor" />
+      <_ContentIncludedByDefault Remove="Components\Liquidity\Settings\LiquiditySettingsComponent.razor" />
+      <_ContentIncludedByDefault Remove="Components\Liquidity\Market2\LiquidityProviderComponent.razor" />
+      <_ContentIncludedByDefault Remove="Components\Liquidity\Market2\LiquidityProviderRowComponent.razor" />
+      <_ContentIncludedByDefault Remove="Components\Liquidity\Market2\LpDetailComponent.razor" />
+      <_ContentIncludedByDefault Remove="Components\Liquidity\Market2\LpHedgeSettingsComponent.razor" />
+      <_ContentIncludedByDefault Remove="Components\Liquidity\Market2\LpSourceSettingsComponent.razor" />
+      <_ContentIncludedByDefault Remove="Components\Liquidity\Market2\ShowPriceComponent.razor" />
+      <_ContentIncludedByDefault Remove="Components\Liquidity\Portfolio\Components\LeClosedPositionComponent.razor" />
+      <_ContentIncludedByDefault Remove="Components\Liquidity\Portfolio\Components\LeTradesComponent.razor" />
+      <_ContentIncludedByDefault Remove="Components\Liquidity\Portfolio\Components\ShortClosePositionComponent.razor" />
+      <_ContentIncludedByDefault Remove="Components\Liquidity\Portfolio\PortfolioComponent.razor" />
     </ItemGroup>
 
     <ItemGroup>
