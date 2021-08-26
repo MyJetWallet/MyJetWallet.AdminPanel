@@ -13,11 +13,11 @@
 @using Syncfusion.Blazor.Diagram
 @using System.Diagnostics
 @using MyNoSqlServer.Abstractions
-@using Service.Liquidity.Engine.Grpc
+@using Service.Liquidity.InternalWallets.Grpc
 @using Service.Liquidity.Monitoring.Domain.Models
 @using Service.Liquidity.PortfolioHedger.Domain.Models
 
-@inject ILpWalletManagerGrpc _lpWalletManagerGrpc
+@inject ILpWalletService _lpWalletManagerGrpc
 @inject IAssetPortfolioService _assetPortfolioService
 @inject IManualTradeService _manualTradeService;
 @inject ISpotInstrumentManager _spotInstrumentManager;
