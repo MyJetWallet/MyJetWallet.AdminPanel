@@ -2,8 +2,7 @@
 @using Service.Liquidity.Portfolio.Domain.Models
 @using Service.Liquidity.Portfolio.Grpc.Models
 @using Backoffice.Services.SpotInstruments
-@using Service.Liquidity.Engine.Domain.Models.Wallets
-@using Service.Liquidity.Engine.Grpc
+@using Service.Liquidity.InternalWallets.Grpc
 @using Service.Liquidity.PortfolioHedger.Domain.Models
 @using Service.Liquidity.PortfolioHedger.Grpc
 @using Service.Liquidity.PortfolioHedger.Grpc.Models
@@ -13,7 +12,7 @@
 @inject ILiquidityReportService _liquidityReportService;
 @inject ISpotInstrumentManager _spotInstrumentManager;
 @inject IManualTradeService _manualTradeService;
-@inject ILpWalletManagerGrpc _lpWalletManagerGrpc
+@inject ILpWalletService _lpWalletManagerGrpc
 
 <ul class="nav">
     @if (_trades?.Any() == true)
