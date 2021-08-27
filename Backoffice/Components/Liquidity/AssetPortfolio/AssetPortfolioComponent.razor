@@ -804,6 +804,11 @@
     }
     private string GetAssetBackgroundStyle(AssetPortfolioStatus status)
     {
+        if (status == null)
+        {
+            return string.Empty;
+        }
+        
         if (status.UplStrike != 0 || status.NetUsdStrike != 0)
         {
             return "lightcoral";
