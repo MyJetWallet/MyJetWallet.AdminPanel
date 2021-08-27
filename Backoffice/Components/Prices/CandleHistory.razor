@@ -28,6 +28,13 @@
         </select>
     </div>
     <div class="row">
+        <span>tIsBid: </span>
+        <select @bind="IsBid" style="width: 100px">
+            <option value=@true>true</option>
+            <option value=@false>false</option>
+        </select>
+    </div>
+    <div class="row">
         <DatesRangePicker OnSelectEvent="SelectDateRange"></DatesRangePicker>
     </div>
     <div class="row">
@@ -77,6 +84,8 @@
     private CandleTypeGrpcModel TimeFrame = CandleTypeGrpcModel.Day;
     
     private List<string> SymbolList = new List<string>();
+
+    private bool IsBid = true;
 
     private List<CandleGrpcModel> Data = new List<CandleGrpcModel>();
 
