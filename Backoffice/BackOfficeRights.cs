@@ -66,7 +66,6 @@ namespace Backoffice
             NavsItem.Create("Market References", "References","list-rich",Menu.References),
             NavsItem.Create("Liquidity", "LiquidityEngine", "list-rich", Menu.Liquidity),
             NavsItem.Create("Prices", "Prices", "list-rich", Menu.Prices),
-            NavsItem.Create("Simulations", "Simulations", "list-rich", Menu.Simulations),
             NavsItem.Create("Clients", "Clients", "list-rich", Menu.Clients),
             NavsItem.Create("BitGo", "BitGo", "list-rich", Menu.BitGo),
             NavsItem.Create("External Markets", "ExternalMarkets", "list-rich", Menu.ExternalMarkets),
