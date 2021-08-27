@@ -35,6 +35,7 @@ using Service.Service.KYC.Client;
 using Service.SmsProviderMock.Client;
 using Service.SmsSender.Client;
 using Service.WalletObserver.Client;
+using SimpleTrading.CandlesHistory.Grpc;
 using SimpleTrading.PersonalData.Grpc;
 
 namespace Backoffice.Modules
@@ -155,6 +156,13 @@ namespace Backoffice.Modules
             builder.RegisterWalletObserverClient(Program.Settings.WalletObserverGrpcUrl);
             
             builder.InternalWalletsClient(Program.Settings.InternalWalletsGrpcUrl);
+            
+            var factory = new MyGrpcClientFactory(Program.Settings.CandlesServiceGrpcUrl);
+            
+            builder
+                .RegisterInstance(factory.CreateGrpcService<ISimpleTradingCandlesHistoryGrpc>())
+                .As<ISimpleTradingCandlesHistoryGrpc>()
+                .SingleInstance();
         }
         
         private void RegisterMyNoSqlTcpClient(ContainerBuilder builder)

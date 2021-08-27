@@ -127,5 +127,8 @@ namespace Backoffice
 
         [YamlProperty("AdminPanel.InternalWalletsGrpcUrl")]
         public string InternalWalletsGrpcUrl { get; set; }
+
+        [YamlProperty("AdminPanel.CandlesServiceGrpcUrl")]
+        public string CandlesServiceGrpcUrl { get; set; }
     }
 }

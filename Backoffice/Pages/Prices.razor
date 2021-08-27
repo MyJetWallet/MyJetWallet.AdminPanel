@@ -18,6 +18,9 @@
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(Menus.ExternalMarkets)" @onclick="SetExternalMarkets" >ExternalMarkets</button>
     </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.Candle)" @onclick="SetCandle" >Candle</button>
+    </li>
 </ul>
 
 <div style="margin: 10px">
@@ -38,10 +41,17 @@
     {
         <CurrentPricesComponent />
     }
-        @if (ActivePage == Menus.ExternalMarkets)
-        {
-            <ExernalMarketComponent />
-        }
+    @if (ActivePage == Menus.ExternalMarkets)
+    {
+        <ExernalMarketComponent />
+    }
+    
+    @if (ActivePage == Menus.Candle)
+    {
+        <CandleHistory/>
+    }
+    
+    
 </div>
 
 @code {
@@ -88,12 +98,18 @@
         IndexPrices,
         ConversionPrices,
         CurrentPrice,
-        ExternalMarkets
+        ExternalMarkets,
+        Candle
     }
 
     private void SetCurrentPrices()
     {
         SetActive(Menus.CurrentPrice);
+    }
+
+    private void SetCandle()
+    {
+        SetActive(Menus.Candle);
     }
 
 }
