@@ -39,7 +39,6 @@
     <tr>
         <th>Id</th>
         <th>DateTime</th>
-        <th>Wallet Name</th>
         <th>Associate Symbol</th>
         <th>Base Asset</th>
         <th>Quote Asset</th>
@@ -49,7 +48,6 @@
         <th>Quote Volume</th>
         <th>Base Volume In Usd</th>
         <th>Quote Volume In Usd</th>
-        <th>Associate Broker Id</th>
         <th>Trade Id</th>
         <th>Source</th>
         <th>Comment</th>
@@ -57,6 +55,8 @@
         <th>Total Release Pnl</th>
         <th>Fee Asset</th>
         <th>Fee Volume</th>
+        <th>Wallet Name</th>
+        <th>Associate Broker Id</th>
     </tr>
     </thead>
     <tbody>
@@ -66,7 +66,6 @@
         <tr>
             <td>@trade.Id</td>
             <td>@trade.DateTime</td>
-            <td>@trade.WalletName</td>
             <td>@trade.AssociateSymbol</td>
             <td>@trade.BaseAsset</td>
             <td>@trade.QuoteAsset</td>
@@ -76,7 +75,6 @@
             <td>@trade.QuoteVolume</td>
             <td>@trade.BaseVolumeInUsd</td>
             <td>@trade.QuoteVolumeInUsd</td>
-            <td>@trade.AssociateBrokerId</td>
             <td>@trade.TradeId</td>
             <td>@trade.Source</td>
             <td>@trade.Comment</td>
@@ -84,6 +82,8 @@
             <td>@trade.TotalReleasePnl</td>
             <td>@trade.FeeAsset</td>
             <td>@trade.FeeVolume</td>
+            <td>@trade.WalletName</td>
+            <td>@trade.AssociateBrokerId</td>
         </tr>
     }
     </tbody>
