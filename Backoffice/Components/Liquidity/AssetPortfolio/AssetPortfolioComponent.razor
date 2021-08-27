@@ -76,7 +76,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr style="background: @GetTotalPnlBackgroundStyle(totalStatus)">
+        <tr style="background: @GetTotalNetUsdBackgroundStyle(totalStatus)">
             <td><b>NET USD</b></td>
             @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
             {
@@ -88,7 +88,7 @@
                 <td style="background: lightgray"><b>NETUSD Limit: @totalStatus.NetUsdStrike</b></td>
             }
         </tr>
-        <tr style="background: @GetTotalNetUsdBackgroundStyle(totalStatus)">
+        <tr style="background: @GetTotalPnlBackgroundStyle(totalStatus)">
             <td><b>UNRELEASED PNL</b></td>
             @foreach (var wallet in _balanceByWallets.OrderByDescending(elem => elem.IsInternal))
             {
