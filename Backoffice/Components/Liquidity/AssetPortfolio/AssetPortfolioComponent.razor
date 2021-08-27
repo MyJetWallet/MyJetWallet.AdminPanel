@@ -637,6 +637,7 @@
 
         AllAssets = new List<string>();
         
+        AllAssets.Add(string.Empty);
         instruments.ForEach(instrument =>
         {
             AllAssets.Add(instrument.Instrument.BaseAsset);
