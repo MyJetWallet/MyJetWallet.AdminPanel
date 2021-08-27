@@ -30,8 +30,8 @@
     <div class="row">
         <span>tIsBid: </span>
         <select @bind="IsBid" style="width: 100px">
-            <option value=@true>true</option>
-            <option value=@false>false</option>
+            <option value=1>true</option>
+            <option value=0>false</option>
         </select>
     </div>
     <div class="row">
@@ -85,7 +85,7 @@
     
     private List<string> SymbolList = new List<string>();
 
-    private bool IsBid = true;
+    private int IsBid = 1;
 
     private List<CandleGrpcModel> Data = new List<CandleGrpcModel>();
 
@@ -116,7 +116,7 @@
 
         var data = await DataSource.GetCandlesHistoryAsync(new GetCandlesHistoryGrpcRequestContract()
         {
-            Bid = IsBid,
+            Bid = IsBid == 1,
             Instrument = Symbol,
             CandleType = TimeFrame,
             From = _from,
