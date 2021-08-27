@@ -48,7 +48,7 @@
       <PackageReference Include="MyJetWallet.Service.Liquidity.Monitoring.Client" Version="1.0.4" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Portfolio.Client" Version="1.6.9" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.PortfolioHedger.Client" Version="1.1.7" />
-      <PackageReference Include="MyJetWallet.Service.Liquidity.Reports.Client" Version="1.1.7" />
+      <PackageReference Include="MyJetWallet.Service.Liquidity.Reports.Client" Version="1.1.8" />
       <PackageReference Include="MyJetWallet.Service.MessageTemplates.Client" Version="1.0.3" />
       <PackageReference Include="MyJetWallet.Service.NewsRepository.Client" Version="1.0.0" />
       <PackageReference Include="MyJetWallet.Service.PriceHistory.Client" Version="1.2.0" />
@@ -99,6 +99,7 @@
       <_ContentIncludedByDefault Remove="Components\Liquidity\Portfolio\Components\LeTradesComponent.razor" />
       <_ContentIncludedByDefault Remove="Components\Liquidity\Portfolio\Components\ShortClosePositionComponent.razor" />
       <_ContentIncludedByDefault Remove="Components\Liquidity\Portfolio\PortfolioComponent.razor" />
+      <_ContentIncludedByDefault Remove="Components\Swap\Settings\SwapSettingsComponent.razor" />
     </ItemGroup>
 
     <ItemGroup>
