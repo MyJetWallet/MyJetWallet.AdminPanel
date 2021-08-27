@@ -34,6 +34,7 @@ using Service.PushNotification.Client;
 using Service.Service.KYC.Client;
 using Service.SmsProviderMock.Client;
 using Service.SmsSender.Client;
+using Service.UserActivityObserver.Client;
 using Service.WalletObserver.Client;
 using SimpleTrading.CandlesHistory.Grpc;
 using SimpleTrading.PersonalData.Grpc;
@@ -163,6 +164,8 @@ namespace Backoffice.Modules
                 .RegisterInstance(factory.CreateGrpcService<ISimpleTradingCandlesHistoryGrpc>())
                 .As<ISimpleTradingCandlesHistoryGrpc>()
                 .SingleInstance();
+            
+            builder.RegisterUserActivityObserverClient(Program.Settings.ActivityObserverServiceGrpcUrl);
         }
         
         private void RegisterMyNoSqlTcpClient(ContainerBuilder builder)

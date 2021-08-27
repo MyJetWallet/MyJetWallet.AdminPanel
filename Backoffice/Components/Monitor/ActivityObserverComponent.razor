@@ -1,0 +1,51 @@
+@using Service.UserActivityObserver.Grpc
+@using Service.UserActivityObserver.Domain.Models
+@inject IActivityService _activityService
+
+<ul class="nav">
+    <li><button type="button" class="btn-outline-secondary btn" @onclick="RefreshData">Refresh</button></li>
+</ul>
+
+<ul class="nav">
+    <table class="table" style="width: auto">
+        <thead>
+        <tr>
+            <th>ClientId</th>
+            <th>ClientEmail</th>
+            <th>EventType</th>
+            <th>Description</th>
+            <th>RecordTime</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var activity in Activities)
+        {
+            <tr>
+                <td>@activity.ClientId</td>
+                <td>@activity.ClientEmail</td>  
+                <td>@activity.EventType</td>
+                <td>@activity.Description</td>
+                <td>@activity.RecordTime</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</ul>
+@code {
+    private List<UserActivity> Activities { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshData();
+    }
+
+    private async Task RefreshData()
+    {
+        Activities = new List<UserActivity>();
+        var response = await _activityService.GetActivityEvents();
+        if (response.Activities != null)
+            Activities = response.Activities;
+        
+        StateHasChanged();
+    }
+}
