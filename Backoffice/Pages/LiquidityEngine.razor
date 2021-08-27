@@ -12,19 +12,27 @@
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(Menus.Wallets)" @onclick="SetWallets" >Wallets</button>
     </li>
+    
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.Simulation)" aria-current="page" @onclick="SetSimulation" >Simulation</button>
+    </li>
+    
 </ul>
 
 <div style="margin: 10px">
 
     
     @if (ActivePage == Menus.Wallets)
-        {
-            <LpWalletsComponent />
-        }
-
+    {
+        <LpWalletsComponent />
+    }
     @if (ActivePage == Menus.AssetPortfolio)
     {
         <AssetPortfolioComponent/>
+    }
+    @if (ActivePage == Menus.Simulation)
+    {
+        <LePortfolioSimulationComponent />
     }
 </div>
 
@@ -38,6 +46,12 @@
             return "active";
 
         return "";
+    }
+    
+    private void SetSimulation()
+    {
+        ActivePage = Menus.Simulation;
+        StateHasChanged();
     }
 
     private void SetAssetPortfolio()
@@ -55,7 +69,8 @@
     {
         None,
         AssetPortfolio,
-        Wallets
+        Wallets,
+        Simulation
     }
 
     private void SetWallets()
