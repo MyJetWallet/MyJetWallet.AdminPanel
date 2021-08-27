@@ -46,10 +46,7 @@ namespace Backoffice
 
         [YamlProperty("AdminPanel.BalanceHistoryGrpcServiceUrl")]
         public string BalanceHistoryGrpcServiceUrl { get; set; }
-
-        [YamlProperty("AdminPanel.ActiveOrdersGrpcServiceUrl")]
-        public string ActiveOrdersGrpcServiceUrl { get; set; }
-
+        
         [YamlProperty("AdminPanel.KycGrpcServiceUrl")]
         public string KycGrpcServiceUrl { get; set; }
         

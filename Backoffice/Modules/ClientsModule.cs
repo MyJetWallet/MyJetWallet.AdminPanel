@@ -8,7 +8,6 @@ using MyJetWallet.Sdk.Grpc;
 using MyJetWallet.Sdk.NoSql;
 using MyJetWallet.Sdk.Service;
 using MyNoSqlServer.DataReader;
-using Service.ActiveOrders.Client;
 using Service.AssetsDictionary.Client.Grpc;
 using Service.AssetsDictionary.Grpc;
 using Service.BalanceHistory.Client;
@@ -112,8 +111,6 @@ namespace Backoffice.Modules
 
             builder.RegisterBalanceHistoryClient(Program.Settings.BalanceHistoryGrpcServiceUrl);
             builder.RegisterSwapHistoryClient(Program.Settings.BalanceHistoryGrpcServiceUrl);
-
-            builder.RegisterActiveOrdersClientsWithoutCache(Program.Settings.ActiveOrdersGrpcServiceUrl);
 
             builder.RegisterTradeHistoryClient(Program.Settings.BalanceHistoryGrpcServiceUrl);
 

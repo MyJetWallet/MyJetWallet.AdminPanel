@@ -34,7 +34,6 @@
       <PackageReference Include="MyJetWallet.Sdk.ExternalMarketsSettings" Version="1.0.3" />
       <PackageReference Include="MyJetWallet.Sdk.Grpc" Version="1.0.2" />
       <PackageReference Include="MyJetWallet.Sdk.NoSql" Version="1.2.0" />
-      <PackageReference Include="MyJetWallet.Service.ActiveOrders.Client" Version="3.0.2" />
       <PackageReference Include="MyJetWallet.Service.AssetsDictionary.Client" Version="1.7.2" />
       <PackageReference Include="MyJetWallet.Service.BalanceHistory.Client" Version="2.1.2" />
       <PackageReference Include="MyJetWallet.Service.Balances.Client" Version="1.0.7" />
