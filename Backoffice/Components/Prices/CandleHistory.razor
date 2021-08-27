@@ -28,6 +28,13 @@
         </select>
     </div>
     <div class="row">
+        <span>tIsBid: </span>
+        <select @bind="IsBid" style="width: 100px">
+            <option value=1>true</option>
+            <option value=0>false</option>
+        </select>
+    </div>
+    <div class="row">
         <DatesRangePicker OnSelectEvent="SelectDateRange"></DatesRangePicker>
     </div>
     <div class="row">
@@ -78,6 +85,8 @@
     
     private List<string> SymbolList = new List<string>();
 
+    private int IsBid = 1;
+
     private List<CandleGrpcModel> Data = new List<CandleGrpcModel>();
 
     private DateTime _from = DateTime.UtcNow.AddDays(-1);
@@ -107,7 +116,7 @@
 
         var data = await DataSource.GetCandlesHistoryAsync(new GetCandlesHistoryGrpcRequestContract()
         {
-            Bid = true,
+            Bid = IsBid == 1,
             Instrument = Symbol,
             CandleType = TimeFrame,
             From = _from,

@@ -130,5 +130,8 @@ namespace Backoffice
 
         [YamlProperty("AdminPanel.CandlesServiceGrpcUrl")]
         public string CandlesServiceGrpcUrl { get; set; }
+        
+        [YamlProperty("AdminPanel.ActivityObserverServiceGrpcUrl")]
+        public string ActivityObserverServiceGrpcUrl { get; set; }
     }
 }
