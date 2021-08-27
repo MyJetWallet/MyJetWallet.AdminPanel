@@ -1,0 +1,123 @@
+﻿@using SimpleTrading.CandlesHistory.Grpc
+@using Backoffice.Services.SpotInstruments
+@using SimpleTrading.CandlesHistory.Grpc.Contracts
+@using SimpleTrading.CandlesHistory.Grpc.Models
+
+@inject ISimpleTradingCandlesHistoryGrpc DataSource;
+@inject ISpotInstrumentManager SpotInstrumentManager;
+
+<h3>CandleHistory</h3>
+
+<div class="table" style="margin: 30px">
+    <div class="row">
+        <span>Instrument: </span>
+        <select @bind="Symbol" style="width: 100px">
+            @foreach (var instrument in SymbolList)
+            {
+                <option value=@instrument>@instrument</option>
+            }
+        </select>
+    </div>
+    <div class="row">
+        <span>time frame: </span>
+        <select @bind="TimeFrame" style="width: 100px">
+            <option value=@CandleTypeGrpcModel.Minute>Minute</option>
+            <option value=@CandleTypeGrpcModel.Hour>Hour</option>
+            <option value=@CandleTypeGrpcModel.Day>Day</option>
+            <option value=@CandleTypeGrpcModel.Month>Month</option>
+        </select>
+    </div>
+    <div class="row">
+        <DatesRangePicker OnSelectEvent="SelectDateRange"></DatesRangePicker>
+    </div>
+    <div class="row">
+        <button type="button" class="btn-outline-info btn" @onclick="ShowCandles" >Show</button>
+        
+    </div>
+</div>
+
+<span style="margin: 10px"></span>
+
+<div>
+    <span>Count: @Data.Count (show only 200) </span>
+</div>
+
+<span style="margin: 10px"></span>
+
+<div>
+    <table>
+        <thead>
+        <tr>
+        <th style="width: 150px">time</th>
+        <th style="width: 100px">open</th>
+        <th style="width: 100px">high</th>
+        <th style="width: 100px">low</th>
+        <th style="width: 100px">close</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Data.Take(200))
+        {
+            <tr>
+                <td>@item.DateTime.ToString("yyyy-MM-dd HH:mm")</td>
+                <td>@item.Open</td>
+                <td>@item.High</td>
+                <td>@item.Low</td>
+                <td>@item.Close</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+@code {
+
+    private string Symbol;
+
+    private CandleTypeGrpcModel TimeFrame = CandleTypeGrpcModel.Day;
+    
+    private List<string> SymbolList = new List<string>();
+
+    private List<CandleGrpcModel> Data = new List<CandleGrpcModel>();
+
+    private DateTime _from = DateTime.UtcNow.AddDays(-1);
+    private DateTime _to = DateTime.UtcNow;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var instruments = await SpotInstrumentManager.GetAll();
+        var symbols = instruments.Select(e => e.Instrument.Symbol).Distinct().ToList();
+
+        SymbolList = symbols;
+
+        Symbol = SymbolList.FirstOrDefault();
+        
+        StateHasChanged();
+    }
+
+    private void SelectDateRange((DateTime @from, DateTime to) obj)
+    {
+        _from = obj.from;
+        _to = obj.to;
+    }
+
+    private async Task ShowCandles()
+    {
+        if (string.IsNullOrEmpty(Symbol)) return;
+
+        var data = await DataSource.GetCandlesHistoryAsync(new GetCandlesHistoryGrpcRequestContract()
+        {
+            Bid = true,
+            Instrument = Symbol,
+            CandleType = TimeFrame,
+            From = _from,
+            To = _to
+        });
+
+        Data = data.OrderByDescending(e => e.DateTime).ToList();
+
+        StateHasChanged();
+    }
+
+    
+}
