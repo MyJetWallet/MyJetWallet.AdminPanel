@@ -54,9 +54,6 @@
                         <button class="page-link" style="@(GetMenuStyle(ClientPage.BalanceHistory))" aria-current="page" @onclick="@(() => SetPage(ClientPage.BalanceHistory))">Balance History</button>
                     </li>
                     <li class="nav-item">
-                        <button class="page-link" style="@(GetMenuStyle(ClientPage.TradeHistory))" @onclick="@(() => SetPage(ClientPage.TradeHistory))">Trades</button>
-                    </li>
-                    <li class="nav-item">
                         <button class="page-link" style="@(GetMenuStyle(ClientPage.SwapHistory))" @onclick="@(() => SetPage(ClientPage.SwapHistory))">Swap History</button>
                     </li>
                     <li class="nav-item">
@@ -85,11 +82,7 @@
                         case ClientPage.BalanceHistory:
                             <ClientBalanceHistoryComponent/>
                             break;
-                            
-                        case ClientPage.TradeHistory:
-                            <ClientTradeHistoryComponent />
-                            break;
-                            
+
                         case ClientPage.SwapHistory:
                             <ClientSwapHistoryComponent />
                             break;
@@ -162,7 +155,6 @@
     {
         Balances,
         BalanceHistory,
-        TradeHistory,
         SwapHistory,
         QuoteHistory,
         BlockchainDepositAddress,
