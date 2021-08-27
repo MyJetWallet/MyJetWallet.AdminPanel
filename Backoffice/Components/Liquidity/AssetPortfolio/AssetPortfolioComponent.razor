@@ -149,12 +149,7 @@
                         .Where(e => e.IsInternal)
                         .Sum(e => e.Volume) != 0)
                     {
-                        <span>Koef: @Math.Round(netBalanceByAsset.WalletBalances
-                                        .Where(e => !e.IsInternal)
-                                        .Sum(e => e.Volume) 
-                                                / netBalanceByAsset.WalletBalances
-                                                    .Where(e => e.IsInternal)
-                                                    .Sum(e => e.Volume), 2)</span>
+                        <span>Koef: @GetKoef(netBalanceByAsset)</span>
                     }
                     else
                     {
@@ -929,4 +924,23 @@
         ErrorText = string.Empty;
         StateHasChanged();
     }
+
+    private static decimal GetKoef(BalanceByAsset netBalanceByAsset)
+    {
+        try
+        {
+            return Math.Round(netBalanceByAsset.WalletBalances
+                .Where(e => !e.IsInternal)
+                .Sum(e => e.Volume)
+                              / netBalanceByAsset.WalletBalances
+                                  .Where(e => e.IsInternal)
+                                  .Sum(e => e.Volume), 2);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Cant calculate koef. Exception: {ex.Message}");
+            return 0;
+        }
+    }
+
 }
