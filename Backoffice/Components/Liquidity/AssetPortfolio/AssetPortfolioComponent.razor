@@ -582,10 +582,6 @@
         _balanceByWallets = balanceResponse?.BalanceByWallet ?? new List<BalanceByWallet>();
         _balanceByAssets = balanceResponse?.BalanceByAsset ?? new List<BalanceByAsset>();
 
-        var plBalance = _balanceByWallets.FirstOrDefault(e => e.WalletName == PlWalletName);
-        if (plBalance != null)
-            plBalance.IsInternal = true;
-
         var statusResponse = _portfolioStatusNoSql.Get();
         foreach (var status in statusResponse)
         {
