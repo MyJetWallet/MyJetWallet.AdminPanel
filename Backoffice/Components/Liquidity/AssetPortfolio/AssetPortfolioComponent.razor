@@ -149,11 +149,11 @@
                         .Where(e => e.IsInternal)
                         .Sum(e => e.Volume) != 0)
                     {
-                        <span>Koef: @GetKoef(netBalanceByAsset)</span>
+                        <span>Koef: @GetKoef(netBalanceByAsset) %</span>
                     }
                     else
                     {
-                        <span>Koef: 0</span>
+                        <span>Koef: 0 %</span>
                     }
 
                 </td>
@@ -926,12 +926,22 @@
     {
         try
         {
-            return Math.Round(netBalanceByAsset.WalletBalances
+            var externalSum = netBalanceByAsset.WalletBalances
                 .Where(e => !e.IsInternal)
-                .Sum(e => e.Volume)
-                              / netBalanceByAsset.WalletBalances
-                                  .Where(e => e.IsInternal)
-                                  .Sum(e => e.Volume), 2);
+                .Sum(e => e.Volume);
+            var internalSum = netBalanceByAsset.WalletBalances
+                .Where(e => e.IsInternal)
+                .Sum(e => e.Volume);
+
+            if ((externalSum > 0 && internalSum > 0) || (externalSum < 0 && internalSum < 0))
+            {
+                return -100;
+            }
+            if (internalSum == 0)
+            {
+                return 0;
+            }
+            return Math.Round(externalSum/internalSum * 100, 2);
         }
         catch (Exception ex)
         {
