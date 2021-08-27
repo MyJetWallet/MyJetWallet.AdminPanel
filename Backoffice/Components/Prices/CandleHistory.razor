@@ -116,7 +116,7 @@
 
         var data = await DataSource.GetCandlesHistoryAsync(new GetCandlesHistoryGrpcRequestContract()
         {
-            Bid = true,
+            Bid = IsBid,
             Instrument = Symbol,
             CandleType = TimeFrame,
             From = _from,
