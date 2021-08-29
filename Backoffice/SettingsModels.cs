@@ -100,6 +100,9 @@ namespace Backoffice
 
         [YamlProperty("AdminPanel.BitgoWithdrawalServiceGrpcUrl")]
         public string BitgoWithdrawalServiceGrpcUrl { get; set; }
+        
+        [YamlProperty("AdminPanel.BitGoSignTransactionGrpcServiceUrl")]
+        public string BitGoSignTransactionGrpcServiceUrl { get; set; }
 
         [YamlProperty("AdminPanel.LiquidityPortfolioMonitoringServiceUrl")]
         public string LiquidityPortfolioMonitoringServiceUrl { get; set; }

@@ -1,0 +1,65 @@
+﻿@using Backoffice.Abstractions.Models
+@using Backoffice.Abstractions.Bo
+@using Service.BitGo.SignTransaction.Grpc
+@using Service.BitGo.SignTransaction.Grpc.Models
+
+@inject ISessionUnlockService _service
+
+<Loader LoaderConfig="@LoaderConfig"/>
+
+<table style="width: 100%; height: 100%">
+    <tr>
+        <table style="width: auto">
+            <tr>
+                <td>
+                    <span>2FA code</span>
+                </td>
+                <td>
+                    <input type="text" @bind="@OTP"/>
+                </td>
+                <td>
+                    <button type="button" @onclick="Unlock">Unlock</button>
+                </td>
+            </tr>
+        </table>
+    </tr>
+</table>  
+
+@if (ShowError)
+{
+    <MyLabel Text="@Error" Color="red"/>
+}  
+
+@if (ShowSuccess)
+{
+    <MyLabel Text="Session unlocked" Color="green"/>
+}  
+
+@code {
+
+    private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+    
+    [CascadingParameter(Name = "CurrentBoUserUser")]
+    public IBackOfficeUser CurrentBoUserUser { get; set; }
+
+    private string OTP { get; set; }
+
+    private bool ShowError { get; set; } = false;
+    private string Error { get; set; }
+    private bool ShowSuccess { get; set; } = false;
+
+    private async Task Unlock()
+    {
+        var result = await _service.UnlockSessionAsync(new UnlockSessionRequest() { Duration = 3600, Otp = OTP, UpdatedBy = CurrentBoUserUser.Id });
+        if (result.Error != null)
+        {
+            ShowError = true;
+            Error = result.Error.ErrorMessage;
+        }
+        else
+        {
+            ShowSuccess = true;
+        }
+    }
+}
+

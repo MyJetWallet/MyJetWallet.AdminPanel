@@ -1,4 +1,5 @@
 ﻿@using Backoffice.Components.BitGo.Balances
+@using Backoffice.Components.BitGo.SessionUnlock
 
 @page "/BitGo"
 
@@ -11,6 +12,9 @@
     </li>
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(Menus.Balances)" aria-current="page" @onclick="SetBalances">Balances</button>
+    </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.UnlockSession)" aria-current="page" @onclick="SetUnlockSession">Unlock session</button>
     </li>
 </ul>
 
@@ -28,6 +32,11 @@
     @if (ActivePage == Menus.Balances)
     {
         <BitGoWalletBalanceListComponent/>
+    }
+
+    @if (ActivePage == Menus.UnlockSession)
+    {
+        <BitGoSessionUnlockComponent/>
     }
 </div>
 
@@ -53,7 +62,8 @@
         None,
         Coins,
         Assets,
-        Balances
+        Balances,
+        UnlockSession
     }
 
 
@@ -70,5 +80,10 @@
     private void SetBalances()
     {
         SetActive(Menus.Balances);
+    }
+
+    private void SetUnlockSession()
+    {
+        SetActive(Menus.UnlockSession);
     }
 }
