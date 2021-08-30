@@ -4,6 +4,7 @@
 @using Service.Liquidity.InternalWallets.Domain.Models
 @using Service.Liquidity.InternalWallets.Grpc
 @using Service.Liquidity.InternalWallets.Grpc.Models
+@using Syncfusion.Blazor.Diagram
 
 @inject ILpWalletService _lpWalletManagerGrpc
 @inject IExternalMarketsGrpc ExternalMarketsManager
@@ -12,6 +13,7 @@
     <ul class="nav float-left" style="margin-left: 30px">
         <li><button @onclick="Refresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
         <li><button @onclick="AddNew" type="button" class="btn btn-outline-success" style="margin: 5px; border-radius: 10px">Add</button></li>
+        <li><button @onclick="Remove" type="button" class="btn btn-outline-success" style="margin: 5px; border-radius: 10px">Remove</button></li>
     </ul>
 </div>
 
@@ -98,6 +100,30 @@
     <WalletEditorDialog Wallet="@DetailWallet" OnClose="CloseDialog" OnSubmit="AddWallet" IsNew="true" />
 }
 
+@if (RemoveWindowOpen)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption="Remove wallet"
+            OnClose="@OnCloseRemoveWalletWindow"
+            YesButtonCaption="Execute"
+            NoButtonCaption="Cancel"
+            OnSubmit="@OnSubmitRemoveWalletWindow">
+            <table>
+                <tr>
+                    <td>Wallet Name</td>
+                    <select @bind="@WalletToRemove.WalletName">
+                        @foreach (var name in LpWallets.Select(e => e.Name).Distinct())
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </tr>
+            </table>
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
 
 @code {
 
@@ -168,6 +194,32 @@
         IsShowAddDialog = true;
         StateHasChanged();
     }
+
+    private bool RemoveWindowOpen = false;
+    private WalletNameRequest WalletToRemove = new WalletNameRequest();
+    
+    private void Remove()
+    {
+        WalletToRemove = new WalletNameRequest();
+        RemoveWindowOpen = true;
+        StateHasChanged();
+    }
+
+    private void OnCloseRemoveWalletWindow()
+    {
+        RemoveWindowOpen = false;
+        StateHasChanged();
+    }
+
+    private async Task OnSubmitRemoveWalletWindow()
+    {
+        if (!string.IsNullOrWhiteSpace(WalletToRemove.WalletName))
+        {
+            await _lpWalletManagerGrpc.RemoveWalletAsync(WalletToRemove);
+        }
+        OnCloseRemoveWalletWindow();
+    }
+    
     
     private void DetailsClick(LpWallet wallet)
     {
