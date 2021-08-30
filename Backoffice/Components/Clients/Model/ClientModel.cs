@@ -24,7 +24,8 @@ namespace Backoffice.Components.Clients.Model
 
     public class WalletModel
     {
-        public WalletModel(string name, string brokerId, string clientId, string brandId, string walletId, bool isDefault)
+        public WalletModel(string name, string brokerId, string clientId, string brandId, string walletId,
+            bool isDefault, string baseAsset)
         {
             Name = name;
             BrokerId = brokerId;
@@ -32,10 +33,11 @@ namespace Backoffice.Components.Clients.Model
             BrandId = brandId;
             WalletId = walletId;
             IsDefault = isDefault;
+            BaseAsset = baseAsset;
         }
 
+        public string BaseAsset { get; set; }
         public string Name { get; set; }
-        
         public string BrokerId { get; set; }
         public string ClientId { get; set; }
         public string BrandId { get; set; }
