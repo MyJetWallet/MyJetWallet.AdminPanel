@@ -21,8 +21,8 @@
         <span style="margin-left: 10px; vertical-align: center">Count in page: </span><input type="number" style="width: 40px" @bind="CountInPage"/>
     </li>
 </ul>
-
-<table class="table" style="width: auto">
+<div style="overflow-x: scroll">
+    <table class="table" style="width: auto">
     <thead>
     <tr>
         <th>Id</th>
@@ -31,9 +31,8 @@
         <th>TransactionId</th>
         <th>Amount</th>
         <th>AssetSymbol</th>
-        <th>Fee AssetSymbol</th>
-        <th>Fee Amount (client)</th>
-        <th>Fee Amount (blockchain)</th>
+        <th>Fee (client)</th>
+        <th>Fee (blockchain)</th>
         <th>Destination address</th>
         <th>Integration</th>
         <th>Comment</th>
@@ -48,12 +47,13 @@
     </tr>
     </thead>
     <tbody>
-        @foreach (var withdrawal in _withdrawals)
-        {
-            <WithdrawalTableRow Item="@withdrawal" OnCancelCallback="CancelWithdrawal"/>
-        }
+    @foreach (var withdrawal in _withdrawals)
+    {
+        <WithdrawalTableRow Item="@withdrawal" OnCancelCallback="CancelWithdrawal"/>
+    }
     </tbody>
 </table>
+</div>
 
 @code {
     private List<Withdrawal> _withdrawals = new();

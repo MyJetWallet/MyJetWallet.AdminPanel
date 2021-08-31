@@ -14,9 +14,8 @@
     <td>@Item.TransactionId</td>
     <td>@Item.Amount</td>
     <td>@Item.AssetSymbol</td>
-    <td>@Item.FeeAssetSymbol</td>
-    <td>@Item.FeeAmount</td>
-    <td>@Item.ActualFee</td>
+    <td style="background: @GetBGColorFee()">@Item.FeeAmount<br>@Item.FeeAssetSymbol</td>
+    <td style="background: @GetBGColorFee()">@Item.ActualFee<br>@Item.ActualFeeAssetSymbol</td>
     <td>@Item.ToAddress</td>
     <td>@Item.Integration</td>
     <td>@Item.Comment</td>
@@ -135,11 +134,14 @@
 
 
     private string GetBGColor()
-    {
+    {            
+        if (Item.Status is WithdrawalStatus.Success or WithdrawalStatus.Cancelled)
+            return "lightgray";
+        
         switch (Item.WorkflowState)
         {
             case WithdrawalWorkflowState.Retrying:
-                return "lightgoldenyellow";
+                return "lightyellow";
             case WithdrawalWorkflowState.Failed:
                 return "lightcoral";
             default:
@@ -147,6 +149,16 @@
                     ? "white"
                     : "lightgray";
         }
+    }
+    
+    private string GetBGColorFee()
+    {
+        if (Item.FeeAssetSymbol == Item.ActualFeeAssetSymbol)
+        {
+            if(Item.FeeAmount>Item.ActualFee)
+                return "lightcoral";
+        }
+        return GetBGColor();
     }
 
 }
