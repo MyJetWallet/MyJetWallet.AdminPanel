@@ -179,7 +179,7 @@
 
         Client = new ClientModel(BrokerId, ClientId, BrandId,EmailConfirmed, Email);
         Client.Wallets = (wallets.Wallets ?? new List<ClientWallet>())
-            .Select(e => new WalletModel(e.Name, BrokerId, ClientId, BrandId, e.WalletId, e.IsDefault, e.BaseAsset))
+            .Select(e => new WalletModel(e.Name, BrokerId, ClientId, BrandId, e.WalletId, e.IsDefault, e.BaseAsset, e.CreatedAt))
             .ToList();
         
         ActiveWallet = null;

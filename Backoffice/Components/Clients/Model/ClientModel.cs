@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Backoffice.Components.Clients.Model
 {
@@ -25,7 +26,7 @@ namespace Backoffice.Components.Clients.Model
     public class WalletModel
     {
         public WalletModel(string name, string brokerId, string clientId, string brandId, string walletId,
-            bool isDefault, string baseAsset)
+            bool isDefault, string baseAsset, DateTime createdAt)
         {
             Name = name;
             BrokerId = brokerId;
@@ -34,8 +35,10 @@ namespace Backoffice.Components.Clients.Model
             WalletId = walletId;
             IsDefault = isDefault;
             BaseAsset = baseAsset;
+            CreatedAt = createdAt;
         }
 
+        public DateTime CreatedAt { get; set; }
         public string BaseAsset { get; set; }
         public string Name { get; set; }
         public string BrokerId { get; set; }
