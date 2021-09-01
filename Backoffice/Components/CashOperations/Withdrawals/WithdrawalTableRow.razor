@@ -14,8 +14,8 @@
     <td>@Item.TransactionId</td>
     <td>@Item.Amount</td>
     <td>@Item.AssetSymbol</td>
-    <td style="background: @GetBGColorFee()">@Item.FeeAmount<br>@Item.FeeAssetSymbol</td>
-    <td style="background: @GetBGColorFee()">@Item.ActualFee<br>@Item.ActualFeeAssetSymbol</td>
+    <td style="background: @GetBGColorFee()">@((decimal)Item.FeeAmount)<br>@Item.FeeAssetSymbol</td>
+    <td style="background: @GetBGColorFee()">@((decimal)Item.ActualFee)<br>@Item.ActualFeeAssetSymbol</td>
     <td>@Item.ToAddress</td>
     <td>@Item.Integration</td>
     <td>@Item.Comment</td>
@@ -155,7 +155,7 @@
     {
         if (Item.FeeAssetSymbol == Item.ActualFeeAssetSymbol)
         {
-            if(Item.FeeAmount>Item.ActualFee)
+            if(Item.ActualFee > Item.FeeAmount)
                 return "lightcoral";
         }
         return GetBGColor();
