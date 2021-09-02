@@ -1,0 +1,142 @@
+﻿@using SimpleTrading.CandlesHistory.Grpc
+@using Backoffice.Services.SpotInstruments
+@using Newtonsoft.Json
+@using SimpleTrading.CandlesHistory.Grpc.Contracts
+@using SimpleTrading.CandlesHistory.Grpc.Models
+
+<h3>CandleHistory</h3>
+
+<div class="table" style="margin: 30px">
+    <div class="row">
+        <span>Url: </span>
+        <input type="text" class="form-control" @bind="_url"/>
+    </div>
+    <div class="row">
+        <span>Auth Token: </span>
+        <input type="text" class="form-control" @bind="_authToken"/>
+    </div>
+    <div class="row">
+        <span>Instrument: </span>
+        <input type="text" class="form-control" @bind="_instruction"/>
+    </div>
+    <div class="row">
+        <span>time frame: </span>
+        <select @bind="_timeFrame" style="width: 100px">
+            <option value=@CandleTypeGrpcModel.Minute>Minute</option>
+            <option value=@CandleTypeGrpcModel.Hour>Hour</option>
+            <option value=@CandleTypeGrpcModel.Day>Day</option>
+            <option value=@CandleTypeGrpcModel.Month>Month</option>
+        </select>
+    </div>
+    <div class="row">
+        <span>tIsBid: </span>
+        <select @bind="IsBid" style="width: 100px">
+            <option value=1>true</option>
+            <option value=0>false</option>
+        </select>
+    </div>
+    <div class="row">
+        <DatesRangePicker OnSelectEvent="SelectDateRange"></DatesRangePicker>
+    </div>
+    <div class="row">
+        <button type="button" class="btn-outline-info btn" @onclick="ShowCandles" >Show</button>
+        
+    </div>
+</div>
+
+<span style="margin: 10px"></span>
+
+<div>
+    <span>Count: @_data.Count (show only 200) </span>
+</div>
+
+<span style="margin: 10px"></span>
+
+<div>
+    <table>
+        <thead>
+        <tr>
+        <th style="width: 150px">time</th>
+        <th style="width: 100px">open</th>
+        <th style="width: 100px">high</th>
+        <th style="width: 100px">low</th>
+        <th style="width: 100px">close</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in _data.Take(200))
+        {
+            <tr>
+                <td>@item.D.ToString("yyyy-MM-dd HH:mm")</td>
+                <td>@item.O</td>
+                <td>@item.H</td>
+                <td>@item.L</td>
+                <td>@item.C</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+@code {
+
+    private string _url;
+    private string _authToken;
+    private string _instruction;
+
+    private CandleTypeGrpcModel _timeFrame = CandleTypeGrpcModel.Day;
+
+    private int IsBid = 1;
+
+    private List<Candle> _data = new List<Candle>();
+
+    private DateTime _from = DateTime.UtcNow.AddDays(-1);
+    private DateTime _to = DateTime.UtcNow;
+
+    protected override async Task OnInitializedAsync()
+    {
+        StateHasChanged();
+    }
+
+    private void SelectDateRange((DateTime @from, DateTime to) obj)
+    {
+        _from = obj.from;
+        _to = obj.to;
+    }
+
+    private async Task ShowCandles()
+    {
+        if (string.IsNullOrEmpty(_instruction)) return;
+
+        _data = await GetData();
+
+        StateHasChanged();
+    }
+
+    private async Task<List<Candle>> GetData()
+    {
+        var client = new HttpClient();
+        var request = new HttpRequestMessage
+        {
+            Method = HttpMethod.Get,
+            RequestUri = new Uri($"{_url}/{(int)_timeFrame}?instruction={_instruction}"),
+            Headers =
+            {
+                { "Authorization", $"Bearer {_authToken}" },
+                {"accept", "text/plain"}
+            }
+        };
+        using var response = await client.SendAsync(request);
+        var body = await response.Content.ReadAsStringAsync();
+        return JsonConvert.DeserializeObject<List<Candle>>(body);
+    }
+
+    public class Candle
+    {
+        public long D { get; set; }
+        public double O { get; set; }
+        public double C { get; set; }
+        public double H { get; set; }
+        public double L { get; set; }
+    }
+}

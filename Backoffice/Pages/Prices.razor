@@ -21,6 +21,9 @@
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(Menus.Candle)" @onclick="SetCandle" >Candle</button>
     </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.CrossCandle)" @onclick="SetCrossCandle" >Cross Candle</button>
+    </li>
 </ul>
 
 <div style="margin: 10px">
@@ -50,8 +53,10 @@
     {
         <CandleHistory/>
     }
-    
-    
+    @if (ActivePage == Menus.CrossCandle)
+    {
+        <CandleHistoryHttp/>
+    }
 </div>
 
 @code {
@@ -99,7 +104,8 @@
         ConversionPrices,
         CurrentPrice,
         ExternalMarkets,
-        Candle
+        Candle,
+        CrossCandle
     }
 
     private void SetCurrentPrices()
@@ -112,4 +118,8 @@
         SetActive(Menus.Candle);
     }
 
+    private void SetCrossCandle()
+    {
+        SetActive(Menus.CrossCandle);
+    }
 }
