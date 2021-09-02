@@ -118,31 +118,39 @@
 
     private async Task<List<Candle>> GetData()
     {
-        var isBid = IsBid == 1 ? "0" : "1";
-        var fromDate = _from.UnixTime();
-        var toDate = _to.UnixTime();
-        var requestUrl = $"{_url}/api/v3/Candles/Candles/{(int) _timeFrame}?Instruction={_instruction}&BidOrAsk={IsBid}&FromDate={fromDate}&ToDate={toDate}";
-        _logger.LogInformation($"Reqeust url for candles : {requestUrl}");
-        
-        var client = new HttpClient();
-        var request = new HttpRequestMessage
+        try
         {
-            Method = HttpMethod.Get,
-            RequestUri = new Uri(requestUrl),
-            Headers =
-            {
-                { "Authorization", $"Bearer {_authToken}" },
-                {"accept", "text/plain"}
-            }
-        };
-        using var response = await client.SendAsync(request);
-        var body = await response.Content.ReadAsStringAsync();
+            var isBid = IsBid == 1 ? "0" : "1";
+            var fromDate = _from.UnixTime();
+            var toDate = _to.UnixTime();
+            var requestUrl = $"{_url}/api/v3/Candles/Candles/{(int) _timeFrame}?Instruction={_instruction}&BidOrAsk={IsBid}&FromDate={fromDate}&ToDate={toDate}";
+            _logger.LogInformation($"Reqeust url for candles : {requestUrl}");
 
-        if (string.IsNullOrWhiteSpace(body))
+            var client = new HttpClient();
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Get,
+                RequestUri = new Uri(requestUrl),
+                Headers =
+                {
+                    {"Authorization", $"Bearer {_authToken}"},
+                    {"accept", "text/plain"}
+                }
+            };
+            using var response = await client.SendAsync(request);
+            var body = await response.Content.ReadAsStringAsync();
+
+            if (string.IsNullOrWhiteSpace(body))
+            {
+                return new List<Candle>();
+            }
+            return JsonConvert.DeserializeObject<List<Candle>>(body);
+        }
+        catch (Exception ex)
         {
+            _logger.LogError(ex.Message);
             return new List<Candle>();
         }
-        return JsonConvert.DeserializeObject<List<Candle>>(body);
     }
 
     public class Candle
