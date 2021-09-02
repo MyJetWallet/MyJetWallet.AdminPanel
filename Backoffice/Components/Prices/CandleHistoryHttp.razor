@@ -123,7 +123,7 @@
             var isBid = IsBid == 1 ? "0" : "1";
             var fromDate = _from.UnixTime();
             var toDate = _to.UnixTime();
-            var requestUrl = $"{_url}/api/v3/Candles/Candles/{(int) _timeFrame}?Instruction={_instruction}&BidOrAsk={IsBid}&FromDate={fromDate}&ToDate={toDate}";
+            var requestUrl = $"{_url}/api/v3/Candles/Candles/{(int) _timeFrame}?Instruction={_instruction}&BidOrAsk={isBid}&FromDate={fromDate}&ToDate={toDate}";
             _logger.LogInformation($"Reqeust url for candles : {requestUrl}");
 
             var client = new HttpClient();
