@@ -1,8 +1,12 @@
 ﻿@using SimpleTrading.CandlesHistory.Grpc
 @using Backoffice.Services.SpotInstruments
+@using DotNetCoreDecorators
+@using Microsoft.Extensions.Logging
 @using Newtonsoft.Json
 @using SimpleTrading.CandlesHistory.Grpc.Contracts
 @using SimpleTrading.CandlesHistory.Grpc.Models
+
+@inject ILogger<CandleHistoryHttp> _logger
 
 <h3>CandleHistory</h3>
 <div class="table" style="margin: 30px">
@@ -66,7 +70,7 @@
         @foreach (var item in _data.Take(200))
         {
             <tr>
-                <td>@item.D.ToString("yyyy-MM-dd HH:mm")</td>
+                <td>@item.D.UnixTimeToDateTime().ToString("yyyy-MM-dd HH:mm")</td>
                 <td>@item.O</td>
                 <td>@item.H</td>
                 <td>@item.L</td>
@@ -114,11 +118,17 @@
 
     private async Task<List<Candle>> GetData()
     {
+        var isBid = IsBid == 1 ? "0" : "1";
+        var fromDate = _from.UnixTime();
+        var toDate = _to.UnixTime();
+        var requestUrl = $"{_url}/api/v3/Candles/Candles/{(int) _timeFrame}?Instruction={_instruction}&BidOrAsk={IsBid}&FromDate={fromDate}&ToDate={toDate}";
+        _logger.LogInformation($"Reqeust url for candles : {requestUrl}");
+        
         var client = new HttpClient();
         var request = new HttpRequestMessage
         {
             Method = HttpMethod.Get,
-            RequestUri = new Uri($"{_url}/api/v3/Candles/{(int)_timeFrame}?instruction={_instruction}"),
+            RequestUri = new Uri(requestUrl),
             Headers =
             {
                 { "Authorization", $"Bearer {_authToken}" },
@@ -127,15 +137,20 @@
         };
         using var response = await client.SendAsync(request);
         var body = await response.Content.ReadAsStringAsync();
+
+        if (string.IsNullOrWhiteSpace(body))
+        {
+            return new List<Candle>();
+        }
         return JsonConvert.DeserializeObject<List<Candle>>(body);
     }
 
     public class Candle
     {
         public long D { get; set; }
-        public double O { get; set; }
-        public double C { get; set; }
-        public double H { get; set; }
-        public double L { get; set; }
+        public decimal O { get; set; }
+        public decimal C { get; set; }
+        public decimal H { get; set; }
+        public decimal L { get; set; }
     }
 }
