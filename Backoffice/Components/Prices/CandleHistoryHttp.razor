@@ -119,7 +119,7 @@
         var request = new HttpRequestMessage
         {
             Method = HttpMethod.Get,
-            RequestUri = new Uri($"{_url}/{(int)_timeFrame}?instruction={_instruction}"),
+            RequestUri = new Uri($"{_url}/api/v3/Candles/{(int)_timeFrame}?instruction={_instruction}"),
             Headers =
             {
                 { "Authorization", $"Bearer {_authToken}" },
