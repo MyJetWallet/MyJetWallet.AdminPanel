@@ -1,4 +1,5 @@
 ﻿@using Service.BitGo.SignTransaction.Domain.Models
+@using Backoffice.Abstractions.Bo
 <BaseTwoButtonsDialog
     Caption=@(!IsCreate ? $"{Item.CoinId}" : "Create a new BitGo Wallet")
     OnClose="OnClose"
@@ -80,6 +81,9 @@
 
     [Parameter]
     public EventCallback<BitGoWallet> OnUpdateCallback { get; set; }
+    
+    [CascadingParameter(Name = "CurrentBoUserUser")]
+    public IBackOfficeUser CurrentBoUserUser { get; set; }
 
     private void OnClose()
     {
@@ -100,7 +104,10 @@
         if (IsCreate)
             Item = new BitGoWallet()
             {
-                BrokerId = "jetwallet"
+                BrokerId = "jetwallet",
+                RegisterDate = DateTime.Now,
+                UpdatedDate = DateTime.Now,
+                UpdatedBy = CurrentBoUserUser.Id
             };
     }
 
