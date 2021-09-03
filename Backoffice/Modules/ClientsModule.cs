@@ -148,6 +148,9 @@ namespace Backoffice.Modules
             builder.RegisterBitgoWithdrawalClient(Program.Settings.BitgoWithdrawalServiceGrpcUrl);
             builder.RegisterBitgoWatcherClient(_myNoSqlClient);
             builder.RegisterBitGoUnlockSessionClient(Program.Settings.BitGoSignTransactionGrpcServiceUrl);
+            builder.RegisterBitGoUsersClient(Program.Settings.BitGoSignTransactionGrpcServiceUrl);
+            builder.RegisterBitGoWalletsClient(Program.Settings.BitGoSignTransactionGrpcServiceUrl);
+            builder.RegisterBitGoUnlockSessionClient(Program.Settings.BitGoSignTransactionGrpcServiceUrl);
             builder.RegisterBitgoDepositAddressClient(Program.Settings.BitgoDepositServiceGrpcUrl, _myNoSqlClient);
             
             builder.RegisterPriceHistoryClient(Program.Settings.BasePriceServiceGrpcUrl);

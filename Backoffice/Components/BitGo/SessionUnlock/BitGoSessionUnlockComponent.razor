@@ -12,6 +12,12 @@
         <table style="width: auto">
             <tr>
                 <td>
+                    <span>Broker</span>
+                </td>
+                <td>
+                    <input type="text" @bind="@Broker"/>
+                </td>
+                <td>
                     <span>2FA code</span>
                 </td>
                 <td>
@@ -42,6 +48,7 @@
     [CascadingParameter(Name = "CurrentBoUserUser")]
     public IBackOfficeUser CurrentBoUserUser { get; set; }
 
+    private string Broker { get; set; }
     private string OTP { get; set; }
 
     private bool ShowError { get; set; } = false;
@@ -50,7 +57,7 @@
 
     private async Task Unlock()
     {
-        var result = await _service.UnlockSessionAsync(new UnlockSessionRequest() { Duration = 3600, Otp = OTP, UpdatedBy = CurrentBoUserUser.Id });
+        var result = await _service.UnlockSessionAsync(new UnlockSessionRequest() { BrokerId = Broker, Duration = 3600, Otp = OTP, UpdatedBy = CurrentBoUserUser.Id });
         if (result.Error != null)
         {
             ShowError = true;

@@ -1,9 +1,8 @@
-﻿@using MyJetWallet.BitGo.Settings.NoSql
-
+﻿@using Service.BitGo.SignTransaction.Domain.Models
 <BaseTwoButtonsDialog
-    Caption=@(!IsCreate ? $"{Item.AssetSymbol} [{Item.BrokerId}]" : "Create a new BitGo Asset")
+    Caption=@(!IsCreate ? $"{Item.Id}" : "Create a new BitGo User")
     OnClose="OnClose"
-    YesButtonCaption="@(IsCreate ? "Create" : "Save")"
+    YesButtonCaption="@(IsCreate ? "Create" : "Update key")"
     NoButtonCaption="Close"
     OnSubmit="OnSubmit">
 
@@ -27,47 +26,35 @@
                         </td>
                     </tr>
                     <tr>
-                        <td>Symbol</td>
+                        <td>Name</td>
                         <td class="float-left">
                             @if (!IsCreate)
                             {
-                                @Item.AssetSymbol
+                                @Item.Id
                             }
                             else
                             {
-                                <input type="text" class="form-control" @bind="Item.AssetSymbol"/>
+                                <input type="text" class="form-control" @bind="Item.Id"/>
                             }
                         </td>
                     </tr>
-                    <tr></tr>
                     <tr>
-                        <td>BitGo wallet</td>
+                        <td>BitGo user Id</td>
                         <td class="float-left">
-                            <input type="text" class="form-control" @bind="Item.BitgoWalletId"/>
+                            @if (!IsCreate)
+                            {
+                                @Item.BitGoId
+                            }
+                            else
+                            {
+                                <input type="text" class="form-control" @bind="Item.BitGoId"/>
+                            }
                         </td>
                     </tr>
                     <tr>
-                        <td>Enabled BitGo wallets</td>
+                        <td>Api key</td>
                         <td class="float-left">
-                            <input type="text" class="form-control" @bind="Item.EnabledBitgoWalletIds"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>BitGo coin</td>
-                        <td class="float-left">
-                            <input type="text" class="form-control" @bind="Item.BitgoCoin"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Min balance</td>
-                        <td class="float-left">
-                            <input type="number" class="form-control" @bind="Item.MinBalance"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Tag Separator</td>
-                        <td class="float-left">
-                            <input type="text" class="form-control" @bind="Item.TagSeparator"/>
+                            <input type="text" class="form-control" @bind="Item.ApiKey"/>
                         </td>
                     </tr>
                 </table>
@@ -80,7 +67,7 @@
 @code {
 
     [Parameter]
-    public BitgoAssetMapEntity Item { get; set; }
+    public BitGoUser Item { get; set; }
 
     [Parameter]
     public bool IsCreate { get; set; }
@@ -89,10 +76,10 @@
     public EventCallback OnCloseCallback { get; set; }
 
     [Parameter]
-    public EventCallback<BitgoAssetMapEntity> OnCreateCallback { get; set; }
+    public EventCallback<BitGoUser> OnCreateCallback { get; set; }
 
     [Parameter]
-    public EventCallback<BitgoAssetMapEntity> OnUpdateCallback { get; set; }
+    public EventCallback<BitGoUser> OnUpdateCallback { get; set; }
 
     private void OnClose()
     {
@@ -111,7 +98,7 @@
     {
         base.OnInitialized();
         if (IsCreate)
-            Item = new BitgoAssetMapEntity
+            Item = new BitGoUser()
             {
                 BrokerId = "jetwallet"
             };

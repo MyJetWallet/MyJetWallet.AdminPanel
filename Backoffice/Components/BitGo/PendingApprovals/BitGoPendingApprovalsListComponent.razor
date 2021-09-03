@@ -1,0 +1,48 @@
+﻿@using Backoffice.Abstractions.Models
+@inject IToaster _toastService;
+
+<Loader LoaderConfig="@LoaderConfig"/>
+
+<ul class="nav">
+    <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
+</ul>
+
+<h3>Pending Approvals</h3>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>Create date</th>
+        <th>Asset</th>
+        <th>Amount</th>
+        <th>Destination address</th>
+        <th>Creator</th>
+        <th>OperationId</th>
+        <th>Approvers count</th>
+        <th>Approvers list</th>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+@code {
+    
+    private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+
+    protected override void OnInitialized()
+    {
+        OnRefresh();
+        
+        base.OnInitialized();
+    }
+
+    private async void OnRefresh()
+    {
+        LoaderConfig.Enable();
+        
+        LoaderConfig.Disable();
+        await InvokeAsync(StateHasChanged);
+    }
+}

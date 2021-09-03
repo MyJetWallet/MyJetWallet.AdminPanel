@@ -1,0 +1,111 @@
+﻿@using Service.BitGo.SignTransaction.Grpc
+@using Service.BitGo.SignTransaction.Grpc.Models
+@using Backoffice.Abstractions.Models
+@using Service.BitGo.SignTransaction.Domain.Models
+
+@inject IBitGoWalletsService _bitGoWalletsService;
+@inject IToaster _toastService;
+
+<Loader LoaderConfig="@LoaderConfig"/>
+
+<ul class="nav float-left">
+    <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
+    <li><button @onclick="OnAddWallet" type="button" class="btn btn-outline-success" style="margin: 5px; border-radius: 10px">Add</button></li>
+</ul>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Coin</th>
+            <th>Wallet</th>
+            <th>Last update time</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var bitGoWallet in BitGoWalletsList)
+        {
+            <BitGoWalletsTableRow Item="@bitGoWallet" LoaderConfig="@LoaderConfig" OnDeleteCallback="DeleteWallet" />
+        }
+    
+    </tbody>
+</table>
+
+@if (IsShowAdding)
+{
+    <div>
+        <BitGoWalletsDetailsDialogEdit IsCreate="true" OnCloseCallback="OnCloseAddingDialog" OnCreateCallback="OnCreateWallet" />
+    </div>
+}
+
+
+@code {
+    private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+    
+    private bool IsShowAdding { get; set; }
+
+    private List<BitGoWallet> BitGoWalletsList { get; set; } = new();
+
+    private async void OnRefresh()
+    {
+        LoaderConfig.Enable();
+        
+        BitGoWalletsList = (await _bitGoWalletsService.GetBitGoWalletsList()).Wallets ?? new List<BitGoWallet>();
+        
+        LoaderConfig.Disable();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override void OnInitialized()
+    {
+        OnRefresh();
+        
+        base.OnInitialized();
+    }
+
+    private async Task OnAddWallet()
+    {
+        IsShowAdding = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void OnCloseAddingDialog()
+    {
+        IsShowAdding = false;
+        StateHasChanged();
+    }
+    
+    private async void OnCreateWallet(BitGoWallet wallet)
+    {
+        try
+        {
+            await _bitGoWalletsService.AddBitGoWallet(wallet);
+            
+            _toastService.Info($"BitGo Wallet {wallet.CoinId}:{wallet.Id} is created", "Create BitGo wallet");
+            
+            IsShowAdding = false;
+            
+            OnRefresh();    
+        }
+        catch (Exception ex)
+        {
+            _toastService.Error(ex.Message, "BitGo wallet creation");
+        }
+    }
+
+    private async void DeleteWallet(BitGoWallet wallet)
+    {
+        try
+        {
+            await _bitGoWalletsService.RemoveBitGoWallet(new RemoveBitGoWalletRequest() {BrokerId = wallet.BrokerId, WalletId = wallet.Id});
+            
+            _toastService.Info($"BitGo Wallet {wallet.CoinId}:{wallet.Id} is deleted", "Delete BitGo wallet");
+            
+            OnRefresh();    
+        }
+        catch (Exception ex)
+        {
+            _toastService.Error(ex.Message, "BitGo wallet deletion");
+        }
+    }
+}

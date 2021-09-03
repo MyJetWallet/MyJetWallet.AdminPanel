@@ -1,0 +1,114 @@
+﻿@using Service.BitGo.SignTransaction.Grpc
+@using Service.BitGo.SignTransaction.Domain.Models
+@using Backoffice.Abstractions.Models
+@inject IBitGoUsersService _bitGoUsersService;
+@inject IToaster ToastService;
+
+
+<tr>
+    <td>@Item.BrokerId</td>
+    <td>@Item.Id</td>
+    <td>@Item.BitGoId</td>
+    <td>@Item.RegisterDate</td>
+
+    <td>
+        <ul class="nav">
+            <li>
+                <button type="button" class="btn-outline-warning btn" @onclick="ShowEdit">Reset key</button>
+            </li>
+            <li>
+                <button type="button" class="btn-outline-danger btn" @onclick="ShowDelete">Delete</button>
+            </li>
+        </ul>
+    </td>
+</tr>
+
+@if (IsShowEdit)
+{
+    <div>
+        <BitGoUsersDetailsDialogEdit Item="@Item" IsCreate="false" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="OnUpdateUser"/>
+    </div>
+}
+
+@if (IsShowDelete)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption=@($"Delete BitGo user {Item.Id}")
+            OnClose="OnCloseDeleteDialog"
+            YesButtonCaption="Delete"
+            NoButtonCaption="Cancel"
+            OnSubmit="DeleteItem">
+
+            <h3 class="alert-warning">Are you sure you want to delete the BitGo user <b>@Item.Id</b> ?</h3>
+
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+
+
+@code {
+
+    [Parameter]
+    public BitGoUser Item { get; set; }
+
+    [Parameter]
+    public ILoaderConfiguration LoaderConfig { get; set; }
+
+    [Parameter]
+    public EventCallback<BitGoUser> OnDeleteCallback { get; set; }
+
+    private bool IsShowEdit { get; set; }
+
+    private bool IsShowDelete { get; set; }
+
+    private void ShowEdit()
+    {
+        IsShowEdit = true;
+        StateHasChanged();
+    }
+
+    private void OnCloseEditDialog()
+    {
+        IsShowEdit = false;
+        StateHasChanged();
+    }
+
+    private async void OnUpdateUser(BitGoUser user)
+    {
+        try
+        {
+            await _bitGoUsersService.UpdateBitGoUser(user);
+
+            IsShowEdit = false;
+
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Edit BitGo user");
+        }
+    }
+
+
+    private void OnCloseDeleteDialog()
+    {
+        IsShowDelete = false;
+        StateHasChanged();
+    }
+
+
+    private async Task DeleteItem()
+    {
+        IsShowDelete = false;
+        await OnDeleteCallback.InvokeAsync(Item);
+    }
+
+    private void ShowDelete()
+    {
+        IsShowDelete = true;
+        StateHasChanged();
+    }
+
+}

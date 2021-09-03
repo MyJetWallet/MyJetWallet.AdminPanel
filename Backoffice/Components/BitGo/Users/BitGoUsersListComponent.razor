@@ -1,0 +1,112 @@
+﻿@using Service.BitGo.SignTransaction.Grpc
+@using Service.BitGo.SignTransaction.Grpc.Models
+@using Backoffice.Abstractions.Models
+@using Service.BitGo.SignTransaction.Domain.Models
+
+@inject IBitGoUsersService _bitGoUsersService;
+@inject IToaster _toastService;
+
+<Loader LoaderConfig="@LoaderConfig"/>
+
+<ul class="nav float-left">
+    <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
+    <li><button @onclick="OnAddUser" type="button" class="btn btn-outline-success" style="margin: 5px; border-radius: 10px">Add</button></li>
+</ul>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Broker</th>
+            <th>Name</th>
+            <th>BitGoId</th>
+            <th>Register date</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var bitGoUser in BitGoUsersList)
+        {
+            <BitGoUsersTableRow Item="@bitGoUser" LoaderConfig="@LoaderConfig" OnDeleteCallback="DeleteUser" />
+        }
+    
+    </tbody>
+</table>
+
+@if (IsShowAdding)
+{
+    <div>
+        <BitGoUsersDetailsDialogEdit IsCreate="true" OnCloseCallback="OnCloseAddingDialog" OnCreateCallback="OnCreateUser" />
+    </div>
+}
+
+
+@code {
+    private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+    
+    private bool IsShowAdding { get; set; }
+
+    private List<BitGoUser> BitGoUsersList { get; set; } = new();
+
+    private async void OnRefresh()
+    {
+        LoaderConfig.Enable();
+        
+        BitGoUsersList = (await _bitGoUsersService.GetBitGoUsersList()).Users ?? new List<BitGoUser>();
+        
+        LoaderConfig.Disable();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override void OnInitialized()
+    {
+        OnRefresh();
+        
+        base.OnInitialized();
+    }
+
+    private async Task OnAddUser()
+    {
+        IsShowAdding = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void OnCloseAddingDialog()
+    {
+        IsShowAdding = false;
+        StateHasChanged();
+    }
+    
+    private async void OnCreateUser(BitGoUser user)
+    {
+        try
+        {
+            await _bitGoUsersService.AddBitGoUser(user);
+            
+            _toastService.Info($"BitGo User {user.Id}:{user.Id} is created", "Create BitGo user");
+            
+            IsShowAdding = false;
+            
+            OnRefresh();    
+        }
+        catch (Exception ex)
+        {
+            _toastService.Error(ex.Message, "BitGo user creation");
+        }
+    }
+
+    private async void DeleteUser(BitGoUser user)
+    {
+        try
+        {
+            await _bitGoUsersService.RemoveBitGoUser(new RemoveBitGoUserRequest() {BrokerId = user.BrokerId, UserId = user.Id});
+            
+            _toastService.Info($"BitGo User {user.Id}:{user.Id} is deleted", "Delete BitGo user");
+            
+            OnRefresh();    
+        }
+        catch (Exception ex)
+        {
+            _toastService.Error(ex.Message, "BitGo user deletion");
+        }
+    }
+}
