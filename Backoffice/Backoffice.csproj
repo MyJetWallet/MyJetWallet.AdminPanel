@@ -40,7 +40,7 @@
       <PackageReference Include="MyJetWallet.Service.Balances.Client" Version="1.0.7" />
       <PackageReference Include="MyJetWallet.Service.Bitgo.DepositDetector.Client" Version="1.1.9" />
       <PackageReference Include="MyJetWallet.Service.BitGo.SignTransaction.Client" Version="1.2.1" />
-      <PackageReference Include="MyJetWallet.Service.Bitgo.WithdrawalProcessor.Client" Version="1.1.4" />
+      <PackageReference Include="MyJetWallet.Service.Bitgo.WithdrawalProcessor.Client" Version="1.1.6" />
       <PackageReference Include="MyJetWallet.Service.ChangeBalanceGateway.Client" Version="1.7.4" />
       <PackageReference Include="MyJetWallet.Service.ClientWallets.Client" Version="1.2.4" />
       <PackageReference Include="MyJetWallet.Service.CoinMarketCapReader.Client" Version="1.0.1" />

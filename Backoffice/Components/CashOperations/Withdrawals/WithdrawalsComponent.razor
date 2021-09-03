@@ -21,7 +21,7 @@
         <span style="margin-left: 10px; vertical-align: center">Count in page: </span><input type="number" style="width: 40px" @bind="CountInPage"/>
     </li>
 </ul>
-<div style="overflow-x: scroll">
+<div style="max-height: 90vh; height: 90vh; overflow-y: scroll; overflow-x: scroll; ">
     <table class="table" style="width: auto">
     <thead>
     <tr>
@@ -40,6 +40,7 @@
         <th>Status</th>
         <th>MatchingEngineId</th>
         <th>LastError</th>
+        <th>ME Error Code</th>
         <th>RetriesCount</th>
         <th>EventDate</th>
         <th>Workflow state</th>

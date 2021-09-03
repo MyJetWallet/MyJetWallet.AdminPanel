@@ -94,5 +94,10 @@ namespace Backoffice.Mocks
         {
             throw new System.NotImplementedException();
         }
+
+        public async ValueTask FundAccountAsync(FundAccountGrpcRequest request)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }
