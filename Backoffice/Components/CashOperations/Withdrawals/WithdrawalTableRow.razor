@@ -27,6 +27,8 @@
     <td>@Item.RetriesCount</td>
     <td>@Item.EventDate</td>
     <td>@Item.WorkflowState</td>
+    <td>@Item.RefundTransactionId</td>
+    <td>@Item.Cancelling</td>
     <td>
         <ul class="nav">
             @if (Item.Status != WithdrawalStatus.Success && Item.Status != WithdrawalStatus.Cancelled)
