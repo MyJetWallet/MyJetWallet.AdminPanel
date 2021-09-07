@@ -1,0 +1,94 @@
+﻿@using Service.Bitgo.PendingApprovals.Grpc
+@using Service.Bitgo.PendingApprovals.Grpc.Models
+@using Service.BitGo.SignTransaction.Domain.Models
+@using Service.Bitgo.PendingApprovals.Domain.Models
+@using Backoffice.Abstractions.Models
+@using Backoffice.Abstractions.Bo
+@inject IPendingApprovalsManageService _pendingApprovalsManageService;
+@inject IToaster _toastService;
+
+
+<tr>
+    <td>@Item.BrokerId</td>
+    <td>@Item.Id</td>
+    <td>@Item.CreatedDate</td>
+    <td>@Item.Asset</td>
+    <td>@Item.Amount</td>
+    <td>@Item.DestinationAddress</td>
+    <td>@Item.CreatedBy</td>
+    <td>@Item.OperationId</td>
+    <td>@Item.ApprovalsCount</td>
+    <td>@string.Join(",", Item.Approvers)</td>
+
+    <td>
+        <ul class="nav">
+            <li>
+                <button type="button" class="btn-outline-warning btn" @onclick="ShowEdit">Resolve</button>
+            </li>
+        </ul>
+    </td>
+</tr>
+
+
+@if (IsShowEdit)
+{
+    <div>
+        <BitGoPendingApprovalsDialogEdit Item="@Item" OnCloseCallback="OnCloseEditDialog" OnUpdateCallback="OnResolvePendingApproval"/>
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public PendingApproval Item { get; set; }
+
+    [Parameter]
+    public ILoaderConfiguration LoaderConfig { get; set; }
+    
+    [CascadingParameter(Name = "CurrentBoUserUser")]
+    public IBackOfficeUser CurrentBoUserUser { get; set; }
+
+    private bool IsShowEdit { get; set; }
+    
+    private void ShowEdit()
+    {
+        IsShowEdit = true;
+        StateHasChanged();
+    }
+
+    private void OnCloseEditDialog()
+    {
+        IsShowEdit = false;
+        StateHasChanged();
+    }
+    
+    private async void OnResolvePendingApproval((PendingApproval approval, BitGoUser user, PendingApprovalUpdatedState state, string otp) param)
+    {
+        try
+        {
+            var result = await _pendingApprovalsManageService.ResolvePendingApproval(new ResolvePendingApprovalRequest
+            {
+                BrokerId = param.approval.BrokerId,
+                PendingApprovalId = param.approval.Id,
+                State = param.state,
+                ResolvedBy = param.user.Id,
+                Otp = param.otp,
+                UpdatedBy = CurrentBoUserUser.Id
+            });
+
+            if (result.Success)
+            {
+                _toastService.Info($"Pending approval {param.approval.Id} resolved", "Pending approval resolve");   
+            }
+            else
+            {
+                _toastService.Error(result.Error, "Pending approval resolve");   
+            }
+        }
+        catch (Exception ex)
+        {
+            _toastService.Error(ex.Message, "Pending approval resolve");
+        }
+    }
+
+}

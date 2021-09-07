@@ -1,0 +1,136 @@
+﻿@using Service.BitGo.SignTransaction.Domain.Models
+@using Backoffice.Abstractions.Bo
+@using Service.Bitgo.PendingApprovals.Domain.Models
+@using Service.BitGo.SignTransaction.Grpc
+
+@inject IBitGoUsersService _bitGoUsersService;
+
+
+<BaseTwoButtonsDialog
+    Caption=@("Resolve pending approval")
+    OnClose="OnClose"
+    YesButtonCaption="Resolve"
+    NoButtonCaption="Close"
+    OnSubmit="OnSubmit">
+    <EditForm Model="@this">
+        <table>
+            <tr>
+                <td>
+                    <table>
+                        <tr>
+                            <td>Broker Id</td>
+                            <td class="float-left">@Item.BrokerId</td>
+                        </tr>
+                        <tr>
+                            <td>Id</td>
+                            <td class="float-left">@Item.Id </td>
+                        </tr>
+                        <tr>
+                            <td>Created Date</td>
+                            <td class="float-left">@Item.CreatedDate </td>
+                        </tr>
+                        <tr>
+                            <td>Asset</td>
+                            <td class="float-left">@Item.Asset </td>
+                        </tr>
+                        <tr>
+                            <td>Amount</td>
+                            <td class="float-left">@Item.Amount </td>
+                        </tr>
+                        <tr>
+                            <td>Destination address</td>
+                            <td class="float-left">@Item.DestinationAddress </td>
+                        </tr>
+                        <tr>
+                            <td>Created By</td>
+                            <td class="float-left">@Item.CreatedBy </td>
+                        </tr>
+                        <tr>
+                            <td>OperaionId</td>
+                            <td class="float-left">@Item.OperationId </td>
+                        </tr>
+                        <tr>
+                            <td>Approvals Count</td>
+                            <td class="float-left">@Item.ApprovalsCount </td>
+                        </tr>
+                        <tr>
+                            <td>Approvers</td>
+                            <td class="float-left">@string.Join(",", Item.Approvers)</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td>Select approver: </td>
+                <td class="float-left">
+                    <InputSelect @bind-Value="@SelectedApiUser">
+                        @foreach (var availableApiUser in AvailableApiUsers)
+                        {
+                            <option value="@availableApiUser.Id">
+                                <MyLabel Text="@availableApiUser.Id"/>
+                            </option>
+                        }
+                    </InputSelect>
+                </td>
+            </tr>
+            <tr>
+                <td>Select resolution: </td>
+                <td class="float-left">
+                    <InputSelect @bind-Value="@State">
+                        <option value="@PendingApprovalUpdatedState.Approved.ToString()">
+                            <MyLabel Text="@(PendingApprovalUpdatedState.Approved.ToString())"/>
+                        </option>
+                        <option value="@PendingApprovalUpdatedState.Rejected.ToString()">
+                            <MyLabel Text="@(PendingApprovalUpdatedState.Rejected.ToString())"/>
+                        </option>
+                    </InputSelect>
+                </td>
+            </tr>
+            <tr>
+                <td>Enter otp: </td>
+                <td class="float-left">
+                    <input type="text" class="form-control" @bind="Otp"/>
+                </td>
+            </tr>
+        </table>
+    </EditForm>
+</BaseTwoButtonsDialog>
+
+@code {
+
+    [Parameter]
+    public PendingApproval Item { get; set; }
+
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+
+    [Parameter]
+    public EventCallback<(PendingApproval, BitGoUser, PendingApprovalUpdatedState, string)> OnUpdateCallback { get; set; }
+
+    [CascadingParameter(Name = "CurrentBoUserUser")]
+    public IBackOfficeUser CurrentBoUserUser { get; set; }
+
+    private string SelectedApiUser { get; set; }
+    private List<BitGoUser> AvailableApiUsers { get; set; } = new();
+
+    private string State { get; set; }
+    private string Otp { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        AvailableApiUsers = (await _bitGoUsersService.GetBitGoUsersList())?.Users ?? new List<BitGoUser>();
+        await base.OnInitializedAsync();
+    }
+
+    private void OnClose()
+    {
+        OnCloseCallback.InvokeAsync();
+    }
+
+    private async Task OnSubmit()
+    {
+        await OnUpdateCallback.InvokeAsync((Item, AvailableApiUsers.Find(e => e.Id == SelectedApiUser), 
+            State == PendingApprovalUpdatedState.Approved.ToString() ? PendingApprovalUpdatedState.Approved : PendingApprovalUpdatedState.Rejected, Otp));
+    }
+
+}

@@ -1,4 +1,8 @@
-﻿@using Backoffice.Abstractions.Models
+﻿@using Service.Bitgo.PendingApprovals.Grpc
+@using Backoffice.Abstractions.Models
+@using Service.Bitgo.PendingApprovals.Domain.Models
+@using Backoffice.Abstractions.Bo
+@inject IPendingApprovalsManageService _pendingApprovalsManageService;
 @inject IToaster _toastService;
 
 <Loader LoaderConfig="@LoaderConfig"/>
@@ -12,6 +16,7 @@
 <table class="table">
     <thead>
     <tr>
+        <th>Broker Id</th>
         <th>Id</th>
         <th>Create date</th>
         <th>Asset</th>
@@ -24,12 +29,21 @@
     </tr>
     </thead>
     <tbody>
+        @foreach(var pendingApproval in PendingApprovalsList)
+        {
+            <BitGoPendingApprovalsTableRow Item="@pendingApproval" LoaderConfig="@LoaderConfig"/>
+        }
     </tbody>
 </table>
 
 @code {
     
     private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+    
+    private List<PendingApproval> PendingApprovalsList { get; set; } = new();
+    
+    [CascadingParameter(Name = "CurrentBoUserUser")]
+    public IBackOfficeUser CurrentBoUserUser { get; set; }
 
     protected override void OnInitialized()
     {
@@ -41,6 +55,8 @@
     private async void OnRefresh()
     {
         LoaderConfig.Enable();
+
+        PendingApprovalsList = await _pendingApprovalsManageService.GetPendingApprovals() ?? new List<PendingApproval>();
         
         LoaderConfig.Disable();
         await InvokeAsync(StateHasChanged);

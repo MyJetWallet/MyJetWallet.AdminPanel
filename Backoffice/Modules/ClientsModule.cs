@@ -13,6 +13,7 @@ using Service.AssetsDictionary.Grpc;
 using Service.BalanceHistory.Client;
 using Service.Balances.Client;
 using Service.Bitgo.DepositDetector.Client;
+using Service.Bitgo.PendingApprovals.Client;
 using Service.BitGo.SignTransaction.Client;
 using Service.Bitgo.Watcher.Client;
 using Service.Bitgo.WithdrawalProcessor.Client;
@@ -152,6 +153,7 @@ namespace Backoffice.Modules
             builder.RegisterBitGoWalletsClient(Program.Settings.BitGoSignTransactionGrpcServiceUrl);
             builder.RegisterBitGoUnlockSessionClient(Program.Settings.BitGoSignTransactionGrpcServiceUrl);
             builder.RegisterBitgoDepositAddressClient(Program.Settings.BitgoDepositServiceGrpcUrl, _myNoSqlClient);
+            builder.RegisterBitgoPendingApprovalsClient(Program.Settings.BitGoPendingApprovalsGrpcServiceUrl);
             
             builder.RegisterPriceHistoryClient(Program.Settings.BasePriceServiceGrpcUrl);
             builder.RegisterMessageTemplatesCachedClient(Program.Settings.MessageTemplatesGrpcServiceUrl, _myNoSqlClient);
