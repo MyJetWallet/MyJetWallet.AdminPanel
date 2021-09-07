@@ -5,6 +5,9 @@
 @inject INewsService _newsService
 <h3>News</h3>
 
+<nav>
+        <button type="button" class="btn-outline-info btn"  @onclick="ShowCreate">Add News</button>
+</nav>
 <table class="table" style="width: auto">
     <thead>
     <tr>
@@ -47,7 +50,6 @@
         </tr>
     }
     </tbody>
-    <button type="button" class="btn-outline-info btn"  @onclick="ShowCreate">Add News</button>
 
 </table>
 
