@@ -16,7 +16,7 @@
         <button class="nav-link @CheckActive(Menus.News)" @onclick="SetNews" >News</button>
     </li>
     <li class="nav-item" style="margin: 10px">
-        <button class="nav-link @CheckActive(Menus.ExternalTikerSettings)" @onclick="SetExternalTikerSettings" >External Tiker Settings</button>
+        <button class="nav-link @CheckActive(Menus.ExternalTickerSettings)" @onclick="SetExternalTickerSettings" >External Tikcer Settings</button>
     </li>
 </ul>
 
@@ -39,7 +39,7 @@
     {
         <NewsComponent />
     }
-    @if (ActivePage == Menus.ExternalTikerSettings)
+    @if (ActivePage == Menus.ExternalTickerSettings)
     {
         <ExternalTikerSettingsComponent />
     }
@@ -90,11 +90,11 @@
         MarketInfo,
         CmcApiKeys,
         News,
-        ExternalTikerSettings
+        ExternalTickerSettings
     }
 
-    private void SetExternalTikerSettings()
+    private void SetExternalTickerSettings()
     {
-        SetActive(Menus.ExternalTikerSettings);
+        SetActive(Menus.ExternalTickerSettings);
     }
 }
