@@ -99,5 +99,10 @@ namespace Backoffice.Mocks
         {
             throw new System.NotImplementedException();
         }
+
+        public ValueTask ChargebackAsync(ChargebackDepositRequest request)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

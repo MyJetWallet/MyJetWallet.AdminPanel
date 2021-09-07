@@ -139,5 +139,8 @@ namespace Backoffice
         
         [YamlProperty("AdminPanel.ActivityObserverServiceGrpcUrl")]
         public string ActivityObserverServiceGrpcUrl { get; set; }
+
+        [YamlProperty("AdminPanel.NewsImporterServiceGrpcUrl")]
+        public string NewsImporterServiceGrpcUrl { get; set; }
     }
 }

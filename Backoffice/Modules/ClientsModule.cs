@@ -30,6 +30,7 @@ using Service.Liquidity.Portfolio.Domain.Models;
 using Service.Liquidity.PortfolioHedger.Client;
 using Service.Liquidity.Reports.Client;
 using Service.MessageTemplates.Client;
+using Service.NewsImporter.Client;
 using Service.NewsRepository.Client;
 using Service.PriceHistory.Client;
 using Service.PushNotification.Client;
@@ -174,6 +175,8 @@ namespace Backoffice.Modules
                 .SingleInstance();
             
             builder.RegisterUserActivityObserverClient(Program.Settings.ActivityObserverServiceGrpcUrl);
+            
+            builder.RegisterNewsImporterClient(Program.Settings.NewsImporterServiceGrpcUrl);
         }
         
         private void RegisterMyNoSqlTcpClient(ContainerBuilder builder)
