@@ -1,5 +1,214 @@
-<h3>ExternalTikerSettingsComponent</h3>
+@using MyNoSqlServer.Abstractions
+@using Service.NewsImporter.Domain.NoSql
+@using Service.NewsImporter.Grpc
+@using Microsoft.AspNetCore.Components
+
+@inject IExternalTickerSettingsService _externalTickerSettingsService;
+
+@foreach (var elem in SettingsWithStringValues)
+{
+    <div class="col">
+        <table>
+            <thead>
+            <tr>
+                <th>News Tiker</th>
+                <th>Associate Symbols</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td class="align-middle">
+                    <input type="text" class="form-control" @bind="elem.NewsTicker"/>
+                </td>
+                <td class="align-middle">
+                    <input type="text" class="form-control" @bind="elem.AssociateSymbols"/>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <br>
+}
+
+<div>
+    <ul class="nav align-middle">
+        <li><button style="margin-left: 10px" type="button" class="btn-outline-danger btn" @onclick="ApplySettings">Apply</button></li>
+        <li><button style="margin-left: 10px" type="button" class="btn-outline-info btn" @onclick="ResetSettings">Refresh</button></li>
+        <li><button style="margin-left: 10px" type="button" class="btn-outline-info btn" @onclick="CreateNew">Create New</button></li>
+    </ul>
+</div>
+
+@if (IsShowQuestion)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption="@QuestionTitle"
+            OnClose="OnCloseQuestionDialog"
+            YesButtonCaption="Yes"
+            NoButtonCaption="No"
+            OnSubmit="ConfirmQuestion">
+            
+            <h3 class="alert-warning">@QuestionText</h3>
+            
+        </BaseTwoButtonsDialog>
+    </div>
+}
 
 @code {
+    private List<ExternalTickerSettings> Settings { get; set; } = new();
+    private List<ExternalTickerSettingsWithStrings> SettingsWithStringValues { get; set; } = new();
+
+    private string ErrorText { get; set; }
+    private bool ShowError { get; set; } = false;
     
+    private bool IsShowQuestion { get; set; }
+    private string QuestionTitle { get; set; }
+    private string QuestionText { get; set; }
+    private Func<Task> QuestionConfirmCallback { get; set; }
+
+    private async Task CreateNew()
+    {
+        SettingsWithStringValues.Add(new ExternalTickerSettingsWithStrings());
+        ShowError = false;
+        StateHasChanged();
+    }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshData();
+    }
+    
+    private async Task RefreshData()
+    {
+        try
+        {
+            var response = await _externalTickerSettingsService.GetTikerSettingsAsync();
+            Settings = response.SettingsCollection ?? new List<ExternalTickerSettings>();
+
+            RefreshSettingsWithStringValues();
+            StateHasChanged();
+        }
+        catch (Exception exception)
+        {
+            ShowErrorText(exception.Message);
+        }
+    }
+
+    private void RefreshSettingsWithStringValues()
+    {
+        SettingsWithStringValues = new();
+        Settings.ForEach(e =>
+        {
+            SettingsWithStringValues.Add(new ExternalTickerSettingsWithStrings()
+            {
+                NewsTicker = e.NewsTicker,
+                AssociateSymbols = GetStringByList(e.AssociateSymbols)
+            });
+        });
+    }
+    
+    private void RefreshSettingsFromStrings()
+    {
+        Settings = new List<ExternalTickerSettings>();
+        foreach (var elem in SettingsWithStringValues)
+        {
+            Settings.Add(new ExternalTickerSettings()
+            {
+                NewsTicker = elem.NewsTicker,
+                AssociateSymbols = GetListByString(elem.AssociateSymbols)
+            });
+        }
+    }
+
+    private List<string> GetListByString(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return new List<string>();
+        }
+        return value.Trim().Split(",").Where(e => !string.IsNullOrWhiteSpace(e)).ToList();
+    }
+
+    private string GetStringByList(List<string> list)
+    {
+        var result = string.Empty;
+
+        if (list == null)
+            return result;
+        
+        foreach (var e in list)
+        {
+            if (!string.IsNullOrWhiteSpace(result))
+                result += ", ";
+            result += e;
+        }
+        return result;
+    }
+
+    private void ShowErrorText(string message)
+    {
+        ErrorText = message;
+        ShowError = true;
+        Settings = new List<ExternalTickerSettings>();
+
+        StateHasChanged();
+    }
+
+    private void ApplySettings()
+    {
+        AskQuestion("Change Settings", "Apply a new settings. Are you sure?",
+            async () =>
+            {
+                RefreshSettingsFromStrings();
+                
+                Settings.ForEach(async elem =>
+                {
+                    var response = await _externalTickerSettingsService.UpdateTikerSettingsAsync(new UpdateTikerSettingsRequest()
+                    {
+                        Settings = elem
+                    });
+                });
+                StateHasChanged();
+            });
+    }
+
+    private async Task ResetSettings()
+    {
+        await RefreshData();
+        StateHasChanged();
+    }
+
+    private void AskQuestion(string title, string content, Func<Task> confirmAction)
+    {
+        QuestionTitle = title;
+        QuestionText = content;
+        QuestionConfirmCallback = confirmAction;
+        IsShowQuestion = true;
+        
+        StateHasChanged();
+    }
+    private async Task ConfirmQuestion()
+    {
+        await InvokeAsync(StateHasChanged);
+        
+        var action = QuestionConfirmCallback;
+        if (action != null)
+        {
+            await action.Invoke();
+        }
+
+        IsShowQuestion = false;
+        await InvokeAsync(StateHasChanged);
+    }
+    private void OnCloseQuestionDialog()
+    {
+        IsShowQuestion = false;
+        StateHasChanged();
+    }
+
+    public class ExternalTickerSettingsWithStrings
+    {
+        public string NewsTicker { get; set; }
+        public string AssociateSymbols { get; set; }
+    }
 }
