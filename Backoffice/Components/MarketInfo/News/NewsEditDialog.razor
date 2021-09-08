@@ -12,12 +12,16 @@
     @if (!IsCreate)
     {
         <h4>Topic: @News.Topic</h4>
+        <h4>Description: @News.Description</h4>
         <h4>Lang: @News.Lang</h4>
     }
     @if (IsCreate)
     {
         <div>
             Topic: <input type="text" class="form-control" @bind="News.Topic"/>
+        </div>
+        <div>
+            Description: <input type="text" class="form-control" @bind="News.Description"/>
         </div>
         <div>
             Lang: <input type="text" class="form-control" @bind="News.Lang"/>
