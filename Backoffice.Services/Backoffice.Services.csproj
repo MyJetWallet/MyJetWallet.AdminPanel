@@ -15,12 +15,12 @@
       <PackageReference Include="MyCrm.Accounts.Grpc" Version="1.0.24" />
       <PackageReference Include="MyCRM.AccountTransactions.Grpc" Version="1.0.12" />
       <PackageReference Include="MyCrm.AuditLog.Grpc" Version="1.0.4" />
-      <PackageReference Include="MyCrm.Auth.GrpcContracts" Version="1.0.11" />
+      <PackageReference Include="MyCrm.Auth.GrpcContracts" Version="1.0.12" />
       <PackageReference Include="MyCrm.AutoOwnerProfiles.Grpc" Version="1.0.1" />
       <PackageReference Include="MyCrm.BusinessCategories.Grpc" Version="1.0.2" />
       <PackageReference Include="MyCrm.Calls.Grpc" Version="1.0.14" />
       <PackageReference Include="MyCrm.Comments.GrpcContracts" Version="1.0.3" />
-      <PackageReference Include="MyCrm.Deposits.Grpc" Version="1.0.35" />
+      <PackageReference Include="MyCrm.Deposits.Grpc" Version="1.0.37" />
       <PackageReference Include="MyCRM.Logs.GrpcContracts" Version="1.0.17" />
       <PackageReference Include="MyCrm.MyCrmTradersUtmParametersGrpcContracts" Version="1.0.3" />
       <PackageReference Include="MyCrm.PaymentReport.GrpcContracts" Version="1.0.9" />
