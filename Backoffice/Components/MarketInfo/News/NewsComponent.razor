@@ -6,7 +6,13 @@
 <h3>News</h3>
 
 <nav>
-        <button type="button" class="btn-outline-info btn"  @onclick="ShowCreate">Add News</button>
+    <button type="button" class="btn-outline-info btn"  @onclick="ShowCreate">Add News</button>
+    @if (_news?.Any() == true)
+    {
+        <button type="button" class="btn-outline-info btn" @onclick="NextPage">>>> Next >>></button>
+    }
+    <button type="button" class="btn-outline-secondary btn" @onclick="RefreshNews">Refresh</button>
+    <span style="margin-left: 10px; vertical-align: center">Count in page: </span><input type="number" style="width: 40px" @bind="CountInPage"/>
 </nav>
 <table class="table" style="width: auto">
     <thead>
@@ -68,6 +74,9 @@
     private bool IsShowEdit  { get; set; }
     private bool isCreate { get; set; }
     private News EditRequest;
+    
+    private int CountInPage { get; set; } = 20;
+    private DateTime _lastSeen = DateTime.MinValue;
 
     protected override async Task OnInitializedAsync()
     {
@@ -89,7 +98,24 @@
     }
     private async Task RefreshNews()
     {
-        _news = (await _newsService.GetNews(new ())).NewsList ?? new List<News>();
+        _news = (await _newsService.GetNews(new ()
+        {
+            BatchSize = CountInPage,
+            LastDate = DateTime.MinValue
+        })).NewsList ?? new List<News>();
+        
+        StateHasChanged();
+    }
+    
+    private async Task NextPage()
+    {
+        _lastSeen = _news.Min(e => e.Timestamp);
+        _news = (await _newsService.GetNews(new ()
+        {
+            BatchSize = CountInPage,
+            LastDate = _lastSeen
+        })).NewsList ?? new List<News>();
+        
         StateHasChanged();
     }
     
@@ -115,4 +141,7 @@
         });
         await RefreshNews();
     }
+
+
+
 }
