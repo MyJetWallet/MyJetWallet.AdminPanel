@@ -39,19 +39,15 @@
                             }
                         </td>
                     </tr>
-                    <tr>
-                        <td>BitGo user Id</td>
-                        <td class="float-left">
-                            @if (!IsCreate)
-                            {
+                    @if (!IsCreate)
+                    {
+                        <tr>
+                            <td>BitGo user Id</td>
+                            <td class="float-left">
                                 @Item.BitGoId
-                            }
-                            else
-                            {
-                                <input type="text" class="form-control" @bind="Item.BitGoId"/>
-                            }
-                        </td>
-                    </tr>
+                            </td>
+                        </tr>
+                    }
                     <tr>
                         <td>Api key</td>
                         <td class="float-left">
