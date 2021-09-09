@@ -1,0 +1,55 @@
+﻿@using Service.BitGo.SignTransaction.Domain.Models.NoSql
+@using MyNoSqlServer.Abstractions
+@using Backoffice.Abstractions.Models
+@inject IToaster ToastService;
+@inject IMyNoSqlServerDataReader<ApiKeyVolumeNoSqlEntity> _apiKeysReader
+
+<Loader LoaderConfig="@LoaderConfig"/>
+
+<ul class="nav">
+    <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
+</ul>
+
+<h3>Api keys accumulated volumes</h3>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Broker Id</th>
+        <th>Api Key hash</th>
+        <th>Asset</th>
+        <th>Volume</th>
+        <th>Update time</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var apiKey in _apiKeys)
+    {
+        <ApiKeysVolumesTableRow Item="@apiKey" />
+    }
+    </tbody>
+</table>
+
+@code {
+    private List<ApiKeyVolumeNoSqlEntity> _apiKeys = new();
+    
+    private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+
+    protected override void OnInitialized()
+    {
+        OnRefresh();
+        
+        base.OnInitialized();
+    }
+
+    private async void OnRefresh()
+    {
+        LoaderConfig.Enable();
+        
+        _apiKeys.Clear();
+        _apiKeys.AddRange(_apiKeysReader.Get());
+        
+        LoaderConfig.Disable();
+        await InvokeAsync(StateHasChanged);
+    }
+}

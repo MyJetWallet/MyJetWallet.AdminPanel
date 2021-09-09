@@ -1,0 +1,13 @@
+﻿@using Service.BitGo.SignTransaction.Domain.Models.NoSql
+<tr>
+    <td>@Item.Volume.BrokerId</td>
+    <td>@Item.Volume.ApiKeyHash</td>
+    <td>@Item.Volume.Asset</td>
+    <td>@Item.Volume.Volume</td>
+    <td>@Item.Volume.LastUpdateTime</td>
+</tr>
+
+@code {
+    [Parameter]
+    public ApiKeyVolumeNoSqlEntity Item { get; set; }
+}

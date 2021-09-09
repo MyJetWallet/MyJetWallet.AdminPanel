@@ -3,6 +3,7 @@
 @using Backoffice.Components.BitGo.Wallets
 @using Backoffice.Components.BitGo.Users
 @using Backoffice.Components.BitGo.PendingApprovals
+@using Backoffice.Components.BitGo.ApiKeysVolumes
 
 @page "/BitGo"
 
@@ -15,6 +16,9 @@
     </li>
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(Menus.Balances)" aria-current="page" @onclick="SetBalances">Balances</button>
+    </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.ApiKeysVolumes)" aria-current="page" @onclick="SetApiKeysVolumes">Api Keys Volumes</button>
     </li>
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(Menus.PendingApprovals)" aria-current="page" @onclick="SetPendingApprovals">Pending Approvals</button>
@@ -44,6 +48,11 @@
     @if (ActivePage == Menus.Balances)
     {
         <BitGoWalletBalanceListComponent/>
+    }
+
+    @if (ActivePage == Menus.ApiKeysVolumes)
+    {
+        <ApiKeysVolumesListComponent/>
     }
 
     @if (ActivePage == Menus.UnlockSession)
@@ -93,7 +102,8 @@
         UnlockSession,
         Wallets,
         Users,
-        PendingApprovals
+        PendingApprovals,
+        ApiKeysVolumes
     }
 
 
@@ -130,5 +140,10 @@
     private void SetPendingApprovals()
     {
         SetActive(Menus.PendingApprovals);
+    }
+
+    private void SetApiKeysVolumes()
+    {
+        SetActive(Menus.ApiKeysVolumes);
     }
 }

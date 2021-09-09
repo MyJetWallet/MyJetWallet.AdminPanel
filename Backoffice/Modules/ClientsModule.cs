@@ -155,6 +155,7 @@ namespace Backoffice.Modules
             builder.RegisterBitGoUnlockSessionClient(Program.Settings.BitGoSignTransactionGrpcServiceUrl);
             builder.RegisterBitgoDepositAddressClient(Program.Settings.BitgoDepositServiceGrpcUrl, _myNoSqlClient);
             builder.RegisterBitgoPendingApprovalsClient(Program.Settings.BitGoPendingApprovalsGrpcServiceUrl);
+            builder.RegisterApiKeyVolumesClient(_myNoSqlClient);
             
             builder.RegisterPriceHistoryClient(Program.Settings.BasePriceServiceGrpcUrl);
             builder.RegisterMessageTemplatesCachedClient(Program.Settings.MessageTemplatesGrpcServiceUrl, _myNoSqlClient);
