@@ -1,6 +1,7 @@
 ﻿@using Service.BitGo.SignTransaction.Domain.Models
 @using Backoffice.Abstractions.Bo
 @using Service.Bitgo.PendingApprovals.Domain.Models
+@using Service.BitGo.SignTransaction.Domain.Models.NoSql
 @using Service.BitGo.SignTransaction.Grpc
 
 @inject IBitGoUsersService _bitGoUsersService;
@@ -119,6 +120,11 @@
     protected override async Task OnInitializedAsync()
     {
         AvailableApiUsers = (await _bitGoUsersService.GetBitGoUsersList())?.Users ?? new List<BitGoUser>();
+        var techUser = AvailableApiUsers.Find(e => e.Id == BitGoUserNoSqlEntity.TechSignerId);
+        if (techUser != null)
+        {
+            AvailableApiUsers.Remove(techUser);
+        }
         await base.OnInitializedAsync();
     }
 

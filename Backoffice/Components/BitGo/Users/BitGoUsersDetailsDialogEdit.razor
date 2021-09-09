@@ -68,6 +68,9 @@
 @code {
 
     [Parameter]
+    public string DefaultUser { get; set; }
+    
+    [Parameter]
     public BitGoUser Item { get; set; }
 
     [Parameter]
@@ -105,6 +108,7 @@
             Item = new BitGoUser()
             {
                 BrokerId = "jetwallet",
+                Id = DefaultUser,
                 RegisterDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
                 UpdatedBy = CurrentBoUserUser.Id

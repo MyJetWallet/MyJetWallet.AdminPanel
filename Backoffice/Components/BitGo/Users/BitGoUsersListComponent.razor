@@ -2,6 +2,7 @@
 @using Service.BitGo.SignTransaction.Grpc.Models
 @using Backoffice.Abstractions.Models
 @using Service.BitGo.SignTransaction.Domain.Models
+@using Service.BitGo.SignTransaction.Domain.Models.NoSql
 
 @inject IBitGoUsersService _bitGoUsersService;
 @inject IToaster _toastService;
@@ -11,6 +12,7 @@
 <ul class="nav float-left">
     <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
     <li><button @onclick="OnAddUser" type="button" class="btn btn-outline-success" style="margin: 5px; border-radius: 10px">Add</button></li>
+    <li><button @onclick="OnAddTechUser" type="button" class="btn btn-outline-success" style="margin: 5px; border-radius: 10px" disabled="@(BitGoUsersList.Find(e => e.Id == BitGoUserNoSqlEntity.TechSignerId) != null)">Add TechSigner</button></li>
 </ul>
 
 <table class="table">
@@ -35,7 +37,7 @@
 @if (IsShowAdding)
 {
     <div>
-        <BitGoUsersDetailsDialogEdit IsCreate="true" OnCloseCallback="OnCloseAddingDialog" OnCreateCallback="OnCreateUser" />
+        <BitGoUsersDetailsDialogEdit IsCreate="true" DefaultUser="@DefaultUser" OnCloseCallback="OnCloseAddingDialog" OnCreateCallback="OnCreateUser" />
     </div>
 }
 
@@ -44,6 +46,7 @@
     private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
     
     private bool IsShowAdding { get; set; }
+    private string DefaultUser { get; set; }
 
     private List<BitGoUser> BitGoUsersList { get; set; } = new();
 
@@ -67,6 +70,13 @@
     private async Task OnAddUser()
     {
         IsShowAdding = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnAddTechUser()
+    {
+        IsShowAdding = true;
+        DefaultUser = BitGoUserNoSqlEntity.TechSignerId;
         await InvokeAsync(StateHasChanged);
     }
 
