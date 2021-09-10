@@ -1,11 +1,21 @@
 ﻿@using Service.BitGo.SignTransaction.Domain.Models
 @using Backoffice.Abstractions.Bo
+@using Backoffice.Abstractions.Models
+@using Backoffice.Services.BitGo.Coins
+@using Microsoft.AspNetCore.Components
+@using Service.BitGo.SignTransaction.Domain.Models.NoSql
+
+@inject IBitGoCoinManager BitGoCoinManager;
+
+<Loader LoaderConfig="@LoaderConfig"/>
+
 <BaseTwoButtonsDialog
     Caption=@(!IsCreate ? $"{Item.Id}" : "Create a new BitGo User")
     OnClose="OnClose"
     YesButtonCaption="@(IsCreate ? "Create" : "Update key")"
     NoButtonCaption="Close"
     OnSubmit="OnSubmit">
+    <EditForm Model="@this">
 
     <table>
 
@@ -39,6 +49,26 @@
                             }
                         </td>
                     </tr>
+                    <tr>
+                        <td>Coin</td>
+                        <td class="float-left">
+                            <table>
+                                <tr>
+                                    <InputSelect @bind-Value="@SelectedCoin">
+                                        @foreach (var coin in AvailableCoins)
+                                        {
+                                            <option value="@coin">
+                                                <MyLabel Text="@coin"/>
+                                            </option>
+                                        }
+                                    </InputSelect>
+                                </tr>
+                                <tr>
+                                    Please select BitGo Coin Id or default create default api key.    
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
                     @if (!IsCreate)
                     {
                         <tr>
@@ -59,10 +89,13 @@
 
         </tr>
     </table>
+    </EditForm>
 </BaseTwoButtonsDialog>
 
 @code {
 
+    private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+    
     [Parameter]
     public string DefaultUser { get; set; }
     
@@ -84,6 +117,9 @@
     [CascadingParameter(Name = "CurrentBoUserUser")]
     public IBackOfficeUser CurrentBoUserUser { get; set; }
 
+    private List<string> AvailableCoins  { get; set; }
+    private string SelectedCoin  { get; set; } = BitGoUserNoSqlEntity.DefaultCoin;
+
     private void OnClose()
     {
         OnCloseCallback.InvokeAsync();
@@ -97,9 +133,10 @@
             await OnUpdateCallback.InvokeAsync(Item);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        base.OnInitialized();
+        await base.OnInitializedAsync();
+        AvailableCoins = new List<string> { BitGoUserNoSqlEntity.DefaultCoin };
         if (IsCreate)
             Item = new BitGoUser()
             {
@@ -109,6 +146,11 @@
                 UpdatedDate = DateTime.Now,
                 UpdatedBy = CurrentBoUserUser.Id
             };
+        var coins = await BitGoCoinManager.GetAll();
+        if (coins.Count > 0)
+        {
+            AvailableCoins.AddRange(coins.Select(e => e.Coin).ToList());    
+        }
     }
 
 }

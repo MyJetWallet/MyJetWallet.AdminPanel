@@ -1,9 +1,11 @@
 ﻿@using Service.BitGo.SignTransaction.Grpc
 @using Service.BitGo.SignTransaction.Grpc.Models
 @using Backoffice.Abstractions.Models
+@using Backoffice.Services.BitGo.Coins
 @using Service.BitGo.SignTransaction.Domain.Models
 @using Service.BitGo.SignTransaction.Domain.Models.NoSql
 
+@inject IBitGoCoinManager BitGoCoinManager;
 @inject IBitGoUsersService _bitGoUsersService;
 @inject IToaster _toastService;
 
@@ -12,7 +14,7 @@
 <ul class="nav float-left">
     <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
     <li><button @onclick="OnAddUser" type="button" class="btn btn-outline-success" style="margin: 5px; border-radius: 10px">Add</button></li>
-    <li><button @onclick="OnAddTechUser" type="button" class="btn btn-outline-success" style="margin: 5px; border-radius: 10px" disabled="@(BitGoUsersList.Find(e => e.Id == BitGoUserNoSqlEntity.TechSignerId) != null)">Add TechSigner</button></li>
+    <li><button @onclick="OnAddTechUser" type="button" class="btn btn-outline-success" style="margin: 5px; border-radius: 10px">Add TechSigner</button></li>
 </ul>
 
 <table class="table">
@@ -20,6 +22,7 @@
         <tr>
             <th>Broker</th>
             <th>Name</th>
+            <th>BitGo coin</th>
             <th>BitGoId</th>
             <th>Register date</th>
             <th></th>
@@ -70,6 +73,7 @@
     private async Task OnAddUser()
     {
         IsShowAdding = true;
+        DefaultUser = "";
         await InvokeAsync(StateHasChanged);
     }
 
