@@ -12,7 +12,7 @@
       <PackageReference Include="DotNetCoreDecorators" Version="1.0.21" />
       <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0-preview.7.21377.19" />
-      <PackageReference Include="MyCrm.Accounts.Grpc" Version="1.0.24" />
+      <PackageReference Include="MyCrm.Accounts.Grpc" Version="1.0.25" />
       <PackageReference Include="MyCRM.AccountTransactions.Grpc" Version="1.0.12" />
       <PackageReference Include="MyCrm.AuditLog.Grpc" Version="1.0.4" />
       <PackageReference Include="MyCrm.Auth.GrpcContracts" Version="1.0.12" />
