@@ -47,7 +47,7 @@
 
     private List<BitGoWallet> BitGoWalletsList { get; set; } = new();
 
-    private async void OnRefresh()
+    private async Task OnRefresh()
     {
         LoaderConfig.Enable();
         
@@ -57,11 +57,11 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        OnRefresh();
+        await OnRefresh();
         
-        base.OnInitialized();
+        await base.OnInitializedAsync();
     }
 
     private async Task OnAddWallet()
