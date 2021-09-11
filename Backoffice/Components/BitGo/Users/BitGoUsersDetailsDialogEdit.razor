@@ -1,10 +1,8 @@
-﻿@using Service.BitGo.SignTransaction.Domain.Models
-@using Backoffice.Abstractions.Bo
-@using Backoffice.Abstractions.Models
-@using Backoffice.Services.BitGo.Coins
-@using Microsoft.AspNetCore.Components
+﻿@using Backoffice.Services.BitGo.Coins
+@using Service.BitGo.SignTransaction.Domain.Models
 @using Service.BitGo.SignTransaction.Domain.Models.NoSql
-
+@using Backoffice.Abstractions.Models
+@using Backoffice.Abstractions.Bo
 @inject IBitGoCoinManager BitGoCoinManager;
 
 <Loader LoaderConfig="@LoaderConfig"/>
@@ -54,7 +52,7 @@
                         <td class="float-left">
                             <table>
                                 <tr>
-                                    <InputSelect @bind-Value="@SelectedCoin">
+                                    <InputSelect @bind-Value="@Item.CoinId">
                                         @foreach (var coin in AvailableCoins)
                                         {
                                             <option value="@coin">
@@ -118,7 +116,6 @@
     public IBackOfficeUser CurrentBoUserUser { get; set; }
 
     private List<string> AvailableCoins  { get; set; }
-    private string SelectedCoin  { get; set; } = BitGoUserNoSqlEntity.DefaultCoin;
 
     private void OnClose()
     {
@@ -142,6 +139,7 @@
             {
                 BrokerId = "jetwallet",
                 Id = DefaultUser,
+                CoinId = BitGoUserNoSqlEntity.DefaultCoin,
                 RegisterDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
                 UpdatedBy = CurrentBoUserUser.Id
@@ -152,5 +150,4 @@
             AvailableCoins.AddRange(coins.Select(e => e.Coin).ToList());    
         }
     }
-
 }
