@@ -46,6 +46,7 @@
       <PackageReference Include="MyJetWallet.Service.ClientWallets.Client" Version="1.2.4" />
       <PackageReference Include="MyJetWallet.Service.CoinMarketCapReader.Client" Version="1.0.1" />
       <PackageReference Include="MyJetWallet.Service.IndexPrices.Client" Version="1.2.1" />
+      <PackageReference Include="MyJetWallet.Service.InternalTransfer.Client" Version="1.0.1" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Converter.Client" Version="1.1.2" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.InternalWallets.Client" Version="1.0.2" />
       <PackageReference Include="MyJetWallet.Service.Liquidity.Monitoring.Client" Version="1.0.4" />

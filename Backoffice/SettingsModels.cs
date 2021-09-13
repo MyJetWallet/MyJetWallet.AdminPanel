@@ -142,5 +142,9 @@ namespace Backoffice
 
         [YamlProperty("AdminPanel.NewsImporterServiceGrpcUrl")]
         public string NewsImporterServiceGrpcUrl { get; set; }
+        
+        [YamlProperty("AdminPanel.InternalTransferGrpcServiceUrl")]
+        public string InternalTransferGrpcServiceUrl { get; set; }
+        
     }
 }

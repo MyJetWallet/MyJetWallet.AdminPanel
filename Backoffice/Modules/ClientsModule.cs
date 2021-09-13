@@ -21,6 +21,7 @@ using Service.ChangeBalanceGateway.Client;
 using Service.ClientWallets.Client;
 using Service.Fees.Client.Grpc;
 using Service.IndexPrices.Client;
+using Service.InternalTransfer.Client;
 using Service.Liquidity.Converter.Client;
 using Service.Liquidity.InternalWallets.Client;
 using Service.Liquidity.Monitoring.Client;
@@ -178,6 +179,8 @@ namespace Backoffice.Modules
             builder.RegisterUserActivityObserverClient(Program.Settings.ActivityObserverServiceGrpcUrl);
             
             builder.RegisterNewsImporterClient(Program.Settings.NewsImporterServiceGrpcUrl);
+            
+            builder.RegisterInternalTransferClient(Program.Settings.InternalTransferGrpcServiceUrl);
         }
         
         private void RegisterMyNoSqlTcpClient(ContainerBuilder builder)

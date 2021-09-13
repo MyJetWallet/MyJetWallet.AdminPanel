@@ -10,6 +10,9 @@
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(Menus.Withdrawals)" aria-current="page" @onclick="SetWithdrawals" >Withdrawals</button>
     </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.Transfers)" aria-current="page" @onclick="SetTransfers">Transfers</button>
+    </li>
 </ul>
 
 <div style="margin: 10px">
@@ -22,6 +25,10 @@
     @if (ActivePage == Menus.Withdrawals)
     {
         <WithdrawalsComponent />
+    }
+    @if (ActivePage == Menus.Transfers)
+    {
+        <InternalTransfersComponent />
     }
 </div>
 
@@ -46,6 +53,11 @@
     {
         SetActive(Menus.Withdrawals);
     }
+    
+    private void SetTransfers()
+    {
+        SetActive(Menus.Transfers);
+    }
 
     private void SetActive(Menus page)
     {
@@ -56,6 +68,7 @@
     public enum Menus
     {
         Deposits,
-        Withdrawals
+        Withdrawals,
+        Transfers
     }
 }

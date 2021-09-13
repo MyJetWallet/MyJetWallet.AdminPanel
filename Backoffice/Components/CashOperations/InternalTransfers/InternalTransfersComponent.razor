@@ -1,0 +1,112 @@
+﻿@using Service.Bitgo.WithdrawalProcessor.Grpc
+@using Service.Bitgo.WithdrawalProcessor.Grpc.Models
+@using Service.Bitgo.WithdrawalProcessor.Domain.Models
+@using Service.InternalTransfer.Domain.Models
+@using Service.InternalTransfer.Grpc
+@using Service.InternalTransfer.Grpc.Models
+
+@inject IToaster ToastService;
+@inject ITransferByPhoneService _transferByPhoneService
+
+<h3>Transfers</h3>
+
+<ul class="nav">
+    @if ((_transfers)?.Any() == true)
+    {
+        <li>
+            <button type="button" class="btn-outline-info btn" @onclick="NextPage">>>> Next >>></button>
+        </li>
+    }
+    <li>
+        <button type="button" class="btn-outline-secondary btn" @onclick="RefreshTransfers">Refresh</button>
+    </li>
+    <li>
+        <span style="margin-left: 10px; vertical-align: center">Count in page: </span><input type="number" style="width: 40px" @bind="CountInPage"/>
+    </li>
+</ul>
+<div style="max-height: 90vh; height: 90vh; overflow-y: scroll; overflow-x: scroll; ">
+    <table class="table" style="width: auto">
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>ClientId</th>
+        <th>WalletId</th>
+        <th>Sender PhoneNumber</th>
+        <th>TransactionId</th>
+        <th>Amount</th>
+        <th>AssetSymbol</th>
+        <th>Destination PhoneNumber</th>
+        <th>Destination ClientId</th>
+        <th>Destination WalletId</th>
+        <th>Txid</th>
+        <th>Status</th>
+        <th>MatchingEngineId</th>
+        <th>LastError</th>
+        <th>ME Error Code</th>
+        <th>RetriesCount</th>
+        <th>EventDate</th>
+        <th>Workflow state</th>
+        <th>Refund TxId</th>
+        <th>Cancelling</th>
+        <th/>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var transfer in _transfers)
+    {
+        <InternalTransferTableRow Item="@transfer" OnCancelCallback="CancelTransfer"/>
+    }
+    </tbody>
+</table>
+</div>
+
+@code {
+    private List<Transfer> _transfers = new();
+    private int CountInPage { get; set; } = 20;
+    private long _lastId = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshTransfers();
+    }
+
+    private async Task RefreshTransfers()
+    {
+        var transfersResponse = await _transferByPhoneService.GetTransfers(new GetTransfersRequest() {BatchSize = CountInPage});
+
+        _transfers = transfersResponse.Transfers ?? new List<Transfer>();
+
+        StateHasChanged();
+    }
+
+    private async Task NextPage()
+    {
+        if (_transfers?.Any() != true)
+            return;
+
+        var transferResponse = await _transferByPhoneService.GetTransfers(new GetTransfersRequest {BatchSize = CountInPage, LastId = _lastId});
+
+        if (!transferResponse.Success || transferResponse.Transfers == null || transferResponse.Transfers.Count == 0)
+            return;
+
+        _transfers = transferResponse.Transfers;
+
+        StateHasChanged();
+    }
+
+    private async void CancelTransfer(Transfer transfer)
+    {
+        try
+        {
+            await _transferByPhoneService.CancelTransfer(new CancelTransferRequest { TransferId= transfer.Id.ToString()});
+            
+            ToastService.Info($"Transfer {transfer.Id} is cancelled", "Cancel transfer");
+            
+            await RefreshTransfers();    
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.Message, "Asset deletion");
+        }
+    }
+}

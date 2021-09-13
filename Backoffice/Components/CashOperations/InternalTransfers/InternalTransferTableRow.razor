@@ -1,0 +1,158 @@
+﻿@using Service.Bitgo.WithdrawalProcessor.Grpc
+@using Service.Bitgo.WithdrawalProcessor.Grpc.Models
+@using Service.Bitgo.WithdrawalProcessor.Domain.Models
+@using Backoffice.Abstractions.Models
+@using Backoffice.Services.Assets
+@using Service.InternalTransfer.Domain.Models
+@using Service.InternalTransfer.Grpc
+@using Service.InternalTransfer.Grpc.Models
+
+@inject ITransferByPhoneService _transferByPhoneService
+@inject IToaster _toastService;
+
+<tr style="background: @GetBGColor()">
+    <td>@Item.Id</td>
+    <td>@Item.ClientId</td>
+    <td>@Item.WalletId</td>
+    <td>@Item.SenderPhoneNumber</td>
+    <td>@Item.TransactionId</td>
+    <td>@Item.Amount</td>
+    <td>@Item.AssetSymbol</td>
+    <td>@Item.DestinationPhoneNumber</td>
+    <td>@Item.DestinationClientId</td>
+    <td>@Item.DestinationWalletId</td>
+    <td>@Item.Status</td>
+    <td>@Item.MatchingEngineId</td>
+    <td>@Item.LastError</td>
+    <td>@Item.MeErrorCode</td>
+    <td>@Item.RetriesCount</td>
+    <td>@Item.EventDate</td>
+    <td>@Item.WorkflowState</td>
+    <td>@Item.RefundTransactionId</td>
+    <td>@Item.Cancelling</td>
+    <td>
+        <ul class="nav">
+            @if (Item.Status != TransferStatus.Cancelled && Item.Status != TransferStatus.Cancelled)
+            {
+                <li><button type="button" class="btn-outline-info btn" @onclick="ShowRetry">Retry</button></li>
+            }
+            @if (Item.Status != TransferStatus.Cancelled && Item.Status != TransferStatus.Cancelled)
+            {
+                <li><button type="button" class="btn-outline-danger btn" @onclick="ShowCancel">Cancel</button></li>
+            }
+        </ul>
+    </td>
+</tr>
+
+
+@if (IsShowRetry)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption=@($"Retry withdrawal {Item.Id}]")
+            OnClose="OnCloseRetryDialog"
+            YesButtonCaption="Retry"
+            NoButtonCaption="Cancel"
+            OnSubmit="OnRetryTransfer">
+            
+            <h3 class="alert-warning">Are you sure you want to retry transfer?</h3>
+            
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+@if (IsShowCancel)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption=@($"Cancel transfer {Item.Id}]")
+            OnClose="OnCloseCancelDialog"
+            YesButtonCaption="Cancel transfer"
+            NoButtonCaption="Cancel"
+            OnSubmit="CancelTransfer">
+            
+            <h3 class="alert-warning">Are you sure you want to cancel transfer?</h3>
+            
+        </BaseTwoButtonsDialog>
+    </div>
+}
+
+
+
+@code {
+    
+    [Parameter]
+    public Transfer Item { get; set; }
+    
+    [Parameter]
+    public EventCallback<Transfer> OnCancelCallback { get; set; }
+
+    private bool IsShowRetry { get; set; }
+    private bool IsShowCancel { get; set; }
+
+    private void ShowRetry()
+    {
+        IsShowRetry = true;
+        StateHasChanged();
+    }
+
+    private void ShowCancel()
+    {
+        IsShowCancel = true;
+        StateHasChanged();
+    }
+
+    private async void OnRetryTransfer()
+    {
+        try
+        {
+            await _transferByPhoneService.RetryWithdrawal(new RetryTransferRequest() {TransferId = Item.Id.ToString()});
+
+            IsShowRetry = false;
+
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            _toastService.Error(ex.Message, "Edit asset");
+        }
+    }
+
+    private async Task CancelTransfer()
+    {
+        IsShowCancel = false;
+        await OnCancelCallback.InvokeAsync(Item);
+    }
+    
+    private void OnCloseRetryDialog()
+    {
+        IsShowRetry = false;
+        StateHasChanged();
+    }
+    
+    private void OnCloseCancelDialog()
+    {
+        IsShowCancel = false;
+        StateHasChanged();
+    }
+
+
+    private string GetBGColor()
+    {            
+        if (Item.Status is TransferStatus.Completed or TransferStatus.Cancelled)
+            return "lightgray";
+        
+        switch (Item.WorkflowState)
+        {
+            case WorkflowState.Retrying:
+                return "lightyellow";
+            case WorkflowState.Failed:
+                return "lightcoral";
+            default:
+                return (Item.Status != TransferStatus.Completed && Item.Status != TransferStatus.Cancelled)
+                    ? "white"
+                    : "lightgray";
+        }
+    }
+
+}
