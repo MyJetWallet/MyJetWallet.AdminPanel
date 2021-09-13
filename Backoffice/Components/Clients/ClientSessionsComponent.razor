@@ -17,6 +17,7 @@
     }
     <li><button type="button" class="btn-outline-secondary btn" @onclick="(async () => { await RefreshSessions(); })">Refresh</button></li>
     <li>Count in page: <input type="number" style="width: 40px" @bind="CountInPage"/></li>
+    <li><button type="button" class="btn-outline-danger btn" style="margin-left: 100px" @onclick=" () => {  ShowDeleteDialog(null); }">Delete ALL Session</button></li>
 </ul>
 <table class="table" style="width: auto">
     <thead>
@@ -32,6 +33,7 @@
         <th>EmailVerified</th>
         <th>Description</th>
         <th>Has Public Key</th>
+        <th>DeviceUid</th>
         <th>Has Firebase Token</th>
         <th>Action</th>
     </tr>
@@ -60,6 +62,7 @@
                 <td>@session.EmailVerified</td>
                 <td>@session.Description</td>
                 <td>@(!string.IsNullOrWhiteSpace(session?.PublicKeyBase64))</td>
+                <td>@session.DeviceUid</td>
                 <td>@tokenExists
                     @if (tokenExists)
                     {
@@ -102,7 +105,7 @@
     private bool IsShowDeleteDialog { get; set; }
     private string DeletedThingName { get; set; }
     private string DeletedThingId { get; set; }
-    private Guid DeletedSessionId { get; set; }
+    private Guid? DeletedSessionId { get; set; }
 
     
     protected override async Task OnInitializedAsync()
@@ -176,19 +179,40 @@
     }
 
 
-    private void ShowDeleteDialog(Guid rootSessionId)
+    private void ShowDeleteDialog(Guid? rootSessionId)
     {
-        DeletedSessionId = rootSessionId;
-        IsShowDeleteDialog = true;
-        DeletedThingId = rootSessionId.ToString("D");
-        DeletedThingName = "Session";
-        StateHasChanged();
+        if (rootSessionId.HasValue)
+        {
+            DeletedSessionId = rootSessionId.Value;
+            IsShowDeleteDialog = true;
+            DeletedThingId = rootSessionId.Value.ToString("D");
+            DeletedThingName = "Session";
+            StateHasChanged();
+        }
+        else
+        {
+            DeletedSessionId = null;
+            IsShowDeleteDialog = true;
+            DeletedThingId = "ALL SESSION'S";
+            DeletedThingName = "Session";
+            StateHasChanged();
+        }
     }
 
     private async Task OnConfirmDelete()
     {
         IsShowDeleteDialog = false;
-        await DeleteSession(DeletedSessionId);
+        if (DeletedSessionId.HasValue)
+        {
+            await DeleteSession(DeletedSessionId.Value);
+        }
+        else
+        {
+            foreach (var session in _sessions)
+            {
+                await DeleteSession(session.RootSessionId);
+            }
+        }
         await RefreshSessions();
     }
 
