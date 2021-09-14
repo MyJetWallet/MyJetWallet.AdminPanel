@@ -9,6 +9,7 @@
 
 @inject ITokenManager _tokenManager
 <h3>ClientSessionsComponent</h3>
+@inject IToaster ToastService;
 
 <ul class="nav">
     @if (_sessions?.Any() == true)
@@ -115,23 +116,41 @@
 
         await RefreshSessions();
     }
-    
+
     private async Task RefreshSessions()
-    {         
+    {
         _timeStamp = DateTime.UtcNow;
         _index = 0;
 
-        _tokens = (await _tokenManager.GetUserTokens(new GetUserTokensRequest()
-        {
-            ClientId = ClientId
-        })).Tokens ?? new ();
+        _tokens = new();
 
-        _sessions = (await _rootWriter.GetAsync(ClientId))
-            .OrderByDescending(s => s.CreateTime)
-            .Take(CountInPage)
-            .ToList();
+        try
+        {
+
+            _tokens = (await _tokenManager.GetUserTokens(new GetUserTokensRequest()
+            {
+                ClientId = ClientId
+            })).Tokens ?? new();
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.ToString());
+        }
+
+        try
+        {
+            _sessions = (await _rootWriter.GetAsync(ClientId))
+                .OrderByDescending(s => s.CreateTime)
+                .Take(CountInPage)
+                .ToList();
         
-        _currentPageSize = CountInPage;
+            _currentPageSize = CountInPage;
+        }
+        catch (Exception ex)
+        {
+            ToastService.Error(ex.ToString());
+        }
+        
         StateHasChanged();
     }
 
