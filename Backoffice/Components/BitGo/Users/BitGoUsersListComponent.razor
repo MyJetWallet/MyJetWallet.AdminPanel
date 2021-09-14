@@ -100,7 +100,7 @@
             
             IsShowAdding = false;
             
-            OnRefresh();    
+            await OnRefresh();    
         }
         catch (Exception ex)
         {
@@ -112,11 +112,11 @@
     {
         try
         {
-            await _bitGoUsersService.RemoveBitGoUser(new RemoveBitGoUserRequest() {BrokerId = user.BrokerId, UserId = user.Id});
+            await _bitGoUsersService.RemoveBitGoUser(new RemoveBitGoUserRequest {BrokerId = user.BrokerId, UserId = user.Id, CoinId = user.CoinId});
             
             _toastService.Info($"BitGo User {user.Id}:{user.Id} is deleted", "Delete BitGo user");
             
-            OnRefresh();    
+            await OnRefresh();    
         }
         catch (Exception ex)
         {
