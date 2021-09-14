@@ -1,0 +1,59 @@
+﻿@using Service.Bitgo.Watcher.NoSql
+@using MyNoSqlServer.Abstractions
+@using Backoffice.Abstractions.Models
+@inject IToaster _toastService;
+@inject IMyNoSqlServerDataReader<WalletSpendingLimitsEntity> _spendingLimitsReader
+
+<Loader LoaderConfig="@LoaderConfig"/>
+
+<ul class="nav">
+    <li><button @onclick="OnRefresh" type="button" class="btn btn-outline-primary" style="margin: 5px; border-radius: 10px">Refresh</button></li>
+</ul>
+
+<h3>Spending limits</h3>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Broker Id</th>
+        <th>Bitgo Coin</th>
+        <th>Bitgo Wallet</th>
+        <th>Transaction Limit</th>
+        <th>Hourly Limit</th>
+        <th>Hourly Spent</th>
+        <th>Daily Limit</th>
+        <th>Daily Spent</th>
+        <th>Update time</th>
+    </tr>
+    </thead>
+    <tbody>
+        @foreach (var limit in _limits)
+        {
+            <BitGoSpendingLimitsTableRow Item="@limit" />
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<WalletSpendingLimitsEntity> _limits = new();
+    
+    private ILoaderConfiguration LoaderConfig { get; set; } = new LoaderConfiguration();
+
+    protected override void OnInitialized()
+    {
+        OnRefresh();
+        
+        base.OnInitialized();
+    }
+
+    private async void OnRefresh()
+    {
+        LoaderConfig.Enable();
+        
+        _limits.Clear();
+        _limits.AddRange(_spendingLimitsReader.Get());
+        
+        LoaderConfig.Disable();
+        await InvokeAsync(StateHasChanged);
+    }
+}

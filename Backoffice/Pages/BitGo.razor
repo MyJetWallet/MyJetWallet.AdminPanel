@@ -1,6 +1,7 @@
 ﻿@using Backoffice.Components.BitGo.Balances
 @using Backoffice.Components.BitGo.SessionUnlock
 @using Backoffice.Components.BitGo.Wallets
+@using Backoffice.Components.BitGo.SpendingLimits
 @using Backoffice.Components.BitGo.Users
 @using Backoffice.Components.BitGo.PendingApprovals
 @using Backoffice.Components.BitGo.ApiKeysVolumes
@@ -16,6 +17,9 @@
     </li>
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(Menus.Balances)" aria-current="page" @onclick="SetBalances">Balances</button>
+    </li>
+    <li class="nav-item" style="margin: 10px">
+        <button class="nav-link @CheckActive(Menus.SpendingLimits)" aria-current="page" @onclick="SetSpendingLimits">Spending Limits</button>
     </li>
     <li class="nav-item" style="margin: 10px">
         <button class="nav-link @CheckActive(Menus.ApiKeysVolumes)" aria-current="page" @onclick="SetApiKeysVolumes">Api Keys Volumes</button>
@@ -65,6 +69,11 @@
         <BitGoWalletsListComponent/>
     }
 
+    @if (ActivePage == Menus.SpendingLimits)
+    {
+        <BitGoSpendingLimitsListComponent/>
+    }
+
     @if (ActivePage == Menus.Users)
     {
         <BitGoUsersListComponent/>
@@ -101,6 +110,7 @@
         Balances,
         UnlockSession,
         Wallets,
+        SpendingLimits,
         Users,
         PendingApprovals,
         ApiKeysVolumes
@@ -130,6 +140,11 @@
     private void SetWallets()
     {
         SetActive(Menus.Wallets);
+    }
+
+    private void SetSpendingLimits()
+    {
+        SetActive(Menus.SpendingLimits);
     }
 
     private void SetUsers()

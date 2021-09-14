@@ -1,0 +1,17 @@
+﻿@using Service.Bitgo.Watcher.NoSql
+<tr>
+    <td>@Item.BrokerId</td>
+    <td>@Item.CoinId</td>
+    <td>@Item.WalletId</td>
+    <td>@(Item.TransactionLimit>0 ? Item.TransactionLimit : "no limit")</td>
+    <td>@(Item.HourlyLimit>0 ? Item.HourlyLimit : "no limit")</td>
+    <td>@Item.HourlySpent</td>
+    <td>@(Item.DailyLimit>0 ? Item.DailyLimit : "no limit")</td>
+    <td>@Item.DailySpent</td>
+    <td>@Item.UpdateTime</td>
+</tr>
+
+@code {
+    [Parameter]
+    public WalletSpendingLimitsEntity Item { get; set; }
+}
