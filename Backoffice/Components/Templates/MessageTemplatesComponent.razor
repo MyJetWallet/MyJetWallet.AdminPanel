@@ -160,7 +160,7 @@
 
     private async Task RefreshTemplates()
     {
-        _templates = (await _templateService.GetAllTemplates()).Templates;
+        _templates = (await _templateService.GetAllTemplates()).Templates ?? new List<Template>();
         StateHasChanged();
     }
 
