@@ -27,7 +27,7 @@
                     <button type="button" @onclick="Search">Search</button>
                 </td>
                 <td>
-                    <button type="button">Last searches</button>
+                    <button style="margin-left: 100px" type="button" @onclick="CreateUser">Create</button>
                 </td>
             </tr>
         </table>
@@ -79,11 +79,20 @@
 
 </table>
 
+@if (ShowAddClient)
+{   
+    
+    <AddClientDialog OnCloseCallback="@CloseAddClient" />
+}
+
+
 @code {
 
     private string SearchText { get; set; }
 
     private bool ShowError { get; set; } = false;
+
+    public bool ShowAddClient { get; set; } = false;
     
     private ClientResultModel ClientResult { get; set; }
     
@@ -211,6 +220,18 @@
     {
         ClientResults = null;
         ClientResult = result;
+        StateHasChanged();
+    }
+
+    private void CloseAddClient()
+    {
+        ShowAddClient = false;
+        StateHasChanged();
+    }
+
+    private void CreateUser()
+    {
+        ShowAddClient = true;
         StateHasChanged();
     }
 

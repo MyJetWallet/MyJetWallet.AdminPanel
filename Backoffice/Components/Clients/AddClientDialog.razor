@@ -1,0 +1,73 @@
+@using MyJetWallet.Domain
+@using Service.ClientWallets.Grpc
+
+@inject IClientWalletService _clientWalletService
+@inject IToaster ToastService
+
+<BaseTwoButtonsDialog
+    Caption="Create client"
+    OnClose="OnClose"
+    YesButtonCaption="Create"
+    NoButtonCaption="Close"
+    OnSubmit="OnSubmit">
+    
+    <table>
+        <tr>
+            <td>Broker Id</td>
+            <td><input type="text" class="form-control" @bind="BrokerId"/></td>
+        </tr>
+        <tr>
+            <td>Brand Id</td>
+            <td><input type="text" class="form-control" @bind="BrandId"/></td>
+        </tr>
+        <tr>
+            <td>Client Id</td>
+            <td><input type="text" class="form-control" @bind="ClientId"/></td>
+        </tr>
+        
+    </table>
+    
+</BaseTwoButtonsDialog>
+
+@code {
+    [Parameter]
+    public EventCallback OnCloseCallback { get; set; }
+
+    public string ClientId { get; set; } = "";
+    public string BrandId { get; set; } = "";
+    public string BrokerId { get; set; } = DomainConstants.DefaultBroker;
+
+    protected override void OnInitialized()
+    {
+        ClientId = "";
+        BrandId = "";
+    }
+
+    private async Task OnClose()
+    {
+        await OnCloseCallback.InvokeAsync();
+    }
+
+    private async Task OnSubmit()
+    {
+        if (string.IsNullOrWhiteSpace(BrokerId) ||
+            string.IsNullOrWhiteSpace(BrandId) ||
+            string.IsNullOrWhiteSpace(ClientId))
+        {
+            ToastService.Error("Cannot create client with empty fields");
+            return;
+        }
+        
+        await _clientWalletService.GetWalletsByClient(new JetClientIdentity()
+        {
+            BrokerId = BrokerId,
+            BrandId = BrandId,
+            ClientId = ClientId
+        });
+
+        ToastService.Info("Client created");
+        
+        await OnCloseCallback.InvokeAsync();
+    }
+
+}
