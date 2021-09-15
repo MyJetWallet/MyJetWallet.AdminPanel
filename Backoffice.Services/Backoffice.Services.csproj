@@ -11,7 +11,7 @@
     <ItemGroup>
       <PackageReference Include="DotNetCoreDecorators" Version="1.0.21" />
       <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0-preview.7.21377.19" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0-rc.1.21451.13" />
       <PackageReference Include="MyCrm.Accounts.Grpc" Version="1.0.25" />
       <PackageReference Include="MyCRM.AccountTransactions.Grpc" Version="1.0.12" />
       <PackageReference Include="MyCrm.AuditLog.Grpc" Version="1.0.4" />
@@ -31,7 +31,7 @@
       <PackageReference Include="MyCrm.AffiliateAccess.Grpc" Version="1.0.2" />
       <PackageReference Include="MyCrm.TradersDocuments.Grpc" Version="1.0.4" />
       <PackageReference Include="MyCrm.Withdrawals.Grpc" Version="1.0.27" />
-      <PackageReference Include="MyJetWallet.BitGo.Settings" Version="1.0.11" />
+      <PackageReference Include="MyJetWallet.BitGo.Settings" Version="1.1.1" />
       <PackageReference Include="MyJetWallet.Sdk.ExternalMarketsSettings" Version="1.0.3" />      
       <PackageReference Include="MyJetWallet.Service.AssetsDictionary.Client" Version="1.7.2" />
       <PackageReference Include="MyJetWallet.Service.Bitgo.Watcher.Client" Version="1.0.2" />
