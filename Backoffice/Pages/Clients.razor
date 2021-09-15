@@ -7,9 +7,11 @@
 @using Backoffice.Components.Clients.Model
 @using MyCrm.PersonalData.Grpc
 @using MyCrm.PersonalData.Grpc.Contracts
+@using SimpleTrading.PersonalData.Grpc
 
 @inject IClientWalletService _walletService
 @inject IMyCrmPersonalDataGrpcService _crmPersonalDataService 
+@inject IPersonalDataServiceGrpc _personalDataService;
 
 <table style="width: 100%; height: 100%">
     <tr>
@@ -70,7 +72,7 @@
     {
         <tr>
             <td rowspan="4">
-                <ClientPresentationComponent ClientId="@ClientResult.ClientId" BrandId="@ClientResult.BrandId" BrokerId="@ClientResult.BrokerId" EmailConfirmed="@ClientResult.EmailConfirmed" Email="@ClientResult.Email"/>
+                <ClientPresentationComponent ClientId="@ClientResult.ClientId" BrandId="@ClientResult.BrandId" BrokerId="@ClientResult.BrokerId" EmailConfirmed="@ClientResult.EmailConfirmed" Email="@ClientResult.Email" PhoneConfirmed="@ClientResult.PhoneConfirmed" Phone="@ClientResult.Phone"/>
             </td>
         </tr>
     }
@@ -101,12 +103,13 @@
             StateHasChanged();
             return;
         }
-
+        
         var crmData = await _crmPersonalDataService.GetByPhraseAsync(new GetByPhraseGrpcRequest
         {
             UserId = Program.Settings.CrmUserId,
             Phrase = SearchText
         }).ToListAsync();
+        
         foreach (var result in crmData)
         {
             var response = await _walletService.SearchClientsAsync(new SearchWalletsRequest
@@ -114,9 +117,10 @@
                 SearchText = result.Id,
                 Take = 10
             });
+            var pdResponse = await _personalDataService.GetByIdAsync(result.Id);
             if (response.Clients?.Any() == true)
             {
-                ClientResults.AddRange(response.Clients.Select(client => new ClientResultModel(client, result.EmailIsConfirmed, result.Email)));
+                ClientResults.AddRange(response.Clients.Select(client => new ClientResultModel(client, (pdResponse.PersonalData.Confirm!=null), pdResponse.PersonalData.Email,(pdResponse.PersonalData.ConfirmPhone!=null), pdResponse.PersonalData.Phone)));
             }
         }
         
@@ -127,29 +131,47 @@
                 SearchText = SearchText,
                 Take = 10
             });
-            
-            if (response.Clients?.Any() != true)
+
+            if (response.Clients?.Any() == true)
+            {
+
+                foreach (var client in response?.Clients)
+                {
+                    try
+                    {
+                        var crmResponse = await _crmPersonalDataService.GetAsync(new GetPersonalDataGrpcRequest()
+                        {
+                            TraderId = client.ClientId,
+                            BackOfficeUserId = Program.Settings.CrmUserId
+                        });
+                        var pdResponse = await _personalDataService.GetByIdAsync(client.ClientId);
+                        ClientResults.Add(new ClientResultModel(client, crmResponse.Trader.EmailIsConfirmed, crmResponse.Trader.Email, (pdResponse.PersonalData.ConfirmPhone != null), pdResponse.PersonalData.Phone));
+                    }
+                    catch
+                    {
+                        ClientResults.Add(new ClientResultModel(client, false, "", false, ""));
+                    }
+                }
+            }
+        }
+
+        if (!ClientResults.Any())
+        {
+            var pdResponse = await _personalDataService.GetByPhone(SearchText);
+            if (pdResponse.PersonalData == null)
             {
                 ShowError = true;
                 StateHasChanged();
                 return;
             }
-            
-            foreach (var client in response?.Clients)
+            var response = await _walletService.SearchClientsAsync(new SearchWalletsRequest
             {
-                try
-                {
-                    var crmResponse = await _crmPersonalDataService.GetAsync(new GetPersonalDataGrpcRequest()
-                    {
-                        TraderId = client.ClientId,
-                        BackOfficeUserId = Program.Settings.CrmUserId
-                    });
-                    ClientResults.Add(new ClientResultModel(client, crmResponse.Trader.EmailIsConfirmed, crmResponse.Trader.Email));
-                }
-                catch
-                {
-                    ClientResults.Add(new ClientResultModel(client, false, ""));
-                }
+                SearchText = pdResponse.PersonalData.Id,
+                Take = 10
+            });
+            if (response.Clients?.Any() == true)
+            {
+                ClientResults.AddRange(response.Clients.Select(client => new ClientResultModel(client, (pdResponse.PersonalData.Confirm!=null), pdResponse.PersonalData.Email,(pdResponse.PersonalData.ConfirmPhone!=null), pdResponse.PersonalData.Phone)));
             }
         }
 

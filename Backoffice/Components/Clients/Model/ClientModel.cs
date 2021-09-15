@@ -5,13 +5,15 @@ namespace Backoffice.Components.Clients.Model
 {
     public class ClientModel
     {
-        public ClientModel(string brokerId, string clientId, string brandId, bool emailConfirmed, string email)
+        public ClientModel(string brokerId, string clientId, string brandId, bool emailConfirmed, string email, bool phoneConfirmed, string phone)
         {
             BrokerId = brokerId;
             ClientId = clientId;
             BrandId = brandId;
             EmailConfirmed = emailConfirmed;
             Email = email;
+            PhoneConfirmed = phoneConfirmed;
+            Phone = phone;
             Wallets = new List<WalletModel>();
         }
 
@@ -20,6 +22,8 @@ namespace Backoffice.Components.Clients.Model
         public string BrandId { get; set; }
         public bool EmailConfirmed { get; set; }
         public string Email { get; set; }
+        public bool PhoneConfirmed { get; set; }
+        public string Phone { get; set; }
         public List<WalletModel> Wallets { get; set; }
     }
 

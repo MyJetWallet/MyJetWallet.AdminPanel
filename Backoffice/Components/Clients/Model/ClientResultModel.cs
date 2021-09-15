@@ -4,7 +4,7 @@ namespace Backoffice.Components.Clients.Model
 {
     public class ClientResultModel
     {
-        public ClientResultModel(SearchWallet wallet, bool emailConfirmed, string email)
+        public ClientResultModel(SearchWallet wallet, bool emailConfirmed, string email, bool phoneConfirmed, string phone)
         {
             BrokerId = wallet.BrokerId;
             BrandId = wallet.BrandId;
@@ -12,6 +12,8 @@ namespace Backoffice.Components.Clients.Model
             Count = wallet.Count;
             EmailConfirmed = emailConfirmed;
             Email = email;
+            PhoneConfirmed = phoneConfirmed;
+            Phone = phone;
         }
         public string BrokerId { get; set; }
 
@@ -25,6 +27,8 @@ namespace Backoffice.Components.Clients.Model
         
         public string Email { get; set; }
         
-        //public bool PhoneConfirmed { get; set; }
+        public string Phone { get; set; }
+
+        public bool PhoneConfirmed { get; set; }
     }
 }
