@@ -1,11 +1,13 @@
 @using Backoffice.Abstractions.Bo
 @using Backoffice.Services
+@using Backoffice.Users
 @using Microsoft.AspNetCore.Http
 
 @inherits LayoutComponentBase
 @inject IBoUsersService BoUsers
 @inject MyHttpContextAccessor ContextAccessor
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject BoUserAccessor _accessor
 
 @if (CurrentBoUserUser == null)
 {
@@ -31,13 +33,23 @@
 @code {
 
     private IBackOfficeUser CurrentBoUserUser { get; set; }
+    
+    protected string BoUser { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var boUser = auth.User.Identity?.Name ?? "no-user";
-        //var boUser = await ContextAccessor.Context.GetBoUserId();
+        var boUser1 = await ContextAccessor.Context.GetBoUserId();
+
+        BoUser = boUser;
+        
+        Console.WriteLine($"  --- {boUser}  {boUser1}");
+        
         CurrentBoUserUser = await BoUsers.GetBoUserById(boUser);
+
+        _accessor.UserId = boUser;
+        
         await base.OnInitializedAsync();
     }
 

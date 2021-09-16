@@ -24,10 +24,7 @@
       <PackageReference Include="Highsoft.Highcharts" Version="9.1.2.2" />
       <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.18.0" />
       <PackageReference Include="MW.Blazor.TagSelector" Version="1.2.3" />
-      <PackageReference Include="MyCrm.Accounts.Grpc" Version="1.0.25" />
-      <PackageReference Include="MyCrm.AutoOwnerProfiles.Grpc" Version="1.0.1" />
-      <PackageReference Include="MyCrm.MyCrmTradersUtmParametersGrpcContracts" Version="1.0.3" />
-      <PackageReference Include="MyCrm.TradersDocuments.Grpc" Version="1.0.4" />
+      <PackageReference Include="MyCrm.PersonalData.Grpc" Version="1.0.49" />
       <PackageReference Include="MyJetWallet.BitGo" Version="1.1.6" />
       <PackageReference Include="MyJetWallet.BitGo.Settings" Version="1.1.1" />
       <PackageReference Include="MyJetWallet.Domain.ExternalMarketApi" Version="1.1.6" />
@@ -73,7 +70,6 @@
       <PackageReference Include="Radzen.Blazor" Version="3.9.9" />
       <PackageReference Include="SimpleTrading.BaseMetrics" Version="1.0.3" />
       <PackageReference Include="SimpleTrading.CandlesHistory.Grpc" Version="1.0.15" />
-      <PackageReference Include="SimpleTrading.Deposit.Grpc" Version="1.2.18" />
       <PackageReference Include="SimpleTrading.PersonalData.Grpc" Version="1.0.50" />
       <PackageReference Include="SimpleTrading.ServiceStatusReporterConnector" Version="1.0.9" />
       <PackageReference Include="Sotsera.Blazor.Toaster" Version="3.0.0" />

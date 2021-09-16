@@ -10,8 +10,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="MyCrm.Deposits.Grpc" Version="1.0.37" />
-      <PackageReference Include="MyCrm.Kyc.New.Grpc" Version="1.0.8" />
       <PackageReference Include="MyJetWallet.Service.ClientWallets.Client" Version="1.2.4" />
     </ItemGroup>
 

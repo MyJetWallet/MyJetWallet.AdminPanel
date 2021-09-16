@@ -4,13 +4,18 @@
 @using Service.IndexPrices.Client
 @using Service.IndexPrices.Domain.Models
 @using Syncfusion.Blazor.Diagrams
+@using Backoffice.Users
 
 @inject IIndexPricesClient _indexPricesClient
 @inject IIndexPriceManager _indexPriceManager;
+@inject IBoUserAccessor _userAccessor
 
 @implements IDisposable
 
 <h3>Index Prices</h3>
+
+<h3>aa @_userAccessor.UserId</h3>
+
 <ul class="nav">
     <li><button type="button" class="btn-outline-info btn" style="height: 20px; font-size: 10px" @onclick="@(() => OpenUpdateWindow(null))" >Create new</button></li>
 </ul>    

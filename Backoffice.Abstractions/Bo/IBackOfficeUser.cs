@@ -8,7 +8,6 @@ namespace Backoffice.Abstractions.Bo
         string Id { get; set;}
         DateTime Registered { get; set;}
         bool IsBlocked { get; set;}
-        string Ip { get; set;}
         string PersonalName { get; set;}
         bool IsAdmin { get; set;}
         bool CanLoginEdit { get; set;}

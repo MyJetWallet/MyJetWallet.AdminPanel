@@ -7,13 +7,17 @@
 @using Service.IndexPrices.Client
 @using Service.IndexPrices.Domain.Models
 @using Syncfusion.Blazor.Diagrams
+@using Backoffice.Users
 
 @inject ICurrentPricesClient _currentPricesClient
+@inject IBoUserAccessor _userAccessor
 
 
 @implements IDisposable
 
 <h3>Current Prices</h3>
+
+<h3>@_userAccessor.UserId</h3>
 
 <table class="table" style="width: auto; font-size: 10px;">
     <thead>

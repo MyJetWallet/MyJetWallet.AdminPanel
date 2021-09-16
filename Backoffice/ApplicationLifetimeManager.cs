@@ -17,7 +17,6 @@ namespace Backoffice
         private readonly ILogger<ApplicationLifetimeManager> _logger;
         private readonly MyNoSqlTcpClient _noSqlTcpClient;
         private readonly IBackofficeRolesRepository _backofficeRolesRepository;
-        private readonly IBackofficeOfficeService _backofficeOfficeService;
         private readonly ILoggerFactory _loggerFactory;
 
         private static readonly TaskTimer StatusTimer = new(TimeSpan.FromSeconds(30));
@@ -27,7 +26,7 @@ namespace Backoffice
             ILogger<ApplicationLifetimeManager> logger,
             MyNoSqlTcpClient noSqlTcpClient,
             IBackofficeRolesRepository backofficeRolesRepository,
-            IBackofficeOfficeService backofficeOfficeService,
+            
             IBoUsersService boUsersService,
             ILoggerFactory loggerFactory
             )
@@ -36,7 +35,6 @@ namespace Backoffice
             _logger = logger;
             _noSqlTcpClient = noSqlTcpClient;
             _backofficeRolesRepository = backofficeRolesRepository;
-            _backofficeOfficeService = backofficeOfficeService;
             _loggerFactory = loggerFactory;
 
             HttpUtils.BoUsersService = boUsersService;
@@ -55,7 +53,6 @@ namespace Backoffice
 
             StatusTimer.Register("BoDataSync", async () =>
             {
-                OfficesCache.SyncData(await _backofficeOfficeService.GetAsync());
                 RolesCache.SyncData(await _backofficeRolesRepository.GetAllRolesAsync());
             });
 
