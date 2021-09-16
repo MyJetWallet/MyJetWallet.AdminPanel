@@ -1,0 +1,78 @@
+@using Backoffice.Abstractions.Bo
+
+<h3>Roles</h3>
+
+@inject IBackofficeRolesRepository _rolesRepository
+
+<ul class="nav">
+    <li><button type="button" class="btn-outline-warning btn" @onclick="RefreshList" >Refresh</button></li>
+    <li><button type="button" class="btn-outline-warning btn" @onclick="ShowAdd" >Add new</button></li>
+</ul>
+
+<table>
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Rights</th>
+        <th></th>
+    </tr>
+    </thead>
+        @foreach (var role in Roles)
+        {
+            <tr>
+                <td>@role.Id</td>
+                <td>@role.Name</td>
+                <td>@role.Rights.Aggregate((s, s1) => $"{s},s1")</td>
+                <td>
+                    <ul class="nav">
+                        <li><button type="button" class="btn-outline-warning btn" @onclick="ShowEdit" >Edit</button></li>
+                    </ul>
+                </td>
+            </tr>
+        }
+    <tbody>
+        
+    </tbody>
+</table>
+
+@if (IsShowAdd)
+{
+    
+}
+
+@if (IsShowEdit)
+{
+    
+}
+
+@code {
+
+    public IEnumerable<IBackofficeRoleModel> Roles { get; set; }
+    
+    private bool IsShowEdit { get; set; }
+    private bool IsShowAdd { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        Roles = await _rolesRepository.GetAllRolesAsync();
+        StateHasChanged();
+    }
+
+    private void ShowEdit()
+    {
+        IsShowEdit = true;
+    }
+
+    private async Task RefreshList()
+    {
+        Roles = await _rolesRepository.GetAllRolesAsync();
+        StateHasChanged();
+    }
+
+    private void ShowAdd()
+    {
+        IsShowAdd = true;
+    }
+
+}

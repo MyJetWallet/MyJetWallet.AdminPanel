@@ -61,5 +61,16 @@ namespace Backoffice.TableStorage.Roles
 
             return result;
         }
+        
+        public static TableStorageBackofficeRoleModel Create(string roleId)
+        {
+            var result = new TableStorageBackofficeRoleModel
+            {
+                PartitionKey = GeneratePartitionKey(),
+                RowKey = roleId
+            };
+
+            return result;
+        }
     }
 }

@@ -93,6 +93,8 @@ namespace Backoffice.Modules
             builder
                 .RegisterInstance(Program.Settings.TableStorageConnectionString.CreateRolesRepository())
                 .As<IBackofficeRolesRepository>()
+                .As<IStartable>()
+                .AutoActivate()
                 .SingleInstance();
 
         }

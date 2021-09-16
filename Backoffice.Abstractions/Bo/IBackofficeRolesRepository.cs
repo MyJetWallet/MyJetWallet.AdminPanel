@@ -7,7 +7,8 @@ namespace Backoffice.Abstractions.Bo
     {
         Task AddAsync(IBackofficeRoleModel backOfficeRole);
         Task EditAsync(IBackofficeRoleModel data);
-        Task<IEnumerable<IBackofficeRoleModel>> GetAllRolesAsync();
+        Task DeleteAsync(IBackofficeRoleModel data);
+        Task<IReadOnlyList<IBackofficeRoleModel>> GetAllRolesAsync();
         Task<IBackofficeRoleModel> GetRoleAsync(string id);
     }
 }
