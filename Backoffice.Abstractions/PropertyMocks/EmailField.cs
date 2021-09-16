@@ -47,7 +47,7 @@ namespace Backoffice.Abstractions.PropertyMocks
             if (user == null)
                 return GetAnonimizedEmail(_email ?? string.Empty);
 
-            if (user.IsAdmin || user.ExposePersonalData)
+            if (user.IsAdmin)
                 return _email;
 
             return GetAnonimizedEmail(_email ?? string.Empty);

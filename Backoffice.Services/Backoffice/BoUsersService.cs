@@ -23,7 +23,10 @@ namespace Backoffice.Services.Backoffice
                 IsAdmin = true,
                 IsBlocked = false,
                 PersonalName = "Alexey",
-                Registered = DateTime.Parse("2021-01-01")
+                PhoneNumber = "123-123-123",
+                TelegramNickName = "",
+                Registered = DateTime.Parse("2021-01-01"),
+                
             };
         }
 

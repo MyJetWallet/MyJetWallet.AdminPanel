@@ -38,7 +38,7 @@ namespace Backoffice.Abstractions.PropertyMocks
             if (user == null)
                 return GetAnonimizedPhone(_phone ?? string.Empty);
 
-            if (user.IsAdmin || user.ExposePersonalData)
+            if (user.IsAdmin)
                 return _phone;
 
             return GetAnonimizedPhone(_phone ?? string.Empty);

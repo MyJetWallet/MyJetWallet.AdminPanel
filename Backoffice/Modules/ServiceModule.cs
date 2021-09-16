@@ -95,10 +95,6 @@ namespace Backoffice.Modules
                 .As<IBackofficeRolesRepository>()
                 .SingleInstance();
 
-            builder
-                .RegisterInstance(Program.Settings.TableStorageConnectionString.CreateFiltersPresetsRepository())
-                .As<IBackofficeFiltersPresetRepository>()
-                .SingleInstance();
         }
 
         private static void RegisterGrpcService(ContainerBuilder builder)

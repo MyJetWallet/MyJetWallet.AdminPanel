@@ -2,7 +2,6 @@
 @using Backoffice.Abstractions.Bo
 
 @inject IToaster ToastService
-@inject IBackofficeFiltersPresetRepository PresetRepository
 
 @if (FiltersPresets != null && FiltersPresets.Any())
 {
@@ -13,7 +12,7 @@
             <option selected>Select filter</option>
             @foreach (var itm in FiltersPresets)
             {
-                <option value="@itm.FilterName">@itm.FilterName</option>
+                <option value="@itm">@itm</option>
             }
         </select>
 
@@ -52,7 +51,7 @@
 {
     private bool IsSaveDialogActive { get; set; }
 
-    private IEnumerable<ILogPresetModel> FiltersPresets { get; set; }
+    private IEnumerable<string> FiltersPresets { get; set; }
 
     [Parameter]
     public SearchModel SearchModel { get; set; }
@@ -101,14 +100,14 @@
     private async void OnSave()
     {
         IsSaveDialogActive = true;
-        FiltersPresets = await PresetRepository.GetFiltersForPage(CurrentBoUserUser.Id, PageName);
+        FiltersPresets = new List<string>() {"111", "222", "333"};
         StateHasChanged();
     }
 
     private async void OnHideSave()
     {
         IsSaveDialogActive = false;
-        FiltersPresets = await PresetRepository.GetFiltersForPage(CurrentBoUserUser.Id, PageName);
+        FiltersPresets = new List<string>() {"111", "222", "333"};
         StateHasChanged();
     }
 
@@ -121,7 +120,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        FiltersPresets = await PresetRepository.GetFiltersForPage(CurrentBoUserUser.Id, PageName);
+        FiltersPresets = new List<string>() {"111", "222", "333"};
         await base.OnInitializedAsync();
     }
 
@@ -129,13 +128,13 @@
     {
         var selectedFilter = eventArgs.Value?.ToString();
 
-        var filter = FiltersPresets.FirstOrDefault(itm => itm.FilterName == selectedFilter);
+        var filter = FiltersPresets.FirstOrDefault(itm => itm == selectedFilter);
         if (filter == null)
         {
             ToastService.Error("Filter not found");
             return;
         }
 
-        _filters = filter.GetFilters();
+        //_filters = filter.GetFilters();
     }
 }

@@ -39,7 +39,7 @@ namespace Backoffice.Abstractions.PropertyMocks
             if (user == null)
                 return GetAnonimizedStr(_str ?? string.Empty);
 
-            if (user.IsAdmin || user.ExposePersonalData)
+            if (user.IsAdmin)
                 return _str;
 
             return GetAnonimizedStr(_str ?? string.Empty);
