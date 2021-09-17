@@ -1,0 +1,222 @@
+@page "/PoolSimulation"
+<h3>PoolSimulation</h3>
+
+<div style="margin: 30px">
+    <h3>prices</h3>
+    <table>
+        <tr>
+            <td>Active A price </td>
+            <td><input type="text" class="form-control" @bind="ActiveAPrice"/></td>
+            <td>$</td>
+        </tr>
+        <tr>
+            <td>Active B price </td>
+            <td><input type="text" class="form-control" @bind="ActiveBPrice"/></td>
+            <td>$</td>
+        </tr>
+        <tr>
+            <td>Price A-B: </td>
+            <td>@PriceAb</td>
+            <td></td>
+        </tr>
+    </table>
+</div>
+<div style="margin: 30px">
+    <h3>pool state</h3>
+    <table>
+        <tr><td>total capital: </td><td>@PoolSize</td><td>$</td></tr>
+        <tr><td>total capacity: </td><td>@PoolCapacity</td><td>$</td></tr>
+        <tr><td>mid price:</td><td>@PoolPrice</td><td></td></tr>
+        <tr>
+            <td>Pool Asset 1 Size:</td>
+            <td><input type="text" class="form-control" @bind="PoolAssetAVolume"/></td>
+            <td>$</td>
+        </tr>
+        <tr>
+            <td>Pool Asset 2 Size:</td>
+            <td><input type="text" class="form-control" @bind="PoolAssetBVolume"/> $</td>
+            <td>$</td>
+        </tr>
+        <tr></tr>
+    </table>
+</div>
+
+<div style="margin: 30px">
+    <h3>RFQ Asset 1 sell</h3>
+    <table>
+        <tr>
+            <td>volume Asset 1:</td>
+            <input type="text" class="form-control" @bind="RfqAsset1_Volume"/>
+        </tr>
+        <tr><td>volume Asset 2:</td><td>@RfqAsset1_QuoteVolume</td></tr>
+        <tr><td>Price:</td><td>@RfqAsset1_Price</td></tr>
+        <tr><button type="button" class="btn-outline-secondary btn" @onclick="SellAsset1">Sell</button></tr>
+    </table>
+</div>
+
+<div style="margin: 30px">
+    <h3>RFQ Asset 2 sell</h3>
+    <table>
+        <tr><td>volume Asset 1:</td><td>@RfqAsset2_QuoteVolume</td></tr>
+        <tr>
+            <td>volume Asset 2:</td>
+            <input type="text" class="form-control" @bind="RfqAsset2_Volume"/>
+        </tr>
+        <tr><td>Price:</td><td>@RfqAsset2_Price</td></tr>
+        <tr><button type="button" class="btn-outline-secondary btn" @onclick="SellAsset2">Sell</button></tr>
+    </table>
+</div>
+
+<div style="margin: 30px">
+    <table>
+        <tr>
+            <th>Asset A</th>
+            <th>Asset B</th>
+            <th>Price</th>
+        </tr>
+        @foreach (var trade in Trades)
+        {
+            <tr>
+                <td>@trade.Item1</td>
+                <td>@trade.Item2</td>
+                <td>@trade.Item3</td>
+            </tr>
+        }
+    </table>
+</div>
+
+@code {
+
+    public decimal ActiveAPrice { get; set; }
+
+    public decimal ActiveBPrice { get; set; }
+
+    public decimal PriceAb
+    {
+        get
+        {
+            try
+            {
+                return ActiveBPrice / ActiveAPrice;
+            }
+            catch (Exception e)
+            {
+                return 0;
+            }
+        }
+    }
+
+    public decimal PoolAssetAVolume { get; set; }
+    public decimal PoolAssetBVolume { get; set; }
+
+    public decimal PoolPrice
+    {
+        get
+        {
+            try
+            {
+                return PoolAssetBVolume / PoolAssetAVolume;
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+            
+        }
+    }
+
+    public decimal PoolSize => PoolAssetAVolume * ActiveAPrice + PoolAssetBVolume * ActiveBPrice;
+
+    public decimal PoolCapacity => PoolAssetAVolume * PoolAssetBVolume;
+
+
+    public decimal RfqAsset1_Volume { get; set; }
+    public decimal RfqAsset1_QuoteVolume
+    {
+        get
+        {
+            try
+            {
+                return -PoolAssetBVolume * RfqAsset1_Volume / (PoolAssetAVolume - RfqAsset1_Volume);
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+        }
+    }
+
+    public decimal RfqAsset1_Price
+    {
+        get
+        {
+            try
+            {
+                return -Math.Round(RfqAsset1_QuoteVolume / RfqAsset1_Volume, 8);
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+            
+        }
+    }
+
+    public decimal RfqAsset2_Volume { get; set; }
+    public decimal RfqAsset2_QuoteVolume
+    {
+        get
+        {
+            try
+            {
+                return -PoolAssetAVolume * RfqAsset2_Volume / (PoolAssetBVolume - RfqAsset2_Volume);
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+        }
+    }
+
+    public decimal RfqAsset2_Price
+    {
+        get
+        {
+            try
+            {
+                return -Math.Round(RfqAsset2_Volume / RfqAsset2_QuoteVolume, 8);
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+            
+        }
+    }
+
+    public List<(decimal, decimal, decimal)> Trades = new List<(decimal, decimal, decimal)>();
+
+    private void SellAsset1()
+    {
+        var volume = RfqAsset1_Volume;
+        var quoteVolume = RfqAsset1_QuoteVolume;
+        
+        PoolAssetAVolume -= volume;
+        PoolAssetBVolume -= quoteVolume;
+        Trades.Add((volume, quoteVolume, -Math.Round(quoteVolume / volume, 8)));
+        StateHasChanged();
+    }
+
+    private void SellAsset2()
+    {
+        var volume = RfqAsset2_Volume;
+        var quoteVolume = RfqAsset2_QuoteVolume;
+        
+        PoolAssetBVolume -= volume;
+        PoolAssetAVolume -= quoteVolume;
+        Trades.Add((quoteVolume, volume, -Math.Round(volume / quoteVolume, 8)));
+        StateHasChanged();
+    }
+
+}
+    
