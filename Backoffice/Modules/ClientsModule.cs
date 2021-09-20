@@ -18,6 +18,7 @@ using Service.BitGo.SignTransaction.Client;
 using Service.Bitgo.Watcher.Client;
 using Service.Bitgo.WithdrawalProcessor.Client;
 using Service.ChangeBalanceGateway.Client;
+using Service.ClientProfile.Client;
 using Service.ClientWallets.Client;
 using Service.Fees.Client.Grpc;
 using Service.IndexPrices.Client;
@@ -181,6 +182,8 @@ namespace Backoffice.Modules
             builder.RegisterNewsImporterClient(Program.Settings.NewsImporterServiceGrpcUrl);
             
             builder.RegisterInternalTransferClient(Program.Settings.InternalTransferGrpcServiceUrl);
+            
+            builder.RegisterClientProfileClientWithoutCache(Program.Settings.ClientProfileGrpcServiceUrl);
         }
         
         private void RegisterMyNoSqlTcpClient(ContainerBuilder builder)

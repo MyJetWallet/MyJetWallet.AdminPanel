@@ -146,5 +146,7 @@ namespace Backoffice
         [YamlProperty("AdminPanel.InternalTransferGrpcServiceUrl")]
         public string InternalTransferGrpcServiceUrl { get; set; }
         
+        [YamlProperty("AdminPanel.ClientProfileGrpcServiceUrl")]
+        public string ClientProfileGrpcServiceUrl { get; set; }
     }
 }

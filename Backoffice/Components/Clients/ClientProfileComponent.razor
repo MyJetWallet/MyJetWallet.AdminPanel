@@ -1,0 +1,126 @@
+@using Service.ClientProfile.Grpc
+@using Service.ClientProfile.Domain.Models
+@using Service.ClientProfile.Grpc.Models.Requests
+@inject IClientProfileService _clientProfileService
+@inject IToaster _toaster;
+<h3>ClientProfileComponent</h3>
+@if (_profile != null)
+{
+    <h5>2FA Status: @_profile.Status2FA</h5>
+    <table>
+        @if (_blockers != null && _blockers.Any())
+        {
+            <thead>
+            <tr>
+                <th>Id</th>
+                <th>Blocker type</th>
+                <th>Reason</th>
+                <th>Expiry time</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var blocker in _blockers)
+            {
+                <tr>
+                    <td>@blocker.BlockerId</td>
+                    <td>@blocker.BlockedOperationType</td>
+                    <td>@blocker.Reason</td>
+                    <td>@blocker.ExpiryTime</td>
+                    <td><button class="btn btn-outline-warning" @onclick="async () => { await RemoveBlocker(blocker.BlockerId); }" type="button">Remove</button></td>
+                </tr>
+            }
+            </tbody>
+        }
+        <button class="btn btn-outline-success" @onclick="async () => { await ShowAddBlocker(); }" type="button">Add</button>
+    </table>
+}
+
+@if (_isShowAddDialog)
+{
+    <BaseTwoButtonsDialog
+        Caption="Add new blocker"
+        OnClose="CloseDialog"
+        YesButtonCaption="Add"
+        NoButtonCaption="Close"
+        OnSubmit="async () => { await AddBlocker(); }">
+        
+        <input type="text" class="form-control" placeholder="Blocking reason" @bind="_newBlocker.BlockerReason"/>
+        <input type="datetime" class="form-control" @bind="_newBlocker.ExpiryTime"/>
+        <select @bind="_newBlocker.Type">
+            
+            @foreach (var type in Enum.GetValues(typeof(BlockingType)))
+            {
+                <option value=@type>@type</option>
+            }
+        </select>
+
+    </BaseTwoButtonsDialog>
+}
+
+@code {
+    
+    [Parameter]
+    public string ClientId { get; set; }
+
+    private ClientProfile _profile;
+    private List<Blocker> _blockers = new ();
+    private bool _isShowAddDialog = false;
+    private AddBlockerToClientRequest _newBlocker = new();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await Refresh();
+    }
+    
+    private async Task Refresh()
+    {
+        _profile = await _clientProfileService.GetOrCreateProfile(new GetClientProfileRequest()
+        {
+            ClientId = ClientId
+        });
+
+        _blockers = _profile.Blockers;
+        StateHasChanged();
+    }
+
+    private async Task RemoveBlocker(int blockerId)
+    {
+        var response = await _clientProfileService.DeleteBlockerFromClient(new DeleteBlockerFromClientRequest()
+        {
+            BlockerId = blockerId,
+            ClientId = ClientId
+        });
+        if(response.IsSuccess)
+            _toaster.Success("Blocker removed");
+        else
+            _toaster.Error($"Unable to remove blocker. Error: {response.Error}");
+
+        await Refresh();
+    }
+    
+    private async Task ShowAddBlocker()
+    {
+        _isShowAddDialog = true;
+    }
+
+    private async Task AddBlocker()
+    {
+        _newBlocker.ClientId = ClientId;
+        var response = await _clientProfileService.AddBlockerToClient(_newBlocker);
+        _isShowAddDialog = false;
+        
+        if(response.IsSuccess)
+            _toaster.Success("Blocker added");
+        else
+            _toaster.Error($"Unable to add blocker. Error: {response.Error}");
+        
+        await Refresh();
+    }
+    private void CloseDialog()
+    {
+        _isShowAddDialog = false;
+    }
+    
+
+}

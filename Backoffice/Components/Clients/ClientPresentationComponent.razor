@@ -70,6 +70,9 @@
                     <li class="nav-item">
                         <button class="page-link" style="@(GetMenuStyle(ClientPage.Notifications))" @onclick="@(() => SetPage(ClientPage.Notifications))">Notification History</button>
                     </li>
+                    <li class="nav-item">
+                        <button class="page-link" style="@(GetMenuStyle(ClientPage.Notifications))" @onclick="@(() => SetPage(ClientPage.Profile))">Client Profile</button>
+                    </li>
                 </ul>
             </tr>
             <tr>
@@ -107,6 +110,10 @@
                             
                         case ClientPage.Notifications:
                             <NotificationHistoryComponent ClientId="@ClientId"/>
+                            break;
+                            
+                        case ClientPage.Profile:
+                            <ClientProfileComponent ClientId="@ClientId"/>
                             break;
                     }
                     </CascadingValue>
@@ -171,7 +178,8 @@
         QuoteHistory,
         BlockchainDepositAddress,
         Sessions,
-        Notifications
+        Notifications,
+        Profile
     }
 
 
