@@ -21,21 +21,71 @@
         </tr>
     </table>
 </div>
+
+@if (IsShowSetPoolSize)
+{
+    <BaseTwoButtonsDialog
+        Caption="Set pool size"
+        OnClose="OnCloseSetPoolSize"
+        YesButtonCaption="Set"
+        NoButtonCaption="Close"
+        OnSubmit="OnSetPolSize">
+        
+        <table>
+            <tr>
+                <td>Pool size:</td>
+                <td><input type="text" class="form-control" @bind="SetPoolSizeVolume"/></td>
+                <td>$</td>
+            </tr>
+        </table>
+        
+    </BaseTwoButtonsDialog>
+}
+
 <div style="margin: 30px">
     <h3>pool state</h3>
     <table>
-        <tr><td>total capital: </td><td>@PoolSize</td><td>$</td></tr>
-        <tr><td>total capacity: </td><td>@PoolCapacity</td><td>$</td></tr>
+        <tr>
+            <td>total capital: </td>
+            <td>@PoolSize</td>
+            <td>$</td>
+            <td>
+                <span>
+                    (@(OriginalPoolSize > 0 ? Math.Round(PoolSize/OriginalPoolSize*100 - 100, 2) : 0)%)
+                </span>
+            </td>
+            <td><button type="button" class="btn-outline-secondary btn" @onclick="ShowSetPoolSize">Set</button></td>
+        </tr>
+        <tr>
+            <td>original capital: </td>
+            <td>@OriginalPoolSize</td>
+            <td>$</td>
+        </tr>
+        <tr>
+            <td>total capacity: </td>
+            <td>@PoolCapacity</td><td>$</td>
+            <td></td>
+        </tr>
         <tr><td>mid price:</td><td>@PoolPrice</td><td></td></tr>
         <tr>
             <td>Pool Asset 1 Size:</td>
             <td><input type="text" class="form-control" @bind="PoolAssetAVolume"/></td>
             <td>$</td>
+            <td>
+                <span>
+                    (@(PoolAssetAVolume > 0 ? Math.Round((PoolAssetAVolume*ActiveAPrice)/PoolSize*100, 2) : 0)%)
+                </span>
+            </td>
         </tr>
         <tr>
             <td>Pool Asset 2 Size:</td>
-            <td><input type="text" class="form-control" @bind="PoolAssetBVolume"/> $</td>
+            <td><input type="text" class="form-control" @bind="PoolAssetBVolume"/></td>
             <td>$</td>
+            <td>
+                <span>
+                    (@(PoolAssetAVolume > 0 ? Math.Round((PoolAssetBVolume*ActiveBPrice)/PoolSize*100, 2) : 0)%)
+                </span>
+            </td>
         </tr>
         <tr></tr>
     </table>
@@ -46,10 +96,23 @@
     <table>
         <tr>
             <td>volume Asset 1:</td>
-            <input type="text" class="form-control" @bind="RfqAsset1_Volume"/>
+            <td><input type="text" class="form-control" @bind="RfqAsset1_Volume"/></td>
+            <td>
+                <span>
+                    @( PoolSize > 0 ? Math.Round(RfqAsset1_Volume*ActiveAPrice/PoolSize*100, 4) : 0) % (@(RfqAsset1_Volume*ActiveAPrice))
+                </span>
+            </td>
         </tr>
         <tr><td>volume Asset 2:</td><td>@RfqAsset1_QuoteVolume</td></tr>
-        <tr><td>Price:</td><td>@RfqAsset1_Price</td></tr>
+        <tr>
+            <td>Price:</td>
+            <td>@RfqAsset1_Price</td>
+            <td>
+                <span>
+                    ( spread @(CalculateABPrice(RfqAsset1_Volume).Item3); @(CalculateABPrice(RfqAsset1_Volume).Item4)% )
+                </span>
+            </td>
+        </tr>
         <tr><button type="button" class="btn-outline-secondary btn" @onclick="SellAsset1">Sell</button></tr>
     </table>
 </div>
@@ -60,7 +123,7 @@
         <tr><td>volume Asset 1:</td><td>@RfqAsset2_QuoteVolume</td></tr>
         <tr>
             <td>volume Asset 2:</td>
-            <input type="text" class="form-control" @bind="RfqAsset2_Volume"/>
+            <td><input type="text" class="form-control" @bind="RfqAsset2_Volume"/></td>
         </tr>
         <tr><td>Price:</td><td>@RfqAsset2_Price</td></tr>
         <tr><button type="button" class="btn-outline-secondary btn" @onclick="SellAsset2">Sell</button></tr>
@@ -87,9 +150,9 @@
 
 @code {
 
-    public decimal ActiveAPrice { get; set; }
+    public decimal ActiveAPrice { get; set; } = 2000;
 
-    public decimal ActiveBPrice { get; set; }
+    public decimal ActiveBPrice { get; set; } = 100;
 
     public decimal PriceAb
     {
@@ -97,7 +160,7 @@
         {
             try
             {
-                return ActiveBPrice / ActiveAPrice;
+                return Math.Round(ActiveAPrice / ActiveBPrice, 4);
             }
             catch (Exception e)
             {
@@ -115,7 +178,7 @@
         {
             try
             {
-                return PoolAssetBVolume / PoolAssetAVolume;
+                return Math.Round(PoolAssetBVolume / PoolAssetAVolume, 4);
             }
             catch (Exception)
             {
@@ -125,9 +188,9 @@
         }
     }
 
-    public decimal PoolSize => PoolAssetAVolume * ActiveAPrice + PoolAssetBVolume * ActiveBPrice;
+    public decimal PoolSize => Math.Round(PoolAssetAVolume * ActiveAPrice + PoolAssetBVolume * ActiveBPrice, 4);
 
-    public decimal PoolCapacity => PoolAssetAVolume * PoolAssetBVolume;
+    public decimal PoolCapacity => Math.Round(PoolAssetAVolume * PoolAssetBVolume, 4);
 
 
     public decimal RfqAsset1_Volume { get; set; }
@@ -137,13 +200,28 @@
         {
             try
             {
-                return -PoolAssetBVolume * RfqAsset1_Volume / (PoolAssetAVolume - RfqAsset1_Volume);
+                return Math.Round( -PoolAssetBVolume * RfqAsset1_Volume / (PoolAssetAVolume - RfqAsset1_Volume), 4);
             }
             catch (Exception)
             {
                 return 0;
             }
         }
+    }
+
+    private (decimal, decimal, decimal, decimal) CalculateABPrice(decimal volume)
+    {
+        if (PoolAssetAVolume == 0 || PoolAssetBVolume == 0 || volume == 0)
+        {
+            return (0,0,0,0);
+        }
+        
+        volume = Math.Abs(volume);
+        var ask = -Math.Round((-PoolAssetBVolume * volume / (PoolAssetAVolume - volume))/volume, 4);
+        var bid = Math.Round(-PoolAssetBVolume * -volume / (PoolAssetAVolume - -volume)/volume, 4);
+        var spread = ask - bid;
+        var spreadpers = Math.Round(spread / ((ask + bid) / 2) * 100, 4);
+        return (ask, bid, spread, spreadpers);
     }
 
     public decimal RfqAsset1_Price
@@ -169,7 +247,7 @@
         {
             try
             {
-                return -PoolAssetAVolume * RfqAsset2_Volume / (PoolAssetBVolume - RfqAsset2_Volume);
+                return Math.Round( -PoolAssetAVolume * RfqAsset2_Volume / (PoolAssetBVolume - RfqAsset2_Volume), 4);
             }
             catch (Exception)
             {
@@ -184,7 +262,7 @@
         {
             try
             {
-                return -Math.Round(RfqAsset2_Volume / RfqAsset2_QuoteVolume, 8);
+                return Math.Round( -Math.Round(RfqAsset2_Volume / RfqAsset2_QuoteVolume, 8), 4);
             }
             catch (Exception)
             {
@@ -203,7 +281,7 @@
         
         PoolAssetAVolume -= volume;
         PoolAssetBVolume -= quoteVolume;
-        Trades.Add((volume, quoteVolume, -Math.Round(quoteVolume / volume, 8)));
+        Trades.Add((volume, quoteVolume, -Math.Round(quoteVolume / volume, 4)));
         StateHasChanged();
     }
 
@@ -214,7 +292,42 @@
         
         PoolAssetBVolume -= volume;
         PoolAssetAVolume -= quoteVolume;
-        Trades.Add((quoteVolume, volume, -Math.Round(volume / quoteVolume, 8)));
+        Trades.Add((quoteVolume, volume, -Math.Round(volume / quoteVolume, 4)));
+        StateHasChanged();
+    }
+
+    private bool IsShowSetPoolSize;
+    private void ShowSetPoolSize()
+    {
+        SetPoolSizeVolume = Math.Round(PoolSize);
+        IsShowSetPoolSize = true;
+        StateHasChanged();
+    }
+
+    private void OnCloseSetPoolSize()
+    {
+        IsShowSetPoolSize = false;
+        StateHasChanged();
+    }
+
+    public decimal SetPoolSizeVolume { get; set; }
+    private decimal OriginalPoolSize { get; set; }
+    private decimal OriginalPriceA { get; set; }
+    private decimal OriginalPriceB { get; set; }
+
+    private void OnSetPolSize()
+    {
+        var assetA = Math.Round(SetPoolSizeVolume / 2);
+        var assetB = SetPoolSizeVolume - assetA;
+
+        PoolAssetAVolume = Math.Round(assetA / ActiveAPrice, 4);
+        PoolAssetBVolume = Math.Round(assetB / ActiveBPrice, 4);
+
+        OriginalPoolSize = SetPoolSizeVolume;
+        OriginalPriceA = ActiveAPrice;
+        OriginalPriceB = ActiveBPrice;
+        
+        IsShowSetPoolSize = false;
         StateHasChanged();
     }
 

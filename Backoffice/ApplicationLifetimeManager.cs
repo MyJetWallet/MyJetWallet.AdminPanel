@@ -65,11 +65,11 @@ namespace Backoffice
         {
             _logger.LogInformation("OnStopping has been called.");
             
-            RefreshTimer.StopTimer();
+            //RefreshTimer.StopTimer();
             
-            _noSqlTcpClient.Stop();
-
-            StatusTimer.Stop();
+            //_noSqlTcpClient.Stop();
+            
+            //StatusTimer.Stop();
         }
 
         protected override void OnStopped()
