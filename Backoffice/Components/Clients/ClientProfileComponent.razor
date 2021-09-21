@@ -3,10 +3,18 @@
 @using Service.ClientProfile.Grpc.Models.Requests
 @inject IClientProfileService _clientProfileService
 @inject IToaster _toaster;
-<h3>ClientProfileComponent</h3>
+
 @if (_profile != null)
 {
     <h5>2FA Status: @_profile.Status2FA</h5>
+    @if (_profile.Status2FA == Status2FA.Enabled)
+    {
+        <button class="btn btn-outline-success" @onclick="async () => { await Disable2FA(); }" type="button">Disable 2FA</button>
+    }
+    @if (_profile.Status2FA != Status2FA.Enabled)
+    {
+        <button class="btn btn-outline-success" @onclick="async () => { await Enable2FA(); }" type="button">Enable 2FA</button>
+    }
     <table>
         @if (_blockers != null && _blockers.Any())
         {
@@ -32,9 +40,10 @@
             }
             </tbody>
         }
-        <button class="btn btn-outline-success" @onclick="async () => { await ShowAddBlocker(); }" type="button">Add</button>
+        <button class="btn btn-outline-success" @onclick="async () => { await ShowAddBlocker(); }" type="button">Add blocker</button>
     </table>
 }
+
 
 @if (_isShowAddDialog)
 {
@@ -120,6 +129,36 @@
     private void CloseDialog()
     {
         _isShowAddDialog = false;
+    }
+    
+    private async Task Enable2FA()
+    {
+        var response = await _clientProfileService.Enable2Fa(new Enable2FaRequest()
+        {
+            ClientId = ClientId
+        });
+        
+        if(response.IsSuccess)
+            _toaster.Success("Enabled 2FA");
+        else
+            _toaster.Error($"Unable to enable 2fa. Error: {response.Error}");
+        
+        await Refresh();
+    }
+    
+    private async Task Disable2FA()
+    {
+        var response = await _clientProfileService.Disable2Fa(new Disable2FaRequest()
+        {
+            ClientId = ClientId
+        });
+        
+        if(response.IsSuccess)
+            _toaster.Success("Disable 2FA");
+        else
+            _toaster.Error($"Unable to disable 2fa. Error: {response.Error}");
+        
+        await Refresh();
     }
     
 
