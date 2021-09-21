@@ -2,6 +2,7 @@
 @using Backoffice.Services.SpotInstruments
 @using SimpleTrading.CandlesHistory.Grpc.Contracts
 @using SimpleTrading.CandlesHistory.Grpc.Models
+@using SimpleTrading.Abstraction.Candles;
 
 @inject ISimpleTradingCandlesHistoryGrpc DataSource;
 @inject ISpotInstrumentManager SpotInstrumentManager;
@@ -21,10 +22,10 @@
     <div class="row">
         <span>time frame: </span>
         <select @bind="TimeFrame" style="width: 100px">
-            <option value=@CandleTypeGrpcModel.Minute>Minute</option>
-            <option value=@CandleTypeGrpcModel.Hour>Hour</option>
-            <option value=@CandleTypeGrpcModel.Day>Day</option>
-            <option value=@CandleTypeGrpcModel.Month>Month</option>
+            <option value=@CandleType.Minute>Minute</option>
+            <option value=@CandleType.Hour>Hour</option>
+            <option value=@CandleType.Day>Day</option>
+            <option value=@CandleType.Month>Month</option>
         </select>
     </div>
     <div class="row">
@@ -81,7 +82,7 @@
 
     private string Symbol;
 
-    private CandleTypeGrpcModel TimeFrame = CandleTypeGrpcModel.Day;
+    private CandleType TimeFrame = CandleType.Day;
     
     private List<string> SymbolList = new List<string>();
 
