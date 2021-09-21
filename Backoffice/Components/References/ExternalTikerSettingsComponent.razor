@@ -5,7 +5,10 @@
 @using Service.NewsImporter.Grpc.Models
 
 @inject IExternalTickerSettingsService _externalTickerSettingsService;
-
+@inject IIntegrationProviderService _integrationProviderService;
+<ul class="nav align-middle">
+    <li><button style="margin-left: 10px" type="button" class="btn-outline-info btn" @onclick="CheckTicker">Check ticker</button></li>
+</ul>
 @foreach (var elem in SettingsWithStringValues)
 {
     <div class="col">
@@ -54,6 +57,39 @@
         </BaseTwoButtonsDialog>
     </div>
 }
+@if (CheckTickerWindowOpen)
+{
+    <div>
+        <BaseTwoButtonsDialog
+            Caption="Check ticker"
+            OnClose="OnCloseCheckTicker"
+            YesButtonCaption="Check"
+            NoButtonCaption="Close"
+            OnSubmit="OnConfirmCheckTicker">
+            <table>
+                <tr>
+                    <td>Ticker</td>
+                    <td><input type="text" class="form-control" @bind=TickerToCheck/></td>
+                </tr>
+            </table>
+            @if (CheckTickerError)
+            {
+                <h2>@CheckTickerErrorText</h2>
+            }
+            @if (NewsByCheckedTicker != null && NewsByCheckedTicker.Any())
+            {
+                var index = 1;
+                foreach (var news in NewsByCheckedTicker)
+                {
+                    <h3>
+                        <b>@(index)</b>@(" " + news)
+                    </h3>
+                    index++;
+                }
+            }
+        </BaseTwoButtonsDialog>
+    </div>
+}
 
 @code {
     private List<ExternalTickerSettings> Settings { get; set; } = new();
@@ -66,6 +102,12 @@
     private string QuestionTitle { get; set; }
     private string QuestionText { get; set; }
     private Func<Task> QuestionConfirmCallback { get; set; }
+    
+    private bool CheckTickerWindowOpen { get; set; }
+    private string TickerToCheck { get; set; }
+    private bool CheckTickerError { get; set; }
+    private string CheckTickerErrorText { get; set; }
+    private List<string> NewsByCheckedTicker { get; set; } = new();
 
     private async Task CreateNew()
     {
@@ -211,5 +253,46 @@
     {
         public string NewsTicker { get; set; }
         public string AssociateSymbols { get; set; }
+    }
+
+    private async Task CheckTicker()
+    {
+        CheckTickerWindowOpen = true;
+        CheckTickerError = false;
+        CheckTickerErrorText = string.Empty;
+        NewsByCheckedTicker = new();
+        TickerToCheck = string.Empty;
+        
+        StateHasChanged();
+    }
+
+    private async Task OnCloseCheckTicker()
+    {
+        CheckTickerWindowOpen = false;
+        StateHasChanged();
+    }
+
+    private async Task OnConfirmCheckTicker()
+    {
+        var response = await _integrationProviderService.GetNewsByTickerAsync(new GetNewsByTickerRequest(){Ticker = TickerToCheck});
+        if (!response.Success)
+        {
+            CheckTickerError = true;
+            CheckTickerErrorText = response.ErrorText;
+            NewsByCheckedTicker = new();
+        }
+        else
+        {
+            CheckTickerError = false;
+            if (response.News != null && response.News.Any())
+            {
+                NewsByCheckedTicker = response.News.Select(e => e.Title).ToList();
+            }
+            else
+            {
+                NewsByCheckedTicker = new(){"News not found"};
+            }
+        }
+        StateHasChanged();
     }
 }
