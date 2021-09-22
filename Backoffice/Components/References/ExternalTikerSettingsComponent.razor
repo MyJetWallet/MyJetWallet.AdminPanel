@@ -2,6 +2,7 @@
 @using Service.NewsImporter.Domain.NoSql
 @using Service.NewsImporter.Grpc
 @using Microsoft.AspNetCore.Components
+@using Service.NewsImporter.Domain.Models
 @using Service.NewsImporter.Grpc.Models
 
 @inject IExternalTickerSettingsService _externalTickerSettingsService;
@@ -15,12 +16,21 @@
         <table>
             <thead>
             <tr>
+                <th>Integration Source</th>
                 <th>News Tiker</th>
                 <th>Associate Symbols</th>
             </tr>
             </thead>
             <tbody>
             <tr>
+                <td class="align-middle">
+                    <select @bind="@elem.IntegrationSource">
+                        @foreach (var name in IntegrationConstants.IntegrationSources)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </td>
                 <td class="align-middle">
                     <input type="text" class="form-control" @bind="elem.NewsTicker"/>
                 </td>
@@ -144,6 +154,7 @@
         {
             SettingsWithStringValues.Add(new ExternalTickerSettingsWithStrings()
             {
+                IntegrationSource = e.IntegrationSource,
                 NewsTicker = e.NewsTicker,
                 AssociateSymbols = GetStringByList(e.AssociateSymbols)
             });
@@ -157,6 +168,7 @@
         {
             Settings.Add(new ExternalTickerSettings()
             {
+                IntegrationSource = elem.IntegrationSource ?? IntegrationConstants.IntegrationSources.FirstOrDefault(),
                 NewsTicker = elem.NewsTicker,
                 AssociateSymbols = GetListByString(elem.AssociateSymbols)
             });
@@ -251,6 +263,7 @@
 
     public class ExternalTickerSettingsWithStrings
     {
+        public string IntegrationSource { get; set; }
         public string NewsTicker { get; set; }
         public string AssociateSymbols { get; set; }
     }

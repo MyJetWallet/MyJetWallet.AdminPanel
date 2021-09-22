@@ -1,6 +1,7 @@
 @using Service.NewsRepository.Grpc
 @using Service.NewsRepository.Domain.Models
 @using Backoffice.Services
+@using Service.NewsImporter.Domain.Models
 @using Service.NewsRepository.Grpc.Models
 @inject INewsService _newsService
 <h3>News</h3>
@@ -14,7 +15,15 @@
     <span style="margin-left: 10px; vertical-align: center">Count in page: </span><input type="number" style="width: 40px" @bind="CountInPage"/>
 </nav>
 <nav>
-    <span style="margin-left: 10px; vertical-align: center">Integration Source: </span><input type="text" style="width: auto" @bind="IntegrationSource"/>
+    <span style="margin-left: 10px; vertical-align: center">Integration Source: </span>
+    <select @bind="@IntegrationSource">
+        @foreach (var name in _integrationSources)
+        {
+            <option value="@name">@name</option>
+        }
+    </select>
+    
+    
     <span style="margin-left: 10px; vertical-align: center">Ticker: </span><input type="text" style="width: auto" @bind="Ticker"/>
     <button type="button" class="btn-outline-secondary btn" @onclick="FindNews">Find</button>
     <button type="button" class="btn-outline-secondary btn" @onclick="ClearFilters">Clear</button>
@@ -85,9 +94,18 @@
     
     private int CountInPage { get; set; } = 20;
     private DateTime _lastSeen = DateTime.MinValue;
+    
+    private bool FindCompleted { get; set; }
+
+    private int FindedCount { get; set; }
+
+    private List<string> _integrationSources = new();
 
     protected override async Task OnInitializedAsync()
     {
+        _integrationSources.Add(string.Empty);
+        _integrationSources.AddRange(IntegrationConstants.IntegrationSources);
+        
         await RefreshNews();
     }
 
@@ -189,9 +207,4 @@
         FindCompleted = false;
         FindedCount = 0;
     }
-
-    private bool FindCompleted { get; set; }
-
-    private int FindedCount { get; set; }
-
 }
