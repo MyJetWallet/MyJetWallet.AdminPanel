@@ -4,7 +4,6 @@
 @using Service.NewsRepository.Grpc.Models
 @inject INewsService _newsService
 <h3>News</h3>
-
 <nav>
     <button type="button" class="btn-outline-info btn"  @onclick="ShowCreate">Add News</button>
     @if (_news?.Any() == true)
@@ -13,6 +12,16 @@
     }
     <button type="button" class="btn-outline-secondary btn" @onclick="RefreshNews">Refresh</button>
     <span style="margin-left: 10px; vertical-align: center">Count in page: </span><input type="number" style="width: 40px" @bind="CountInPage"/>
+</nav>
+<nav>
+    <span style="margin-left: 10px; vertical-align: center">Integration Source: </span><input type="text" style="width: auto" @bind="IntegrationSource"/>
+    <span style="margin-left: 10px; vertical-align: center">Ticker: </span><input type="text" style="width: auto" @bind="Ticker"/>
+    <button type="button" class="btn-outline-secondary btn" @onclick="FindNews">Find</button>
+    <button type="button" class="btn-outline-secondary btn" @onclick="ClearFilters">Clear</button>
+    @if (FindCompleted)
+    {
+        <span style="margin-left: 10px; vertical-align: center">Finded @FindedCount news</span>
+    }
 </nav>
 <table class="table" style="width: auto">
     <thead>
@@ -34,7 +43,6 @@
     @{
         var rowNumber = 0;
     }
-        
     @foreach (var news in _news)
     {
         rowNumber++;
@@ -60,9 +68,7 @@
         </tr>
     }
     </tbody>
-
 </table>
-
 
 @if (IsShowEdit)
 {
@@ -100,6 +106,8 @@
     }
     private async Task RefreshNews()
     {
+        ClearFilters();
+        
         _news = (await _newsService.GetNews(new ()
         {
             BatchSize = CountInPage,
@@ -111,6 +119,8 @@
     
     private async Task NextPage()
     {
+        ClearFilters();
+        
         _lastSeen = _news.Min(e => e.Timestamp);
         _news = (await _newsService.GetNews(new ()
         {
@@ -144,6 +154,44 @@
         await RefreshNews();
     }
 
+    private string IntegrationSource { get; set; }
 
+    private string Ticker { get; set; }
+
+    private async Task FindNews()
+    {
+        if (!string.IsNullOrWhiteSpace(IntegrationSource) || !string.IsNullOrWhiteSpace(Ticker))
+        {
+            _news = (await _newsService.GetNews(new ()
+            {
+                BatchSize = 999999999,
+                LastDate = DateTime.MinValue
+            })).NewsList ?? new List<News>();
+
+            if (!string.IsNullOrWhiteSpace(IntegrationSource))
+            {
+                _news = _news.Where(e => e.IntegrationSource == IntegrationSource).ToList();
+            }
+            if (!string.IsNullOrWhiteSpace(Ticker))
+            {
+                _news = _news.Where(e => e.AssociatedAssets.Contains(Ticker)).ToList();
+            }
+            FindCompleted = true;
+            FindedCount = _news.Count;
+            
+            StateHasChanged();
+        }
+    }
+    private void ClearFilters()
+    {
+        IntegrationSource = string.Empty;
+        Ticker = string.Empty;
+        FindCompleted = false;
+        FindedCount = 0;
+    }
+
+    private bool FindCompleted { get; set; }
+
+    private int FindedCount { get; set; }
 
 }
