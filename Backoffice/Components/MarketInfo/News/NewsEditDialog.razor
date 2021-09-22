@@ -31,6 +31,9 @@
         Source: <input type="text" class="form-control" @bind="News.Source"/>
     </div>
     <div>
+        Integration Source: <input type="text" class="form-control" @bind="News.IntegrationSource"/>
+    </div>
+    <div>
         Sentiment: <input type="text" class="form-control" @bind="News.Sentiment"/>
     </div>
     <div>
@@ -78,6 +81,7 @@
         if (string.IsNullOrWhiteSpace(News.Lang)
             || string.IsNullOrWhiteSpace(News.Topic)
             || string.IsNullOrWhiteSpace(News.Source)
+            || string.IsNullOrWhiteSpace(News.IntegrationSource)
             || string.IsNullOrWhiteSpace(News.UrlAddress))
         {
          _toaster.Error("Empty fields are not allowed");   
