@@ -171,7 +171,7 @@
         await _newsService.DeleteNews(new DeleteNewsRequest()
         {
             Lang = newsDelete.Lang,
-            Topic = newsDelete.Topic
+            Ticker = newsDelete.Topic
         });
         await RefreshNews();
     }
