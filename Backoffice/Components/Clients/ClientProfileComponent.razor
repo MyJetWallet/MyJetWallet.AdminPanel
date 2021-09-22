@@ -110,6 +110,7 @@
     
     private async Task ShowAddBlocker()
     {
+        _newBlocker.ExpiryTime = DateTime.UtcNow;
         _isShowAddDialog = true;
     }
 
