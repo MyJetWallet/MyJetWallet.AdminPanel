@@ -22,12 +22,15 @@
             <option value="@name">@name</option>
         }
     </select>
-    
-    
     <span style="margin-left: 10px; vertical-align: center">Ticker: </span><input type="text" style="width: auto" @bind="Ticker"/>
+    <span style="margin-left: 10px; vertical-align: center">Language: </span><input type="text" style="width: auto" @bind="Language"/>
     <button type="button" class="btn-outline-secondary btn" @onclick="FindNews">Find</button>
     <button type="button" class="btn-outline-secondary btn" @onclick="ClearFilters">Clear</button>
-    @if (FindCompleted)
+    @if (FindInProcess)
+    {
+        <img style="margin-left: 10px" width="30" src="images/loading-buffering.gif" alt=""/>
+    }
+    else if (FindCompleted)
     {
         <span style="margin-left: 10px; vertical-align: center">Finded @FindedCount news</span>
     }
@@ -96,6 +99,7 @@
     private DateTime _lastSeen = DateTime.MinValue;
     
     private bool FindCompleted { get; set; }
+    private bool FindInProcess { get; set; }
 
     private int FindedCount { get; set; }
 
@@ -175,11 +179,15 @@
     private string IntegrationSource { get; set; }
 
     private string Ticker { get; set; }
+    private string Language { get; set; }
 
     private async Task FindNews()
     {
-        if (!string.IsNullOrWhiteSpace(IntegrationSource) || !string.IsNullOrWhiteSpace(Ticker))
+        if (!string.IsNullOrWhiteSpace(IntegrationSource) || !string.IsNullOrWhiteSpace(Ticker) || !string.IsNullOrWhiteSpace(Language))
         {
+            FindInProcess = true;
+            StateHasChanged();
+            
             _news = (await _newsService.GetNews(new ()
             {
                 BatchSize = 999999999,
@@ -194,9 +202,14 @@
             {
                 _news = _news.Where(e => e.AssociatedAssets.Contains(Ticker)).ToList();
             }
+            if (!string.IsNullOrWhiteSpace(Language))
+            {
+                _news = _news.Where(e => e.Lang == Language.ToLower()).ToList();
+            }
             FindCompleted = true;
             FindedCount = _news.Count;
             
+            FindInProcess = false;
             StateHasChanged();
         }
     }
@@ -207,4 +220,5 @@
         FindCompleted = false;
         FindedCount = 0;
     }
+
 }
