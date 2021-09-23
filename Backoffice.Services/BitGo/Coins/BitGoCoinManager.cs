@@ -28,7 +28,7 @@ namespace Backoffice.Services.BitGo.Coins
             {
                 _logger.LogInformation("Creating BitGo coin: {jsonText}", JsonConvert.SerializeObject(item));
                 await _bitGoCoinSettingsService.CreateBitgoCoinEntityAsync(item.Coin, item.Accuracy,
-                    item.RequiredConfirmations);
+                    item.RequiredConfirmations, item.IsMainNet);
                 _logger.LogInformation("Created BitGo coin: {jsonText}", JsonConvert.SerializeObject(item));
             }
             catch (Exception ex)
@@ -44,7 +44,7 @@ namespace Backoffice.Services.BitGo.Coins
             {
                 _logger.LogInformation("Updating BitGo coin: {jsonText}", JsonConvert.SerializeObject(item));
                 await _bitGoCoinSettingsService.UpdateBitgoCoinEntityAsync(item.Coin, item.Accuracy,
-                    item.RequiredConfirmations);
+                    item.RequiredConfirmations, item.IsMainNet);
                 _logger.LogInformation("Updated BitGo coin: {jsonText}", JsonConvert.SerializeObject(item));
             }
             catch (Exception ex)
