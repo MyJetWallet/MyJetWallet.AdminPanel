@@ -21,14 +21,14 @@
       <PackageReference Include="Finance.PciDssPublic.HttpContracts" Version="1.0.0" />
       <PackageReference Include="Flurl.Http" Version="3.2.0" />
       <PackageReference Include="Grpc.Net.Client" Version="2.39.0" />
-      <PackageReference Include="Highsoft.Highcharts" Version="9.1.2.2" />
+      <PackageReference Include="Highsoft.Highcharts" Version="9.2.2.1" />
       <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.18.0" />
       <PackageReference Include="MW.Blazor.TagSelector" Version="1.2.3" />
       <PackageReference Include="MyCrm.PersonalData.Grpc" Version="1.0.49" />
-      <PackageReference Include="MyJetWallet.BitGo" Version="1.1.6" />
-      <PackageReference Include="MyJetWallet.BitGo.Settings" Version="1.1.1" />
+      <PackageReference Include="MyJetWallet.BitGo" Version="1.2.1" />
+      <PackageReference Include="MyJetWallet.BitGo.Settings" Version="1.1.2" />
       <PackageReference Include="MyJetWallet.Domain.ExternalMarketApi" Version="1.1.6" />
-      <PackageReference Include="MyJetWallet.Sdk.Authorization" Version="2.0.3" />
+      <PackageReference Include="MyJetWallet.Sdk.Authorization" Version="2.0.4" />
       <PackageReference Include="MyJetWallet.Sdk.ExternalMarketsSettings" Version="1.0.3" />
       <PackageReference Include="MyJetWallet.Sdk.Grpc" Version="1.0.2" />
       <PackageReference Include="MyJetWallet.Sdk.NoSql" Version="1.2.0" />
@@ -40,7 +40,7 @@
       <PackageReference Include="MyJetWallet.Service.BitGo.SignTransaction.Client" Version="1.2.8" />
       <PackageReference Include="MyJetWallet.Service.Bitgo.WithdrawalProcessor.Client" Version="1.1.9" />
       <PackageReference Include="MyJetWallet.Service.ChangeBalanceGateway.Client" Version="1.7.4" />
-      <PackageReference Include="MyJetWallet.Service.ClientProfile.Client" Version="1.0.0" />
+      <PackageReference Include="MyJetWallet.Service.ClientProfile.Client" Version="1.0.1" />
       <PackageReference Include="MyJetWallet.Service.ClientWallets.Client" Version="1.2.4" />
       <PackageReference Include="MyJetWallet.Service.CoinMarketCapReader.Client" Version="1.0.1" />
       <PackageReference Include="MyJetWallet.Service.IndexPrices.Client" Version="1.2.1" />
@@ -68,7 +68,7 @@
       <PackageReference Include="MyTokenGeneratorUtils" Version="1.0.1" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
       <PackageReference Include="protobuf-net.Grpc" Version="1.0.152" />
-      <PackageReference Include="Radzen.Blazor" Version="3.10.0" />
+      <PackageReference Include="Radzen.Blazor" Version="3.10.1" />
       <PackageReference Include="SimpleTrading.BaseMetrics" Version="1.0.3" />
       <PackageReference Include="SimpleTrading.CandlesHistory.Grpc" Version="1.0.17" />
       <PackageReference Include="SimpleTrading.PersonalData.Grpc" Version="1.0.50" />
