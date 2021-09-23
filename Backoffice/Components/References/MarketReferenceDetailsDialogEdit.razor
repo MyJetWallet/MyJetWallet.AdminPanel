@@ -57,18 +57,6 @@
                         }
                     </tr>
                     <tr>
-                        <td>AssociateAssetPair</td>
-                        @if (SpotInstrumentItems.Any())
-                        {
-                            <select @bind="Item.Reference.AssociateAssetPair">
-                                @foreach (var spotInstrument in SpotInstrumentItems.Where(i=> i.Instrument.BaseAsset == Item.Reference.AssociateAsset || i.Instrument.QuoteAsset == Item.Reference.AssociateAsset))
-                                {
-                                    <option value=@spotInstrument.Instrument.Symbol>@spotInstrument.Instrument.Symbol</option>
-                                }
-                            </select>
-                        }
-                    </tr>
-                    <tr>
                         <td>Name</td>
                         <input type="text" class="form-control" @bind="Item.Reference.Name"/>
                     </tr>
@@ -146,8 +134,6 @@
         {
             Item.Reference.AssociateAsset = AssetItems.FirstOrDefault()?.Asset.Symbol;
         }
-        Item.Reference.AssociateAssetPair = SpotInstrumentItems.FirstOrDefault(i => i.Instrument.BaseAsset == Item.Reference.AssociateAsset || i.Instrument.QuoteAsset == Item.Reference.AssociateAsset).Instrument.Symbol;
-
         StateHasChanged();
     }
 }
