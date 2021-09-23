@@ -131,6 +131,10 @@
             {
                 ClientResults.AddRange(response.Clients.Select(client => new ClientResultModel(client, (pdResponse.PersonalData.Confirm!=null), pdResponse.PersonalData.Email,(pdResponse.PersonalData.ConfirmPhone!=null), pdResponse.PersonalData.Phone)));
             }
+            else
+            {
+                ClientResults.Add(new ClientResultModel(result.Id, pdResponse.PersonalData.BrandId, null, 0,(pdResponse.PersonalData.Confirm!=null), pdResponse.PersonalData.Email,(pdResponse.PersonalData.ConfirmPhone!=null), pdResponse.PersonalData.Phone));
+            }
         }
         
         if (!ClientResults.Any())
@@ -182,6 +186,10 @@
             {
                 ClientResults.AddRange(response.Clients.Select(client => new ClientResultModel(client, (pdResponse.PersonalData.Confirm!=null), pdResponse.PersonalData.Email,(pdResponse.PersonalData.ConfirmPhone!=null), pdResponse.PersonalData.Phone)));
             }
+            else
+            {
+                ClientResults.Add(new ClientResultModel(pdResponse.PersonalData.Id, pdResponse.PersonalData.BrandId, null, 0,(pdResponse.PersonalData.Confirm!=null), pdResponse.PersonalData.Email,(pdResponse.PersonalData.ConfirmPhone!=null), pdResponse.PersonalData.Phone));
+            }
         }
 
         if (ClientResults?.Any() != true)
@@ -202,19 +210,6 @@
         StateHasChanged();
     }
     
-    private bool IsEmail(string value)
-    {
-        try
-        {
-            var m = new MailAddress(value);
-            return true;
-        }
-        catch (FormatException)
-        {
-            return false;
-        }
-    }
-
 
     private void SelectClient(ClientResultModel result)
     {

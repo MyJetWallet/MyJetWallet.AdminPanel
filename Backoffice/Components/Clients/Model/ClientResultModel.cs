@@ -15,6 +15,18 @@ namespace Backoffice.Components.Clients.Model
             PhoneConfirmed = phoneConfirmed;
             Phone = phone;
         }
+        
+        public ClientResultModel(string clientId, string brandId, string brokerId, int count, bool emailConfirmed, string email, bool phoneConfirmed, string phone)
+        {
+            ClientId = clientId;
+            BrandId = brandId;
+            BrokerId = brokerId;
+            Count = count;
+            EmailConfirmed = emailConfirmed;
+            Email = email;
+            PhoneConfirmed = phoneConfirmed;
+            Phone = phone;
+        }
         public string BrokerId { get; set; }
 
         public string BrandId { get; set; }

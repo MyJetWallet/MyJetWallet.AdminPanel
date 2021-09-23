@@ -42,28 +42,30 @@
                 }
             </ul>
         </tr>
-        @if (ActiveWallet != null)
-        {
+
             <tr>
                 <ul class="nav nav-tabs nav-pills">
-                    <li class="nav-item">
-                        <button class="page-link" style="@(GetMenuStyle(ClientPage.WalletInfo))" aria-current="page" @onclick="@(() => SetPage(ClientPage.WalletInfo))">Wallet Info</button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="page-link" style="@(GetMenuStyle(ClientPage.Balances))" aria-current="page" @onclick="@(() => SetPage(ClientPage.Balances))">Balances</button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="page-link" style="@(GetMenuStyle(ClientPage.BalanceHistory))" aria-current="page" @onclick="@(() => SetPage(ClientPage.BalanceHistory))">Balance History</button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="page-link" style="@(GetMenuStyle(ClientPage.SwapHistory))" @onclick="@(() => SetPage(ClientPage.SwapHistory))">Swap History</button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="page-link" style="@(GetMenuStyle(ClientPage.QuoteHistory))" @onclick="@(() => SetPage(ClientPage.QuoteHistory))">Quote History</button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="page-link" style="@(GetMenuStyle(ClientPage.BlockchainDepositAddress))" @onclick="@(() => SetPage(ClientPage.BlockchainDepositAddress))">Blockchain Addresses</button>
-                    </li>
+                    @if (ActiveWallet != null)
+                    {
+                        <li class="nav-item">
+                            <button class="page-link" style="@(GetMenuStyle(ClientPage.WalletInfo))" aria-current="page" @onclick="@(() => SetPage(ClientPage.WalletInfo))">Wallet Info</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="page-link" style="@(GetMenuStyle(ClientPage.QuoteHistory))" @onclick="@(() => SetPage(ClientPage.QuoteHistory))">Quote History</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="page-link" style="@(GetMenuStyle(ClientPage.BlockchainDepositAddress))" @onclick="@(() => SetPage(ClientPage.BlockchainDepositAddress))">Blockchain Addresses</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="page-link" style="@(GetMenuStyle(ClientPage.Balances))" aria-current="page" @onclick="@(() => SetPage(ClientPage.Balances))">Balances</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="page-link" style="@(GetMenuStyle(ClientPage.BalanceHistory))" aria-current="page" @onclick="@(() => SetPage(ClientPage.BalanceHistory))">Balance History</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="page-link" style="@(GetMenuStyle(ClientPage.SwapHistory))" @onclick="@(() => SetPage(ClientPage.SwapHistory))">Swap History</button>
+                        </li>
+                    }
                     <li class="nav-item">
                         <button class="page-link" style="@(GetMenuStyle(ClientPage.Sessions))" @onclick="@(() => SetPage(ClientPage.Sessions))">Sessions</button>
                     </li>
@@ -120,7 +122,6 @@
                 </div>
 
             </tr>
-        }
     </table>
 }
 
@@ -171,6 +172,7 @@
 
     private enum ClientPage
     {
+        None,
         WalletInfo,
         Balances,
         BalanceHistory,
@@ -188,12 +190,17 @@
         if (string.IsNullOrEmpty(ClientId))
             return;
 
-        var wallets = await _walletService.GetWalletsByClient(new JetClientIdentity(BrokerId, BrandId, ClientId));
-
         Client = new ClientModel(BrokerId, ClientId, BrandId, EmailConfirmed, Email, PhoneConfirmed, Phone);
-        Client.Wallets = (wallets.Wallets ?? new List<ClientWallet>())
-            .Select(e => new WalletModel(e.Name, BrokerId, ClientId, BrandId, e.WalletId, e.IsDefault, e.BaseAsset, e.CreatedAt))
-            .ToList();
+        Client.Wallets = new List<WalletModel>();
+        
+        if (!string.IsNullOrWhiteSpace(BrokerId) && !string.IsNullOrWhiteSpace(BrandId) && !string.IsNullOrWhiteSpace(ClientId))
+        {
+            var wallets = await _walletService.GetWalletsByClient(new JetClientIdentity(BrokerId, BrandId, ClientId));
+
+            Client.Wallets = wallets.Wallets
+                .Select(e => new WalletModel(e.Name, BrokerId, ClientId, BrandId, e.WalletId, e.IsDefault, e.BaseAsset, e.CreatedAt))
+                .ToList();
+        }
         
         ActiveWallet = null;
         
