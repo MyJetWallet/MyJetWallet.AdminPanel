@@ -53,7 +53,7 @@
     </thead>
     <tbody>
     @{
-        var rowNumber = 0;
+        var rowNumber = RowIndex;
     }
     @foreach (var news in _news)
     {
@@ -97,7 +97,9 @@
     
     private int CountInPage { get; set; } = 20;
     private DateTime _lastSeen = DateTime.MinValue;
-    
+
+    private int RowIndex { get; set; } = 0;
+
     private bool FindCompleted { get; set; }
     private bool FindInProcess { get; set; }
 
@@ -129,12 +131,14 @@
     private async Task RefreshNews()
     {
         ClearFilters();
-        
+
+        RowIndex = 0;
         _news = (await _newsService.GetNews(new ()
         {
             BatchSize = CountInPage,
             LastDate = DateTime.MinValue
         })).NewsList ?? new List<News>();
+        
         
         StateHasChanged();
     }
@@ -149,7 +153,9 @@
             BatchSize = CountInPage,
             LastDate = _lastSeen
         })).NewsList ?? new List<News>();
-        
+
+        RowIndex += CountInPage;
+            
         StateHasChanged();
     }
     
