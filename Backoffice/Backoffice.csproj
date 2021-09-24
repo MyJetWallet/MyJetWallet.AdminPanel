@@ -28,7 +28,7 @@
       <PackageReference Include="MyJetWallet.BitGo" Version="1.2.2" />
       <PackageReference Include="MyJetWallet.BitGo.Settings" Version="1.2.0" />
       <PackageReference Include="MyJetWallet.Domain.ExternalMarketApi" Version="1.1.6" />
-      <PackageReference Include="MyJetWallet.Sdk.Authorization" Version="2.0.4" />
+      <PackageReference Include="MyJetWallet.Sdk.Authorization" Version="2.0.5" />
       <PackageReference Include="MyJetWallet.Sdk.ExternalMarketsSettings" Version="1.0.3" />
       <PackageReference Include="MyJetWallet.Sdk.Grpc" Version="1.0.2" />
       <PackageReference Include="MyJetWallet.Sdk.NoSql" Version="1.2.0" />
@@ -39,7 +39,7 @@
       <PackageReference Include="MyJetWallet.Service.BitGo.PendingApprovals.Client" Version="1.0.0" />
       <PackageReference Include="MyJetWallet.Service.BitGo.SignTransaction.Client" Version="1.2.8" />
       <PackageReference Include="MyJetWallet.Service.Bitgo.WithdrawalProcessor.Client" Version="1.1.9" />
-      <PackageReference Include="MyJetWallet.Service.ChangeBalanceGateway.Client" Version="1.7.4" />
+      <PackageReference Include="MyJetWallet.Service.ChangeBalanceGateway.Client" Version="1.7.5" />
       <PackageReference Include="MyJetWallet.Service.ClientProfile.Client" Version="1.0.1" />
       <PackageReference Include="MyJetWallet.Service.ClientWallets.Client" Version="1.2.4" />
       <PackageReference Include="MyJetWallet.Service.CoinMarketCapReader.Client" Version="1.0.1" />
