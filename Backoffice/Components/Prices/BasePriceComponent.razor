@@ -1,16 +1,17 @@
 @using Service.PriceHistory.Grpc
 @using Service.PriceHistory.Grpc.Models
-@inject IBasePriceSerivce _basePriceSerivce
+@using Service.PriceHistory.Domain.Models
+@inject IBasePriceSerivce _basePriceService
 <h3>Base prices</h3>
 
 <table class="table" style="width: auto">
     <thead>
     <tr>
         <th>#</th>
-        <th>Instrument</th>
+        <th>Base Asset</th>
+        <th>Quote Asset</th>
         <th>CurrentPrice</th>
-        <th>H24P</th>
-        <th>H24A</th>
+        <th>H24</th>
         <th>D7</th>
         <th>M1</th>
         <th>M3</th>
@@ -21,24 +22,22 @@
         var rowNumber = 0;
     }
         
-    @foreach (var price in _prices)
+    @foreach (var basePrice in _prices)
     {
-        rowNumber++;
-        <tr>
-            <td>@rowNumber</td>
-            <td>@price.AssetId</td>
-            <td>@price.CurrentPrice</td>
-            <td>@price.H24P</td>
-            <td>@price.H24A</td>
-            <td>@price.D7</td>
-            <td>@price.M1</td>
-            <td>@price.M3</td>
-            <td>
-                <ul class="nav">
-                    <li><button type="button" class="btn-outline-info btn"  @onclick="() => { ShowEdit(price); }">Edit</button></li>
-                </ul>
-            </td>
-        </tr>
+        foreach (var quotePrice in basePrice.PricesByQuoteAsset)
+        {
+            rowNumber++;
+            <tr>
+                <td>@rowNumber</td>
+                <td>@basePrice.BaseAsset</td>
+                <td>@quotePrice.Asset</td>
+                <td>@quotePrice.CurrentPrice</td>
+                <td>@quotePrice.H24</td>
+                <td>@quotePrice.D7</td>
+                <td>@quotePrice.M1</td>
+                <td>@quotePrice.M3</td>
+            </tr>
+        }
     }
     </tbody>
 
@@ -52,7 +51,7 @@
 }
 
 @code {
-    private List<BasePriceResponse> _prices = new();
+    private List<AssetPrices> _prices = new();
     private bool IsShowEdit  { get; set; }
     private BasePriceEditRequest BasePrice;
 
@@ -77,10 +76,8 @@
     }
     private async Task RefreshPrices()
     {
-        _prices = (await _basePriceSerivce.GetAllPrices(new BasePriceRequest()
-        {
-            BrokerId = "jetwallet"
-        })).BasePrices ?? new List<BasePriceResponse>();
+        var response = await _basePriceService.GetAssetPricesV2();
+        _prices = response.AssetPrices ?? new List<AssetPrices>();
 
         StateHasChanged();
     }
@@ -94,7 +91,7 @@
     private async Task OnUpdateBasePrice()
     {
         IsShowEdit = false;
-        await _basePriceSerivce.EditBasePriceRecord(BasePrice);
+        await _basePriceService.EditBasePriceRecord(BasePrice);
         await RefreshPrices();
     }
 }
